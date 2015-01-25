@@ -26,21 +26,46 @@ int xsize = 400;
 int ysize = 720;
 
 // current tile
-vec2 tile[4]; // An array of 4 2d vectors representing displacement from a 'center' piece of the tile, on the grid
-vec2 tilepos = vec2(5, 19); // The position of the current tile using grid coordinates ((0,0) is the bottom left corner)
+vec2 tile[4]; 				
+// An array of 4 2d vectors representing displacement from a 'center' piece of the tile, on the grid
+vec2 tilepos = vec2(5, 19);
+// The position of the current tile using grid coordinates ((0,0) is the bottom left corner)
 
 // An array storing all possible orientations of all possible tiles
 // The 'tile' array will always be some element [i][j] of this array (an array of vec2)
 vec2 allRotationsLshape[4][4] = 
-	{{vec2(0, 0), vec2(-1,0), vec2(1, 0), vec2(-1,-1)},
-	{vec2(0, 1), vec2(0, 0), vec2(0,-1), vec2(1, -1)},     
-	{vec2(1, 1), vec2(-1,0), vec2(0, 0), vec2(1,  0)},  
-	{vec2(-1,1), vec2(0, 1), vec2(0, 0), vec2(0, -1)}};
+	{
+		{vec2(0, 0), vec2(-1,0), vec2(1, 0), vec2(-1,-1)},
+		{vec2(0, 1), vec2(0, 0), vec2(0,-1), vec2(1, -1)},
+		{vec2(1, 1), vec2(-1,0), vec2(0, 0), vec2(1,  0)},
+		{vec2(-1,1), vec2(0, 1), vec2(0, 0), vec2(0, -1)}
+	};
+
+// All rotations for S and L shapes
+vec2 allRotationsSshape[2][4] = 
+	{
+		{vec2(-1, -1), vec2(0,-1), vec2(0,0), vec2(0,1)},
+		{vec2(1,-1), vec2(1,0), vec2(0,0), vec2(0,1)}
+	}
+
+vec2 allRotationsIshape[2][4] = 
+	{
+		{vec2(-2,0), vec2(-1,0), vec2(0,0), vec2(1,0)},
+		{vec2(0,-2), vec2(0,-1), vec2(0,0), vec2(0,1)}
+	}
+
 
 // colors
 vec4 orange = vec4(1.0, 0.5, 0.0, 1.0); 
 vec4 white  = vec4(1.0, 1.0, 1.0, 1.0);
-vec4 black  = vec4(0.0, 0.0, 0.0, 1.0); 
+vec4 black  = vec4(0.0, 0.0, 0.0, 1.0);
+
+// extra colors for fruits 
+vec4 red 	= vec4(1.0, 0.0, 0.0, 1.0);
+vec4 green 	= vec4(0.0, 1.0, 0.0, 1.0);
+vec4 purple	= vec4(1.0, 0.0, 1.0, 1.0);
+vec4 yello 	= vec4(1.0, 1.0, 0.0, 1.0);
+
  
 //board[x][y] represents whether the cell (x,y) is occupied
 bool board[10][20]; 
