@@ -9,10 +9,10 @@ uniform int ysize;
 
 void main() 
 {
-	mat4 scale = mat4(	2.0/xsize, 	0.0, 		0.0, 0.0,
-			  			0.0,  	2.0/ysize, 	0.0, 0.0,
-			  			0.0, 		0.0, 		1.0, 0.0,
-			  			0.0, 		0.0, 		0.0, 1.0 );
+	mat4 scale = mat4(	2.0/xsize, 	0.0, 		0.0, 	0.0,
+			  			0.0,  		2.0/ysize, 	0.0, 	0.0,
+			  			0.0, 		0.0, 		1.0, 	0.0,
+			  			0.0, 		0.0, 		0.0, 	1.0 );
 
 	// First, center the image by translating each vertex by half of the original window size
 	// Then, multiply by the scale matrix to maintain size after the window is reshaped
