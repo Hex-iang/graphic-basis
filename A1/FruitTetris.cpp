@@ -21,16 +21,50 @@ Modified in Sep 2014 by Honghua Li (honghual@sfu.ca).
 // Personal included library
 #include <ctime>
 #include <algorithm>
-
+#include <random>
 using namespace std;
 
 // Macros defined by Hexiang
 // ============================================================================================
 // macros for tile types
 
-#define TILE_TYPE_NUM 3
-#define DEBUG 1
+#define TILE_TYPE_NUM 	3
+#define TILE_COLOR_NUM	5
+#define DEBUG 			1
 
+//  constant variable
+// ============================================================================================
+
+
+const int TILE_TYPE_L = 0;
+const int TILE_TYPE_S = 1;
+const int TILE_TYPE_I = 2;
+
+// const for board boundaries 
+const int LEFT_BOUND 	= 0;
+const int RIGHT_BOUND 	= 9;
+const int DOWN_BOUND 	= 0;
+const int UP_BOUND  	= 19;
+
+
+// const for board size
+const int BOARD_WIDTH 	= 10;
+const int BOARD_HEIGHT	= 20;
+
+// colors
+const vec4 white  = vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 black  = vec4(0.0, 0.0, 0.0, 1.0);
+
+// extra colors for fruits 
+const vec4 orange 	= vec4(1.0, 0.5, 0.0, 1.0); 
+const vec4 red 		= vec4(1.0, 0.0, 0.0, 1.0);
+const vec4 green 	= vec4(0.0, 1.0, 0.0, 1.0);
+const vec4 purple	= vec4(1.0, 0.0, 1.0, 1.0);
+const vec4 yellow 	= vec4(1.0, 1.0, 0.0, 1.0);
+
+const vec4 tileColors[5] = {
+	orange, red, green, purple, yellow
+};
 
 // xsize and ysize represent the window size - updated if window is reshaped to prevent stretching of the game
 int xsize = 400; 
@@ -39,9 +73,10 @@ int ysize = 720;
 // current tile
 vec2 tile[4]; 				
 // An array of 4 2d vectors representing displacement from a 'center' piece of the tile, on the grid
-vec2 tilepos = vec2(5, 19);
+vec2 tilePos = vec2(5, 19);
 // The position of the current tile using grid coordinates ((0,0) is the bottom left corner)
-
+int tileType 	= TILE_TYPE_L;
+int rotateType 		= 0;
 
 // The 'tile' array will always be some element [i][j] of this array (an array of vec2)
 int allRotationShapeSize[TILE_TYPE_NUM] = {4, 2, 2};
@@ -58,8 +93,8 @@ vec2 allRotationsLshape[4][4] =
 // ============================================================================================
 vec2 allRotationsSshape[2][4] = 
 	{
-		{vec2(-1, -1), vec2(0, -1), vec2(0, 0), vec2(0, 1)},
-		{vec2( 1, -1), vec2(1,  0), vec2(0, 0), vec2(0, 1)}
+		{vec2(-1, -1), vec2( 0,-1), vec2(0, 0), vec2(1, 0)},
+		{vec2( 1, -1), vec2( 1, 0), vec2(0, 0), vec2(0, 1)}
 	};
 
 vec2 allRotationsIshape[2][4] = 
@@ -68,39 +103,13 @@ vec2 allRotationsIshape[2][4] =
 		{vec2( 0,-2), vec2( 0,-1), vec2(0, 0), vec2(0, 1)}
 	};
 
-//  constant variable
-// ============================================================================================
-
-const int TILE_TYPE_L 	= 0;
-const int TILE_TYPE_S 	= 1;
-const int TILE_TYPE_I 	= 2;
-
-// macros for bounds 
-const int LEFT_BOUND 	= 0;
-const int RIGHT_BOUND 	= 9;
-const int DOWN_BOUND 	= 0;
-const int UP_BOUND  	= 19;
-
-
-// colors
-vec4 orange = vec4(1.0, 0.5, 0.0, 1.0); 
-vec4 white  = vec4(1.0, 1.0, 1.0, 1.0);
-vec4 black  = vec4(0.0, 0.0, 0.0, 1.0);
-
-// extra colors for fruits 
-vec4 red 	= vec4(1.0, 0.0, 0.0, 1.0);
-vec4 green 	= vec4(0.0, 1.0, 0.0, 1.0);
-vec4 purple	= vec4(1.0, 0.0, 1.0, 1.0);
-vec4 yello 	= vec4(1.0, 1.0, 0.0, 1.0);
-
- 
 //board[x][y] represents whether the cell (x,y) is occupied
-bool board[10][20];
+bool board[BOARD_WIDTH][BOARD_HEIGHT];
 
 // An array containing the colour of each of the 10*20*2*3 vertices that make up the board
 // Initially, all will be set to black. As tiles are placed, sets of 6 vertices (2 triangles; 1 square)
 // will be set to the appropriate colour in this array before updating the corresponding VBO
-vec4 boardcolours[1200];
+vec4 boardcolours[BOARD_WIDTH * BOARD_HEIGHT * 3 * 2];
 
 // location of vertex attributes in the shader program
 GLuint vPosition;
@@ -134,17 +143,18 @@ void updateTile()
 	for (int i = 0; i < 4; i++) 
 	{
 		// Calculate the grid coordinates of the cell
-		GLfloat x = tilepos.x + tile[i].x; 
-		GLfloat y = tilepos.y + tile[i].y;
+		GLfloat x = tilePos.x + tile[i].x; 
+		GLfloat y = tilePos.y + tile[i].y;
 
-		// Create the 4 corners of the square - these vertices are using location in pixels
-		// These vertices are later converted by the vertex shader
 
+		// Contraints that make the tile outside the UP_BOUND of board invisible
+		// ==============================================================================
 		vec4 p1 = vec4(33.0 + (x * 33.0), 33.0 + (y * 33.0), .4, 1); 
 		vec4 p2 = vec4(33.0 + (x * 33.0), 66.0 + (y * 33.0), .4, 1);
 		vec4 p3 = vec4(66.0 + (x * 33.0), 33.0 + (y * 33.0), .4, 1);
 		vec4 p4 = vec4(66.0 + (x * 33.0), 66.0 + (y * 33.0), .4, 1);
 
+		if ( y > UP_BOUND ) continue;
 
 		// Two points are used by two triangles each
 		vec4 newpoints[6] = {p1, p2, p3, p2, p3, p4}; 
@@ -158,13 +168,12 @@ void updateTile()
 
 // Get Tile Bound 
 //-------------------------------------------------------------------------------------------------------------------
-class Bound{
-public:
+struct Bound{
 	GLfloat left, right, up, down;
 	Bound(int _left, int _right, int _up, int _down):left(_left), right(_right), up(_up), down(_down){}
 };
 
-Bound getTileBound( vec2 * pTile)
+const Bound getTileBound( vec2 * pTile)
 {
 	Bound tileBound(0, 0, 0, 0);
 	for (int i = 0; i < 4; i++){
@@ -177,15 +186,29 @@ Bound getTileBound( vec2 * pTile)
 	return tileBound;
 }
 
+// Fill Tile with random colors
+void fillupTile( vec4 * pTileColor ){
+	// Fill up the four tiles with different colors
+	for (int i = 0; i < 4; i++){
+		vec4 tileColor = tileColors[rand() % TILE_COLOR_NUM];
+		int j = 6;
+		while (j--){
+			*pTileColor = tileColor;
+			pTileColor ++;
+		}
+	}
+}
+
 // Called at the start of play and every time a tile is placed
 void newTile()
 {
 	// First generate a random tile
 
-	int tileType = rand() % 3;
+	tileType = rand() % TILE_TYPE_NUM;
 	vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
 				( (tileType == TILE_TYPE_I)? allRotationsIshape : allRotationsSshape );
-	int rotateType = rand() % ( allRotationShapeSize[tileType] );
+	rotateType = rand() % ( allRotationShapeSize[tileType] );
+
 
 #ifdef DEBUG
 	cout << "newTile() [Generate Randomness] - TileType: " << tileType << ", RotateType: " << rotateType 
@@ -197,32 +220,35 @@ void newTile()
 		tile[i] = pAllRotationShape[rotateType][i];
 
 #ifdef DEBUG
-		cout << "newTile() [Generate Randomness] - Tile#" << i << " - " << tile[i].x << "," << tile[i].y << endl;
+		cout << "newTile() [Tile init] - Tile#" << i << " - " << tile[i].x << "," << tile[i].y << endl;
 #endif
 
 	}
 
 	Bound tileBound = getTileBound(tile);
+	int coverage = ( RIGHT_BOUND - int(tileBound.right) + int(tileBound.left) + 1);
 
+	int hpos = rand() % coverage - int(tileBound.left);
+	int vpos = 19 - tileBound.up;
+	tilePos = vec2(hpos , vpos);
+	// Put the tile at the top of the board
+	
 #ifdef DEBUG
 	cout << "newTile() [Get Tile Boundary] - Bound(" << tileBound.left << ", " << tileBound.right
 		<<", " << tileBound.down << ", " << tileBound.up << ")" << endl;
-	cout << "newTile() [Boundaries] - Right: " << (RIGHT_BOUND - int(tileBound.right)) << ", Left: " << (LEFT_BOUND);
+	cout << "newTile() [Boundaries] - Right: " << (RIGHT_BOUND - int(tileBound.right)) 
+		<< ", Left: " << (- int(tileBound.left)) << ", Coverage: " << coverage << endl;
+	cout << "newTile() [New Tile Position] - x = " << hpos << ", y = " << vpos << endl;
 #endif
 
-	int hpos = rand() % ( RIGHT_BOUND - int(tileBound.right)) - int(tileBound.left);
-	int vpos = 19 - tileBound.up;
-	tilepos = vec2(hpos , vpos);
-	// Put the tile at the top of the board
-	
 	// Get the 4 pieces of the new tile
 	updateTile(); 
 
 	// Update the color VBO of current tile
 	vec4 newcolours[24];
-	for (int i = 0; i < 24; i++)
-		newcolours[i] = orange; 
+
 	// You should randomlize the color
+	fillupTile(newcolours);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[5]); 
 	// Bind the VBO containing current tile vertex colours
@@ -356,7 +382,7 @@ void initCurrentTile()
 
 void init()
 {
-	// Set up random seed 
+	// initialize random generator with seed 
 	srand(time(NULL));
 
 	// Load shaders and use the shader program
@@ -390,9 +416,34 @@ void init()
 
 //-------------------------------------------------------------------------------------------------------------------
 
-// Rotates the current tile, if there is room
-void rotate()
-{      
+// Try rotates the current tile, return true if the tile is successfully rotated, 
+// And return false if there are some issues related to rotation 
+// bool rotateTile()
+// {
+// 	rotateType = (rotateType + 1) % allRotationShapeSize[tileType];
+// 	vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+// 				( (tileType == TILE_TYPE_I)? allRotationsIshape : allRotationsSshape );
+
+// 	// Update the geometry VBO of current tile
+// 	for (int i = 0; i < 4; i++){
+// 		tile[i] = pAllRotationShape[rotateType][i];
+
+// #ifdef DEBUG
+// 	cout << "rotateTile() [Change Rotation] - Tile#" << i << " - " << tile[i].x << "," << tile[i].y << endl;
+// #endif
+
+// 	}
+// #ifdef DEBUG
+// 	cout << "rotateTile() [Change Rotation] - TileType: " << tileType << ", RotateType: " << rotateType 
+// 		<< ", RotationShape: " << allRotationShapeSize[tileType] << endl;
+// #endif
+// 	updateTile();
+// }
+
+// Different from the first version, this rotation function is going to do 
+// ratation transformation to the tile instead of rendering now position of time
+bool rotateTile()
+{
 
 }
 
@@ -410,7 +461,7 @@ void checkFullRow(int row)
 // Places the current tile - update the board vertex colour VBO and the array maintaining occupied cells
 void setTile()
 {
-	
+	checkFullRow(1);	
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -419,20 +470,27 @@ void setTile()
 // Returns true if the tile was successfully moved, or false if there was some issue
 bool moveTile(vec2 direction)
 {
+	Bound tileBound = getTileBound(tile);
+	vec2 futureTilePos = tilePos + direction;
+
 	return false;
 }
 //-------------------------------------------------------------------------------------------------------------------
 
 // Starts the game over - empties the board, creates new tiles, resets line counters
-void restart()
+void restartGame()
 {
-
+	cout << "Restart Game..." << endl;
+	initGrid();
+	initBoard();
+	initCurrentTile();
+	newTile(); 
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 // Draws the game
-void display()
+void processDisplay()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -456,7 +514,7 @@ void display()
 
 // Reshape callback will simply change xsize and ysize variables, which are passed to the vertex shader
 // to keep the game the same from stretching if the window is stretched
-void reshape(GLsizei w, GLsizei h)
+void processReshape(GLsizei w, GLsizei h)
 {
 	xsize = w;
 	ysize = h;
@@ -466,7 +524,7 @@ void reshape(GLsizei w, GLsizei h)
 //-------------------------------------------------------------------------------------------------------------------
 
 // Handle arrow key keypresses
-void special(int key, int x, int y)
+void processSpecialKey(int key, int x, int y)
 {
 	// Initial attempt for special key event
 	vec2 displacement = vec2(0,0);
@@ -486,13 +544,10 @@ void special(int key, int x, int y)
 		break;
 	}
 
-	tilepos += displacement;
-
-	if ( tilepos.x > RIGHT_BOUND || tilepos.x < LEFT_BOUND || tilepos.y > UP_BOUND || tilepos.y < DOWN_BOUND )
-		tilepos -= displacement;
+	moveTile(displacement);
 
 #ifdef DEBUG
-	cout << "Curret position - " << tilepos.x << ", " << tilepos.y << endl;
+	cout << "Curret position - " << tilePos.x << ", " << tilePos.y << endl;
 #endif
 
 	glutPostRedisplay();
@@ -502,7 +557,7 @@ void special(int key, int x, int y)
 //-------------------------------------------------------------------------------------------------------------------
 
 // Handles standard keypresses
-void keyboard(unsigned char key, int x, int y)
+void processKeyboard(unsigned char key, int x, int y)
 {
 	switch(key) 
 	{
@@ -513,7 +568,10 @@ void keyboard(unsigned char key, int x, int y)
 			exit (EXIT_SUCCESS);
 			break;
 		case 'r': // 'r' key restarts the game
-			restart();
+			restartGame();
+			break;
+		case 's':
+			rotateTile();
 			break;
 	}
 	glutPostRedisplay();
@@ -521,7 +579,7 @@ void keyboard(unsigned char key, int x, int y)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-void idle(void)
+void processIdle(void)
 {
 	glutPostRedisplay();
 }
@@ -543,11 +601,11 @@ int main(int argc, char **argv)
 	init();
 
 	// Callback functions
-	glutDisplayFunc(display);
-	glutReshapeFunc(reshape);
-	glutSpecialFunc(special);
-	glutKeyboardFunc(keyboard);
-	glutIdleFunc(idle);
+	glutDisplayFunc(processDisplay);
+	glutReshapeFunc(processReshape);
+	glutSpecialFunc(processSpecialKey);
+	glutKeyboardFunc(processKeyboard);
+	glutIdleFunc(processIdle);
 
 	glutMainLoop(); // Start main loop
 	return 0;

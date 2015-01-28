@@ -20,7 +20,7 @@ LIBDIR=/usr/lib
 SOURCE= FruitTetris.cpp include/InitShader.cpp
 
 # The compiler we are using 
-CC= g++
+CC= g++ -std=c++11
 
 # The flags that will be used to compile the object file.
 # If you want to debug your program,
@@ -28,7 +28,7 @@ CC= g++
 CFLAGS= -O3 -g -Wall -pedantic -DGL_GLEXT_PROTOTYPES
 
 # The name of the final executable 
-EXECUTABLE= FruitTetris.out.o
+EXECUTABLE= FruitTetris
 
 # The basic library we are using add the other libraries you want to link
 # to your program here 
