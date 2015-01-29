@@ -1,144 +1,13 @@
-/*
-CMPT 361 Assignment 1 - FruitTetris implementation Sample Skeleton Code
+#include "FruitTetris.hpp"
 
-- This is ONLY a skeleton code showing:
-How to use multiple buffers to store different objects
-An efficient scheme to represent the grids and blocks
-
-- Compile and Run:
-Type make in terminal, then type ./FruitTetris
-
-This code is extracted from Connor MacLeod's (crmacleo@sfu.ca) assignment submission
-by Rui Ma (ruim@sfu.ca) on 2014-03-04. 
-
-Modified in Sep 2014 by Honghua Li (honghual@sfu.ca).
-*/
-
-#include "include/Angel.h"
-#include <cstdlib>
-#include <iostream>
-
-// Personal included library
-#include <ctime>
-#include <algorithm>
-#include <random>
-using namespace std;
-
-// Macros defined by Hexiang
-// ============================================================================================
-// macros for tile types
-
-#define TILE_TYPE_NUM 	3
-#define TILE_COLOR_NUM	5
-#define DEBUG 			1
-
-//  constant variable
-// ============================================================================================
-
-
-const int TILE_TYPE_L = 0;
-const int TILE_TYPE_S = 1;
-const int TILE_TYPE_I = 2;
-
-// const for board boundaries 
-const int LEFT_BOUND 	= 0;
-const int RIGHT_BOUND 	= 9;
-const int DOWN_BOUND 	= 0;
-const int UP_BOUND  	= 19;
-
-
-// const for board size
-const int BOARD_WIDTH 	= 10;
-const int BOARD_HEIGHT	= 20;
-
-// colors
-const vec4 white  = vec4(1.0, 1.0, 1.0, 1.0);
-const vec4 black  = vec4(0.0, 0.0, 0.0, 1.0);
-
-// extra colors for fruits 
-const vec4 orange 	= vec4(1.0, 0.5, 0.0, 1.0); 
-const vec4 red 		= vec4(1.0, 0.0, 0.0, 1.0);
-const vec4 green 	= vec4(0.0, 1.0, 0.0, 1.0);
-const vec4 purple	= vec4(1.0, 0.0, 1.0, 1.0);
-const vec4 yellow 	= vec4(1.0, 1.0, 0.0, 1.0);
-
-const vec4 tileColors[5] = {
-	orange, red, green, purple, yellow
-};
-
-// xsize and ysize represent the window size - updated if window is reshaped to prevent stretching of the game
-int xsize = 400; 
-int ysize = 720;
-
-// current tile
-vec2 tile[4]; 				
-// An array of 4 2d vectors representing displacement from a 'center' piece of the tile, on the grid
-vec2 tilePos = vec2(5, 19);
-// The position of the current tile using grid coordinates ((0,0) is the bottom left corner)
-int tileType 	= TILE_TYPE_L;
-int rotateType 		= 0;
-
-// The 'tile' array will always be some element [i][j] of this array (an array of vec2)
-int allRotationShapeSize[TILE_TYPE_NUM] = {4, 2, 2};
-
-vec2 allRotationsLshape[4][4] = 
-	{
-		{vec2( 0, 0), vec2(-1, 0), vec2(1, 0), vec2(-1, -1)},
-		{vec2( 0, 1), vec2( 0, 0), vec2(0,-1), vec2( 1, -1)},
-		{vec2( 1, 1), vec2(-1, 0), vec2(0, 0), vec2( 1,  0)},
-		{vec2(-1, 1), vec2( 0, 1), vec2(0, 0), vec2( 0, -1)}
-	};
-
-// All rotations for S and L shapes
-// ============================================================================================
-vec2 allRotationsSshape[2][4] = 
-	{
-		{vec2(-1, -1), vec2( 0,-1), vec2(0, 0), vec2(1, 0)},
-		{vec2( 1, -1), vec2( 1, 0), vec2(0, 0), vec2(0, 1)}
-	};
-
-vec2 allRotationsIshape[2][4] = 
-	{
-		{vec2(-2, 0), vec2(-1, 0), vec2(0, 0), vec2(1, 0)},
-		{vec2( 0,-2), vec2( 0,-1), vec2(0, 0), vec2(0, 1)}
-	};
-
-//board[x][y] represents whether the cell (x,y) is occupied
-bool board[BOARD_WIDTH][BOARD_HEIGHT];
-
-// An array containing the colour of each of the 10*20*2*3 vertices that make up the board
-// Initially, all will be set to black. As tiles are placed, sets of 6 vertices (2 triangles; 1 square)
-// will be set to the appropriate colour in this array before updating the corresponding VBO
-vec4 boardcolours[BOARD_WIDTH * BOARD_HEIGHT * 3 * 2];
-
-// location of vertex attributes in the shader program
-GLuint vPosition;
-GLuint vColor;
-
-// locations of uniform variables in shader program
-GLuint locxsize;
-GLuint locysize;
-
-// VAO and VBO
-GLuint vaoIDs[3]; 
-// One VAO for each object: 0. the grid 1. the board 2. the current piece
-
-GLuint vboIDs[6]; 
-// Two Vertex Buffer Objects for each VAO (specifying vertex positions and colours, respectively)
-
-// Global structures needed by Hexiang 
-// ============================================================================================
-GLfloat step = 1.0;
+// =================================================================================================================
+// Tile Controller Function  
 
 
 //-------------------------------------------------------------------------------------------------------------------
-
 // When the current tile is moved or rotated (or created), update the VBO containing its vertex position data
 void updateTile()
 {
-	// Bind the VBO containing current tile vertex positions
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[4]); 
-
 	// For each of the 4 'cells' of the tile,
 	for (int i = 0; i < 4; i++) 
 	{
@@ -154,51 +23,38 @@ void updateTile()
 		vec4 p3 = vec4(66.0 + (x * 33.0), 33.0 + (y * 33.0), .4, 1);
 		vec4 p4 = vec4(66.0 + (x * 33.0), 66.0 + (y * 33.0), .4, 1);
 
-		if ( y > UP_BOUND ) continue;
+		// if ( y > UP_BOUND ) continue;
 
 		// Two points are used by two triangles each
-		vec4 newpoints[6] = {p1, p2, p3, p2, p3, p4}; 
+		vec4 newPoints[6] = {p1, p2, p3, p2, p3, p4}; 
 
 		// Put new data in the VBO
-		glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(vec4), 6*sizeof(vec4), newpoints); 
+		vec4 pointsColors[6];
+		if (_IN_BOUND(x,y))
+		{
+			genColorVertexFromTileColor(pointsColors, tileColors[i]);
+		}
+		else
+		{
+			// If current tile is outside the boundary, set it as black
+			genColorVertexFromTileColor(pointsColors, black);
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
+		glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(vec4), 6*sizeof(vec4), pointsColors);
+
+
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]); 
+		glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(vec4), 6*sizeof(vec4), newPoints);
+
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
+		glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(vec4), 6*sizeof(vec4), pointsColors);
 	}
 
 	glBindVertexArray(0);
 }
 
-// Get Tile Bound 
 //-------------------------------------------------------------------------------------------------------------------
-struct Bound{
-	GLfloat left, right, up, down;
-	Bound(int _left, int _right, int _up, int _down):left(_left), right(_right), up(_up), down(_down){}
-};
-
-const Bound getTileBound( vec2 * pTile)
-{
-	Bound tileBound(0, 0, 0, 0);
-	for (int i = 0; i < 4; i++){
-		tileBound.left 	= min(pTile[i].x, tileBound.left);
-		tileBound.right = max(pTile[i].x, tileBound.right);
-		tileBound.down 	= min(pTile[i].y, tileBound.down);
-		tileBound.up    = max(pTile[i].y, tileBound.up);
-	}
-
-	return tileBound;
-}
-
-// Fill Tile with random colors
-void fillupTile( vec4 * pTileColor ){
-	// Fill up the four tiles with different colors
-	for (int i = 0; i < 4; i++){
-		vec4 tileColor = tileColors[rand() % TILE_COLOR_NUM];
-		int j = 6;
-		while (j--){
-			*pTileColor = tileColor;
-			pTileColor ++;
-		}
-	}
-}
-
 // Called at the start of play and every time a tile is placed
 void newTile()
 {
@@ -220,7 +76,7 @@ void newTile()
 		tile[i] = pAllRotationShape[rotateType][i];
 
 #ifdef DEBUG
-		cout << "newTile() [Tile init] - Tile#" << i << " - " << tile[i].x << "," << tile[i].y << endl;
+		cout << "newTile() [Tile init] - Tile#" << i << " - " << tilePos.x + tile[i].x << "," << tilePos.y + tile[i].y << endl;
 #endif
 
 	}
@@ -229,7 +85,7 @@ void newTile()
 	int coverage = ( RIGHT_BOUND - int(tileBound.right) + int(tileBound.left) + 1);
 
 	int hpos = rand() % coverage - int(tileBound.left);
-	int vpos = 19 - tileBound.up;
+	int vpos = UP_BOUND - tileBound.up;
 	tilePos = vec2(hpos , vpos);
 	// Put the tile at the top of the board
 	
@@ -245,15 +101,16 @@ void newTile()
 	updateTile(); 
 
 	// Update the color VBO of current tile
-	vec4 newcolours[24];
+	vec4 newColors[24];
 
 	// You should randomlize the color
-	fillupTile(newcolours);
+	fillTileWithRandomColor();
+	genColorVertexsFromTileColors(newColors);
 	
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[5]); 
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]); 
 	// Bind the VBO containing current tile vertex colours
 	
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(newcolours), newcolours); 
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(newColors), newColors); 
 	// Put the colour data in the VBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -261,7 +118,105 @@ void newTile()
 }
 
 //-------------------------------------------------------------------------------------------------------------------
+// Rotate the current tile 
+void rotateTile()
+{
+	vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+				( (tileType == TILE_TYPE_I)? allRotationsIshape : allRotationsSshape );
 
+	// First test if the rotated version are in the boundary
+	if (!testRotation(tilePos))
+	{
+		// Add logic to rescue a tile if it could be rotate with a unit movement.
+		if (testRotation(tilePos + vec2(1, 0)))
+			tilePos += vec2(1, 0);
+		else if (testRotation(tilePos + vec2(-1, 0)))
+			tilePos += vec2(-1, 0);
+		else if (testRotation(tilePos + vec2( 0, 1)))
+			tilePos += vec2(0, 1);
+	}
+
+	// Testing succeed, do actual rotation
+
+	rotateType = (rotateType + 1) % allRotationShapeSize[tileType];
+	// Update the geometry VBO of current tile
+	for (int i = 0; i < 4; i++){
+		tile[i] = pAllRotationShape[rotateType][i];
+
+#ifdef DEBUG
+		cout << "rotateTile() [Change Rotation] - Tile#" << i << " - " << tilePos.x + tile[i].x << "," << tilePos.y + tile[i].y << endl;
+#endif
+	}
+
+
+#ifdef DEBUG
+	cout << "rotateTile() [Change Rotation] - TileType: " << tileType << ", RotateType: " << rotateType 
+		<< ", RotationShape: " << allRotationShapeSize[tileType] << endl;
+#endif
+	updateTile();
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// shift Teris color 
+
+void shiftTileColor()
+{
+	vec4 oldColor = tileColors[3];
+
+	tileColors[3] = tileColors[2];
+	tileColors[2] = tileColors[1];
+	tileColors[1] = tileColors[0];
+	tileColors[0] = oldColor;
+	updateTile();
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// check the rows inside the range and see if they are full
+void checkFullRow(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
+{
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// match fruits when a tile is set and see if there is a elimination 
+void matchFruit(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
+{
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// Places the current tile - update the board vertex colour VBO and the array maintaining occupied cells
+void setTile()
+{
+	checkFullRow();
+	matchFruit();
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// Given (x,y), tries to move the tile x squares to the right and y squares down
+// Returns true if the tile was successfully moved, or false if there was some issue
+void moveTile(vec2 direction)
+{
+	// Bound tileBound = getTileBound(tile);
+	// vec2 futureTilePos = tilePos + direction;
+	if( checkBound(tilePos + direction) )
+		tilePos += direction;
+
+#ifdef DEBUG
+	cout << "moveTile() - Horizontal Movement: " << direction.x << ", Vertical Movement: " << direction.y << endl;
+	cout << "moveTile() - Curret position - " << tilePos.x << ", " << tilePos.y << endl;
+#endif
+
+	updateTile();
+
+}
+
+
+// ================================================================================================================= 
+// Initialization controller
+
+//-------------------------------------------------------------------------------------------------------------------
+// Init back grid of the board
 void initGrid()
 {
 	// ***Generate geometry data
@@ -287,13 +242,13 @@ void initGrid()
 
 	// *** set up buffer objects
 	// Set up first VAO (representing grid lines)
-	glBindVertexArray(vaoIDs[0]);
+	glBindVertexArray(vaoIDs[VAO_GRID]);
 	// Bind the first VAO
 	glGenBuffers(2, vboIDs); 
 	// Create two Vertex Buffer Objects for this VAO (positions, colours)
 
 	// Grid vertex positions
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]); 
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_GRID_POSITION]); 
 	// Bind the first grid VBO (vertex positions)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(gridpoints), gridpoints, GL_STATIC_DRAW); 
 	// Put the grid points in the VBO
@@ -302,7 +257,7 @@ void initGrid()
 	// Enable the attribute
 	
 	// Grid vertex colours
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]); 
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_GRID_COLOR]); 
 	// Bind the second grid VBO (vertex colours)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(gridcolours), gridcolours, GL_STATIC_DRAW); 
 	// Put the grid colours in the VBO
@@ -311,7 +266,8 @@ void initGrid()
 	// Enable the attribute
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------
+// Init playing board
 void initBoard()
 {
 	// *** Generate the geometric data
@@ -344,42 +300,45 @@ void initBoard()
 
 
 	// *** set up buffer objects
-	glBindVertexArray(vaoIDs[1]);
+	glBindVertexArray(vaoIDs[VAO_BOARD]);
 	glGenBuffers(2, &vboIDs[2]);
 
 	// Grid cell vertex positions
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_POSITION]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), boardpoints, GL_STATIC_DRAW);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(vPosition);
 
 	// Grid cell vertex colours
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[3]);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_COLOR]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), boardcolours, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(vColor);
 }
 
+//-------------------------------------------------------------------------------------------------------------------
 // No geometry for current tile initially
 void initCurrentTile()
 {
 	// Bind the Current vao to Tils's array
-	glBindVertexArray(vaoIDs[2]);
+	glBindVertexArray(vaoIDs[VAO_TILE]);
 	glGenBuffers(2, &vboIDs[4]);
 
 	// Current tile vertex positions
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[4]);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]);
 	glBufferData(GL_ARRAY_BUFFER, 24*sizeof(vec4), NULL, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(vPosition);
 
 	// Current tile vertex colours
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[5]);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
 	glBufferData(GL_ARRAY_BUFFER, 24*sizeof(vec4), NULL, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(vColor);
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// init openGL configure
 void init()
 {
 	// initialize random generator with seed 
@@ -414,69 +373,9 @@ void init()
 	glClearColor(0, 0, 0, 0);
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 
-// Try rotates the current tile, return true if the tile is successfully rotated, 
-// And return false if there are some issues related to rotation 
-// bool rotateTile()
-// {
-// 	rotateType = (rotateType + 1) % allRotationShapeSize[tileType];
-// 	vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
-// 				( (tileType == TILE_TYPE_I)? allRotationsIshape : allRotationsSshape );
-
-// 	// Update the geometry VBO of current tile
-// 	for (int i = 0; i < 4; i++){
-// 		tile[i] = pAllRotationShape[rotateType][i];
-
-// #ifdef DEBUG
-// 	cout << "rotateTile() [Change Rotation] - Tile#" << i << " - " << tile[i].x << "," << tile[i].y << endl;
-// #endif
-
-// 	}
-// #ifdef DEBUG
-// 	cout << "rotateTile() [Change Rotation] - TileType: " << tileType << ", RotateType: " << rotateType 
-// 		<< ", RotationShape: " << allRotationShapeSize[tileType] << endl;
-// #endif
-// 	updateTile();
-// }
-
-// Different from the first version, this rotation function is going to do 
-// ratation transformation to the tile instead of rendering now position of time
-bool rotateTile()
-{
-
-}
 
 //-------------------------------------------------------------------------------------------------------------------
-
-// Checks if the specified row (0 is the bottom 19 the top) is full
-// If every cell in the row is occupied, it will clear that cell and everything above it will shift down one row
-void checkFullRow(int row)
-{
-
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-// Places the current tile - update the board vertex colour VBO and the array maintaining occupied cells
-void setTile()
-{
-	checkFullRow(1);	
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-// Given (x,y), tries to move the tile x squares to the right and y squares down
-// Returns true if the tile was successfully moved, or false if there was some issue
-bool moveTile(vec2 direction)
-{
-	Bound tileBound = getTileBound(tile);
-	vec2 futureTilePos = tilePos + direction;
-
-	return false;
-}
-//-------------------------------------------------------------------------------------------------------------------
-
 // Starts the game over - empties the board, creates new tiles, resets line counters
 void restartGame()
 {
@@ -487,7 +386,9 @@ void restartGame()
 	newTile(); 
 }
 
-//-------------------------------------------------------------------------------------------------------------------
+
+// ================================================================================================================= 
+// CallBack Functions
 
 // Draws the game
 void processDisplay()
@@ -531,7 +432,7 @@ void processSpecialKey(int key, int x, int y)
 
 	switch(key) {
 	case GLUT_KEY_UP :
-		displacement += vec2(0, step);
+		rotateTile();
 		break;
 	case GLUT_KEY_DOWN :
 		displacement -= vec2(0, step);
@@ -545,12 +446,6 @@ void processSpecialKey(int key, int x, int y)
 	}
 
 	moveTile(displacement);
-
-#ifdef DEBUG
-	cout << "Curret position - " << tilePos.x << ", " << tilePos.y << endl;
-#endif
-
-	glutPostRedisplay();
 
 }
 
@@ -571,16 +466,31 @@ void processKeyboard(unsigned char key, int x, int y)
 			restartGame();
 			break;
 		case 's':
-			rotateTile();
+			shiftTileColor();
 			break;
 	}
 	glutPostRedisplay();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-
-void processIdle(void)
+void processTimer(int val)
 {
+	cout << "running timer" << endl;
+	moveTile(vec2(0.0, velocity ));
+	glutPostRedisplay();
+	glutTimerFunc(1000, processTimer, 0);
+}
+//-------------------------------------------------------------------------------------------------------------------
+
+void processIdle()
+{
+	// When the game agent is idle, check if the current tile is arrived at a position 
+	// that it could never fail. If it is, then set the tile 
+	if ( checkGridCollision() )
+	{
+		setTile();
+	}
+
 	glutPostRedisplay();
 }
 
@@ -606,6 +516,8 @@ int main(int argc, char **argv)
 	glutSpecialFunc(processSpecialKey);
 	glutKeyboardFunc(processKeyboard);
 	glutIdleFunc(processIdle);
+	// Callback function for timer 
+	glutTimerFunc(1000, processTimer, 0);
 
 	glutMainLoop(); // Start main loop
 	return 0;
