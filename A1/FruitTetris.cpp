@@ -6,6 +6,12 @@
 
 //-------------------------------------------------------------------------------------------------------------------
 // When the current tile is moved or rotated (or created), update the VBO containing its vertex position data
+
+void updateBoard()
+{
+	
+}
+
 void updateTile()
 {
 	// For each of the 4 'cells' of the tile,
@@ -186,10 +192,35 @@ void matchFruit(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
 
 //-------------------------------------------------------------------------------------------------------------------
 // Places the current tile - update the board vertex colour VBO and the array maintaining occupied cells
-void setTile()
+bool setTile()
 {
-	checkFullRow();
-	matchFruit();
+	// First check if the collision between tile and grid is detected
+	if (true == checkGridCollision())
+	{
+		// If a collision is detected
+		for (int i = 0; i < 4; ++i)
+		{
+			int x = int(tilePos.x + tile[i].x);
+			int y = int(tilePos.y + tile[i].y);
+
+			board[x][y] = true;
+			boardColors[x][y] = tileColors[i];
+			genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
+
+		}
+
+		updateBoard();
+
+		checkFullRow();
+		matchFruit();
+
+		newTile();
+		updateTile();
+
+		return true;
+	}
+	else
+		return false;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -199,7 +230,7 @@ void moveTile(vec2 direction)
 {
 	// Bound tileBound = getTileBound(tile);
 	// vec2 futureTilePos = tilePos + direction;
-	if( checkBound(tilePos + direction) )
+	if( checkInBound(tilePos + direction) )
 		tilePos += direction;
 
 #ifdef DEBUG
@@ -271,9 +302,11 @@ void initGrid()
 void initBoard()
 {
 	// *** Generate the geometric data
-	vec4 boardpoints[1200];
-	for (int i = 0; i < 1200; i++)
-		boardcolours[i] = black; // Let the empty cells on the board be black
+	vec4 boardpoints[BOARD_WIDTH*BOARD_HEIGHT*3*2];
+	// for (int i = 0; i < BOARD_WIDTH*BOARD_HEIGHT*3*2; i++)
+	// 	boardVertexColors[i] = black; 
+	// Let the empty cells on the board be black
+
 	// Each cell is a square (2 triangles with 6 vertices)
 	for (int i = 0; i < 20; i++){
 		for (int j = 0; j < 10; j++)
@@ -294,10 +327,15 @@ void initBoard()
 	}
 
 	// Initially no cell is occupied
-	for (int i = 0; i < 10; i++)
-		for (int j = 0; j < 20; j++)
-			board[i][j] = false; 
+	for (int i = 0; i < BOARD_WIDTH; i++)
+		for (int j = 0; j < BOARD_HEIGHT; j++)
+		{
+			board[i][j]			= false;
+			boardColors[i][j] 	= black; 
+		}
 
+	// Generate vertex color structure from board
+	genBoardVertexColorsFromBoardColors();
 
 	// *** set up buffer objects
 	glBindVertexArray(vaoIDs[VAO_BOARD]);
@@ -311,7 +349,7 @@ void initBoard()
 
 	// Grid cell vertex colours
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_COLOR]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), boardcolours, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), boardVertexColors, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(vColor);
 }

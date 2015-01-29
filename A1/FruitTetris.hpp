@@ -74,6 +74,33 @@ vec2 tilePos = vec2(5, 19);
 int tileType 	= TILE_TYPE_L;
 int rotateType 		= 0;
 
+//board[x][y] represents whether the cell (x,y) is occupied
+bool board[BOARD_WIDTH][BOARD_HEIGHT];
+vec4 boardColors[BOARD_WIDTH][BOARD_HEIGHT];
+// An array containing the colour of each of the 10*20*2*3 vertices that make up the board
+// Initially, all will be set to black. As tiles are placed, sets of 6 vertices (2 triangles; 1 square)
+// will be set to the appropriate colour in this array before updating the corresponding VBO
+vec4 boardVertexColors[BOARD_WIDTH * BOARD_HEIGHT * 3 * 2];
+
+// location of vertex attributes in the shader program
+GLuint vPosition;
+GLuint vColor;
+
+// locations of uniform variables in shader program
+GLuint locxsize;
+GLuint locysize;
+
+// VAO and VBO
+GLuint vaoIDs[3]; 
+// One VAO for each object: 0. the grid 1. the board 2. the current piece
+
+GLuint vboIDs[6]; 
+// Two Vertex Buffer Objects for each VAO (specifying vertex positions and colours, respectively)
+
+GLfloat velocity 	= -1.0;
+GLfloat step 		=  1.0;
+// Velocity for each timer movement and step for keyboard movement
+
 // The 'tile' array will always be some element [i][j] of this array (an array of vec2)
 int allRotationShapeSize[TILE_TYPE_NUM] = {4, 2, 2};
 
@@ -99,40 +126,13 @@ vec2 allRotationsIshape[2][4] =
 		{vec2( 0,-2), vec2( 0,-1), vec2(0, 0), vec2(0, 1)}
 	};
 
-//board[x][y] represents whether the cell (x,y) is occupied
-bool board[BOARD_WIDTH][BOARD_HEIGHT];
-
-// An array containing the colour of each of the 10*20*2*3 vertices that make up the board
-// Initially, all will be set to black. As tiles are placed, sets of 6 vertices (2 triangles; 1 square)
-// will be set to the appropriate colour in this array before updating the corresponding VBO
-vec4 boardcolours[BOARD_WIDTH * BOARD_HEIGHT * 3 * 2];
-
-// location of vertex attributes in the shader program
-GLuint vPosition;
-GLuint vColor;
-
-// locations of uniform variables in shader program
-GLuint locxsize;
-GLuint locysize;
-
-// VAO and VBO
-GLuint vaoIDs[3]; 
-// One VAO for each object: 0. the grid 1. the board 2. the current piece
-
-GLuint vboIDs[6]; 
-// Two Vertex Buffer Objects for each VAO (specifying vertex positions and colours, respectively)
-
-// Global variable
-// ============================================================================================
-GLfloat velocity 	= -1.0;
-GLfloat step 		=  1.0;
 
 // =============================================================================================
 // Utility functions
 
 //-------------------------------------------------------------------------------------------------------------------
 // check whether the tile is outside the bound
-bool checkBound(vec2 newPos)
+bool checkInBound(vec2 newPos)
 {
 	bool flag = true;
 	for (int i = 0; i < 4; ++i)
@@ -150,8 +150,23 @@ bool checkBound(vec2 newPos)
 // check whether the tile has collision with the adjacent grid object
 bool checkGridCollision()
 {
+	bool flag = false;
 
-	return false;
+	for (int i = 0; i < 4; ++i)
+	{
+		int x = int(tilePos.x + tile[i].x);
+		int y = int(tilePos.y + tile[i].y);
+
+		if ( (_IN_BOUND(x,y) && board[x][y] ) || (_IN_BOUND(x, y) && y == 0) )
+		{
+
+#ifdef DEBUG
+			cout << "Collision detected! x = " << x << ", y = " << y << endl;
+#endif			
+			flag = true;
+		}
+	}
+	return flag;
 }
 
 // Try rotates the current tile, return true if the tile is successfully rotated, 
@@ -219,6 +234,24 @@ void genColorVertexsFromTileColors(vec4 * pPointsColors)
 {
 	for (int i = 0; i < 4; i++){
 		genColorVertexFromTileColor( &pPointsColors[i*6], tileColors[i]);
+	}
+}
+
+void genBoardVertexColorFromBoardColor(int x ,int y, vec4 _color)
+{
+	for (int i = 0; i < 6; ++i)
+	{
+		boardVertexColors[x*y*6 + i] = _color;
+	}
+}
+
+void genBoardVertexColorsFromBoardColors()
+{
+	for (int i = 0; i < BOARD_WIDTH; i++){
+		for (int j = 0; j < BOARD_HEIGHT; ++j)
+		{
+			genBoardVertexColorFromBoardColor(i, j, boardColors[i][j]);
+		}
 	}
 }
 
