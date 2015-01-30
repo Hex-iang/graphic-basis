@@ -1,5 +1,5 @@
 #include "FruitTetris.hpp"
-
+#include "Tile.hpp"
 // =================================================================================================================
 // Tile Controller Function  
 
@@ -9,7 +9,13 @@
 
 void updateBoard()
 {
-	
+	// Update board colors
+
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_COLOR]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(boardVertexColors), boardVertexColors);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);		
 }
 
 void updateTile()
@@ -57,6 +63,7 @@ void updateTile()
 		glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(vec4), 6*sizeof(vec4), pointsColors);
 	}
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 
@@ -103,22 +110,11 @@ void newTile()
 	cout << "newTile() [New Tile Position] - x = " << hpos << ", y = " << vpos << endl;
 #endif
 
-	// Get the 4 pieces of the new tile
-	updateTile(); 
-
-	// Update the color VBO of current tile
-	vec4 newColors[24];
-
-	// You should randomlize the color
+	// You should randomlize the color in structure tileColors
 	fillTileWithRandomColor();
-	genColorVertexsFromTileColors(newColors);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]); 
-	// Bind the VBO containing current tile vertex colours
-	
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(newColors), newColors); 
-	// Put the colour data in the VBO
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// Call update function to draw the tile with its position as well as its color
+	updateTile(); 
 
 	glBindVertexArray(0);
 }
@@ -215,7 +211,6 @@ bool setTile()
 		matchFruit();
 
 		newTile();
-		updateTile();
 
 		return true;
 	}

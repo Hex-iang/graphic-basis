@@ -182,7 +182,7 @@ bool testRotation(vec2 currentTilePos)
 		GLfloat x = currentTilePos.x + pAllRotationShape[rotateType + 1][i].x;
 		GLfloat y = currentTilePos.y + pAllRotationShape[rotateType + 1][i].y;
 
-		if (!_IN_BOUND(x,y))
+		if ( !_IN_BOUND(x,y) )
 			return false;
 	}
 
