@@ -41,15 +41,8 @@ void updateTile()
 
 		// Put new data in the VBO
 		vec4 pointsColors[6];
-		if (_IN_BOUND(x,y))
-		{
-			genColorVertexFromTileColor(pointsColors, tileColors[i]);
-		}
-		else
-		{
-			// If current tile is outside the boundary, set it as black
-			genColorVertexFromTileColor(pointsColors, black);
-		}
+
+		genColorVertexFromTileColor(pointsColors, tileColors[i]);
 
 		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
 		glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(vec4), 6*sizeof(vec4), pointsColors);
@@ -57,9 +50,6 @@ void updateTile()
 
 		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]); 
 		glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(vec4), 6*sizeof(vec4), newPoints);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
-		glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(vec4), 6*sizeof(vec4), pointsColors);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -80,34 +70,29 @@ void newTile()
 
 
 #ifdef DEBUG
-	cout << "newTile() [Generate Randomness] - TileType: " << tileType << ", RotateType: " << rotateType 
+	cout << "newTile() - [Generate Randomness] TileType: " << tileType << ", RotateType: " << rotateType 
 		<< ", RotationShape: " << allRotationShapeSize[tileType] << endl;
 #endif
 
 	// Update the geometry VBO of current tile
 	for (int i = 0; i < 4; i++){
 		tile[i] = pAllRotationShape[rotateType][i];
-
-#ifdef DEBUG
-		cout << "newTile() [Tile init] - Tile#" << i << " - " << tilePos.x + tile[i].x << "," << tilePos.y + tile[i].y << endl;
-#endif
-
 	}
 
 	TileBound tileBound = getTileBound(tile);
 	int coverage = ( RIGHT_BOUND - int(tileBound.right) + int(tileBound.left) + 1);
 
 	int hpos = rand() % coverage - int(tileBound.left);
-	int vpos = UP_BOUND - tileBound.down;
+	int vpos = UP_BOUND - tileBound.up;
 	tilePos = vec2(hpos , vpos);
 	// Put the tile at the top of the board
 	
 #ifdef DEBUG
-	cout << "newTile() [Get Tile Boundary] - Bound(" << tileBound.left << ", " << tileBound.right
+	cout << "newTile() - [Get Tile Boundary] Bound(" << tileBound.left << ", " << tileBound.right
 		<<", " << tileBound.down << ", " << tileBound.up << ")" << endl;
-	cout << "newTile() [Boundaries] - Right: " << (RIGHT_BOUND - int(tileBound.right)) 
+	cout << "newTile() - [Boundaries] Right: " << (RIGHT_BOUND - int(tileBound.right)) 
 		<< ", Left: " << (- int(tileBound.left)) << ", Coverage: " << coverage << endl;
-	cout << "newTile() [New Tile Position] - x = " << hpos << ", y = " << vpos << endl;
+	cout << "newTile() - [New Tile Position] x = " << hpos << ", y = " << vpos << endl;
 #endif
 
 	// You should randomlize the color in structure tileColors
@@ -212,7 +197,20 @@ bool matchFruit(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
 }
 
 bool checkEndOfGame(){
-	return false;
+	bool flag = false;
+	for (int i = 0; i < BOARD_WIDTH; ++i)
+	{
+
+#ifdef DEBUG
+		if (board[i][UP_BOUND])
+		{
+			cout << "chcekEndOfGame() - board[" << i << "][" << UP_BOUND << "]"<< endl;
+		}
+#endif
+		flag |= board[i][UP_BOUND];
+	}
+
+	return flag;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -227,6 +225,9 @@ bool setTile()
 		int x = int(tilePos.x + tile[i].x);
 		int y = int(tilePos.y + tile[i].y);
 
+#ifdef DEBUG
+		cout << "setTile() - [Setting Tile] x = " << x << ", y = " << y << endl;
+#endif
 		board[x][y] = true;
 		boardColors[x][y] = tileColors[i];
 		genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
@@ -237,8 +238,6 @@ bool setTile()
 
 	checkFullRow();
 	matchFruit();
-
-	newTile();
 
 	return true;
 
@@ -256,6 +255,9 @@ bool moveTile(vec2 direction)
 	{
 		if ( checkTilesGridsCollision(tilePos + direction) )
 		{
+#ifdef DEBUG
+	cout << "moveTile() - [Collision detected] " << endl;
+#endif
 			flag = false;
 		}
 		else
@@ -264,8 +266,12 @@ bool moveTile(vec2 direction)
 			tilePos += direction;
 		}
 	}
-	else
+	else{
+#ifdef DEBUG
+	cout << "moveTile() - [Out of Bound] " << endl;
+#endif		
 		flag = false;
+	}
 
 #ifdef DEBUG
 	cout << "moveTile() - Horizontal Movement: " << direction.x << ", Vertical Movement: " << direction.y << endl;
@@ -280,8 +286,12 @@ bool moveTile(vec2 direction)
 
 void moveDownTileToEnd()
 {
+
+#ifdef DEBUG
+	cout << "moveDownTileToEnd() - [Straight down.] from ["<< tilePos.x <<"][" << tilePos.y << "]"<< endl;
+#endif
 	bool flag = false; 
-	for (int i = 0; i < BOARD_HEIGHT; ++i)
+	for (int i = 0; i <= BOARD_HEIGHT; ++i)
 	{
 		if( !moveTile(vec2(0.0, -1.0)) ){
 			flag = true;
@@ -291,17 +301,20 @@ void moveDownTileToEnd()
 
 	if (flag == true)
 	{
+#ifdef DEBUG
+	cout << "moveDownTileToEnd() - [Straight down.] to ["<< tilePos.x <<"][" << tilePos.y << "]"<< endl;
+#endif
 		setTile();
 		updateTile();
 		newTile();
 	}
+#ifdef DEBUG
 	else
 	{	
-#ifdef DEBUG
 		cout << "moveDownTileToEnd() - [Error] " << endl;
-#endif
 		return;
 	}
+#endif
 
 }
 
