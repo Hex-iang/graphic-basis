@@ -103,7 +103,7 @@ GLfloat step 		=  1.0;
 // Velocity for each timer movement and step for keyboard movement
 
 // The 'tile' array will always be some element [i][j] of this array (an array of vec2)
-int allRotationShapeSize[TILE_TYPE_NUM] = {4, 2, 2};
+int allRotationShapeSize[TILE_TYPE_NUM] = {4, 4, 4};
 
 vec2 allRotationsLshape[4][4] = 
 	{
@@ -117,14 +117,19 @@ vec2 allRotationsLshape[4][4] =
 // ============================================================================================
 vec2 allRotationsSshape[2][4] = 
 	{
-		{vec2(-1, -1), vec2( 0,-1), vec2(0, 0), vec2(1, 0)},
-		{vec2( 1, -1), vec2( 1, 0), vec2(0, 0), vec2(0, 1)}
+		{vec2(-1, -1), vec2( 0,-1), vec2(0, 0), vec2( 1, 0)},
+		{vec2( 1, -1), vec2( 1, 0), vec2(0, 0), vec2( 0, 1)},
+		{vec2( 1,  1), vec2( 0, 1), vec2(0, 0), vec2(-1, 0)},
+		{vec2(-1,  1), vec2(-1, 0), vec2(0, 0), vec2( 0,-1)}
 	};
 
 vec2 allRotationsIshape[2][4] = 
 	{
-		{vec2(-2, 0), vec2(-1, 0), vec2(0, 0), vec2(1, 0)},
-		{vec2( 0,-2), vec2( 0,-1), vec2(0, 0), vec2(0, 1)}
+		{vec2(-2, 0), vec2(-1, 0), vec2(0, 0), vec2( 1, 0)},
+		{vec2( 0,-2), vec2( 0,-1), vec2(0, 0), vec2( 0, 1)},
+		{vec2( 2, 0), vec2( 1, 0), vec2(0, 0), vec2(-1, 0)},
+		{vec2( 0, 2), vec2( 0, 1), vec2(0, 0), vec2( 0,-1)}
+
 	};
 
 
@@ -259,12 +264,3 @@ void genBoardVertexColorsFromBoardColors()
 		}
 	}
 }
-
-// void genColorVertexsFromTileColors(vec4 * pPointsColors)
-// {
-// 	for (int i = 0; i < 4; i++){
-// 		for (int j = 0; j < 6; j++){
-// 			*(pPointsColors + i*6 + j) = tileColors[i];
-// 		}	
-// 	}
-// }

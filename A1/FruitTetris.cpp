@@ -136,6 +136,16 @@ bool rotateTile()
 			cout << "Test rotation4 - True" << endl;
 			tilePos += vec2(2, 0);			
 		}
+		else if ( testRotation(tilePos + vec2(-2, 0)))
+		{
+			cout << "Test rotation5 - True" << endl;
+			tilePos += vec2(-2, 0);
+		}
+		else if ( testRotation(tilePos + vec2( 0, 2)) )
+		{
+			cout << "Test rotation5 - True" << endl;
+			tilePos += vec2(0, 2);
+		}
 		else{
 
 #ifdef DEBUG
@@ -184,10 +194,20 @@ void shiftTileColor()
 
 //-------------------------------------------------------------------------------------------------------------------
 // check the rows inside the range and see if they are full
-bool checkFullRow(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
+void eliminateRow()
 {
-	return false;
+
 }
+
+bool checkFullRow(int row)
+{
+	bool isRowFull = true;
+	for (int i = 0; i < BOARD_WIDTH; ++i)
+		isRowFull = isRowFull && board[i][row];
+
+	return isRowFull
+}
+
 
 //-------------------------------------------------------------------------------------------------------------------
 // match fruits when a tile is set and see if there is a elimination 
@@ -207,7 +227,7 @@ bool checkEndOfGame(){
 			cout << "chcekEndOfGame() - board[" << i << "][" << UP_BOUND << "]"<< endl;
 		}
 #endif
-		flag |= board[i][UP_BOUND];
+		flag = ( flag || board[i][UP_BOUND]);
 	}
 
 	return flag;
@@ -236,7 +256,16 @@ bool setTile()
 
 	updateBoard();
 
-	checkFullRow();
+	// Perform row checking..
+	TileBound tileBound = getTileBound(tile);
+	int start = tileBound.down + tilePos.y;
+	int end = tileBound.up + tilePos.y;
+	for (int i = start; i < end ; ++i)
+	{
+		if( checkFullRow(i) )
+			eliminateRow(i);
+	}
+
 	matchFruit();
 
 	return true;
