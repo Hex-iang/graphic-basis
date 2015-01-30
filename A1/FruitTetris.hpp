@@ -25,15 +25,16 @@ using namespace std;
 #define VAO_BOARD			1
 #define VAO_TILE			2
 
-#define _IN_BOUND(x, y)	 (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
+// #define _IN_BOUND(x, y)	 (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
+#define _IN_BOUND(x, y)	 (y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 
 //  constant variable
 // ============================================================================================
 
 
-const int TILE_TYPE_L = 0;
-const int TILE_TYPE_S = 1;
-const int TILE_TYPE_I = 2;
+const int TILE_TYPE_L 	= 0;
+const int TILE_TYPE_S 	= 1;
+const int TILE_TYPE_I 	= 2;
 
 // const for board boundaries 
 const int LEFT_BOUND 	= 0;
@@ -47,15 +48,15 @@ const int BOARD_WIDTH 	= 10;
 const int BOARD_HEIGHT	= 20;
 
 // colors
-const vec4 white  = vec4(1.0, 1.0, 1.0, 1.0);
-const vec4 black  = vec4(0.0, 0.0, 0.0, 1.0);
+const vec4 white  		= vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 black  		= vec4(0.0, 0.0, 0.0, 1.0);
 
 // extra colors for fruits 
-const vec4 orange 	= vec4(1.0, 0.5, 0.0, 1.0); 
-const vec4 red 		= vec4(1.0, 0.0, 0.0, 1.0);
-const vec4 green 	= vec4(0.0, 1.0, 0.0, 1.0);
-const vec4 purple	= vec4(1.0, 0.0, 1.0, 1.0);
-const vec4 yellow 	= vec4(1.0, 1.0, 0.0, 1.0);
+const vec4 orange 		= vec4(1.0, 0.5, 0.0, 1.0); 
+const vec4 red 			= vec4(1.0, 0.0, 0.0, 1.0);
+const vec4 green 		= vec4(0.0, 1.0, 0.0, 1.0);
+const vec4 purple		= vec4(1.0, 0.0, 1.0, 1.0);
+const vec4 yellow 		= vec4(1.0, 1.0, 0.0, 1.0);
 
 const vec4 tileColorsSet[5] = {
 	orange, red, green, purple, yellow
@@ -147,24 +148,23 @@ bool checkInBound(vec2 newPos)
 	return flag;
 }
 
+bool checkTileGridCollision( int x, int y)
+{
+	return ( (_IN_BOUND(x,y) && board[x][y] ) || (_IN_BOUND(x, y) && y < 0) );
+}
+
 // check whether the tile has collision with the adjacent grid object
-bool checkGridCollision()
+bool checkTilesGridsCollision(vec2 newPos)
 {
 	bool flag = false;
 
 	for (int i = 0; i < 4; ++i)
 	{
-		int x = int(tilePos.x + tile[i].x);
-		int y = int(tilePos.y + tile[i].y);
+		int x = int(newPos.x + tile[i].x);
+		int y = int(newPos.y + tile[i].y);
 
-		if ( (_IN_BOUND(x,y) && board[x][y] ) || (_IN_BOUND(x, y) && y == 0) )
-		{
-
-#ifdef DEBUG
-			cout << "Collision detected! x = " << x << ", y = " << y << endl;
-#endif			
-			flag = true;
-		}
+		if ( (flag = checkTileGridCollision(x, y)) )
+			break;
 	}
 	return flag;
 }
@@ -174,15 +174,20 @@ bool checkGridCollision()
 bool testRotation(vec2 currentTilePos)
 {
 	vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
-			( (tileType == TILE_TYPE_I)? allRotationsIshape : allRotationsSshape );
+			( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
 
 	// First test if the rotated version are in the boundary
 	for (int i = 0; i < 4; ++i)
-	{
-		GLfloat x = currentTilePos.x + pAllRotationShape[rotateType + 1][i].x;
-		GLfloat y = currentTilePos.y + pAllRotationShape[rotateType + 1][i].y;
+	{	
+		int nextShape = (rotateType + 1) % allRotationShapeSize[tileType];
+		int x = int(currentTilePos.x + pAllRotationShape[nextShape][i].x);
+		int y = int(currentTilePos.y + pAllRotationShape[nextShape][i].y);
 
-		if ( !_IN_BOUND(x,y) )
+#ifdef DEBUG
+		cout << "testRotation() - [Ratated tile#"<< i <<" x:" << x << ", y:" << y << "]" << endl;
+#endif
+
+		if ( !_IN_BOUND(x,y) || checkTileGridCollision(x, y) )
 			return false;
 	}
 
@@ -192,14 +197,14 @@ bool testRotation(vec2 currentTilePos)
 
 // Get Tile Bound 
 //-------------------------------------------------------------------------------------------------------------------
-struct Bound{
+struct TileBound{
 	GLfloat left, right, up, down;
-	Bound(int _left, int _right, int _up, int _down):left(_left), right(_right), up(_up), down(_down){}
+	TileBound(int _left, int _right, int _up, int _down):left(_left), right(_right), up(_up), down(_down){}
 };
 
-const Bound getTileBound( vec2 * pTile)
+const TileBound getTileBound( vec2 * pTile)
 {
-	Bound tileBound(0, 0, 0, 0);
+	TileBound tileBound(0, 0, 0, 0);
 	for (int i = 0; i < 4; i++){
 		tileBound.left 	= min(pTile[i].x, tileBound.left);
 		tileBound.right = max(pTile[i].x, tileBound.right);
@@ -241,7 +246,7 @@ void genBoardVertexColorFromBoardColor(int x ,int y, vec4 _color)
 {
 	for (int i = 0; i < 6; ++i)
 	{
-		boardVertexColors[x*y*6 + i] = _color;
+		boardVertexColors[(x + y*BOARD_WIDTH)*6 + i] = _color;
 	}
 }
 

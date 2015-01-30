@@ -1,5 +1,4 @@
 #include "FruitTetris.hpp"
-#include "Tile.hpp"
 // =================================================================================================================
 // Tile Controller Function  
 
@@ -75,7 +74,8 @@ void newTile()
 
 	tileType = rand() % TILE_TYPE_NUM;
 	vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
-				( (tileType == TILE_TYPE_I)? allRotationsIshape : allRotationsSshape );
+			( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
+
 	rotateType = rand() % ( allRotationShapeSize[tileType] );
 
 
@@ -94,11 +94,11 @@ void newTile()
 
 	}
 
-	Bound tileBound = getTileBound(tile);
+	TileBound tileBound = getTileBound(tile);
 	int coverage = ( RIGHT_BOUND - int(tileBound.right) + int(tileBound.left) + 1);
 
 	int hpos = rand() % coverage - int(tileBound.left);
-	int vpos = UP_BOUND - tileBound.up;
+	int vpos = UP_BOUND - tileBound.down;
 	tilePos = vec2(hpos , vpos);
 	// Put the tile at the top of the board
 	
@@ -121,21 +121,45 @@ void newTile()
 
 //-------------------------------------------------------------------------------------------------------------------
 // Rotate the current tile 
-void rotateTile()
+bool rotateTile()
 {
 	vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
-				( (tileType == TILE_TYPE_I)? allRotationsIshape : allRotationsSshape );
+			( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
 
 	// First test if the rotated version are in the boundary
 	if (!testRotation(tilePos))
 	{
+		cout << "Test rotation0 - False" << endl << endl;
 		// Add logic to rescue a tile if it could be rotate with a unit movement.
-		if (testRotation(tilePos + vec2(1, 0)))
+		if ( testRotation(tilePos + vec2(1, 0)) )
+		{
+			cout << "Test rotation1 - True"<< endl;
 			tilePos += vec2(1, 0);
-		else if (testRotation(tilePos + vec2(-1, 0)))
+		}
+		else if ( testRotation(tilePos + vec2(-1, 0)) )
+		{
+			cout << "Test rotation2 - True" << endl;
 			tilePos += vec2(-1, 0);
-		else if (testRotation(tilePos + vec2( 0, 1)))
+		}
+		else if ( testRotation(tilePos + vec2( 0, 1)) )
+		{
+			cout << "Test rotation3 - True" << endl;
 			tilePos += vec2(0, 1);
+		}
+		else if ( testRotation(tilePos + vec2( 2, 0)) )
+		{
+			cout << "Test rotation4 - True" << endl;
+			tilePos += vec2(2, 0);			
+		}
+		else{
+
+#ifdef DEBUG
+		cout << "rotateTile() [Failure Rotation]"<< endl;
+#endif		
+			updateTile();
+			return false;
+
+		}
 	}
 
 	// Testing succeed, do actual rotation
@@ -156,6 +180,7 @@ void rotateTile()
 		<< ", RotationShape: " << allRotationShapeSize[tileType] << endl;
 #endif
 	updateTile();
+	return true;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -174,16 +199,20 @@ void shiftTileColor()
 
 //-------------------------------------------------------------------------------------------------------------------
 // check the rows inside the range and see if they are full
-void checkFullRow(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
+bool checkFullRow(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
 {
-
+	return false;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 // match fruits when a tile is set and see if there is a elimination 
-void matchFruit(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
+bool matchFruit(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
 {
+	return false;
+}
 
+bool checkEndOfGame(){
+	return false;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -191,52 +220,90 @@ void matchFruit(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
 bool setTile()
 {
 	// First check if the collision between tile and grid is detected
-	if (true == checkGridCollision())
+
+	// If a collision is detected
+	for (int i = 0; i < 4; ++i)
 	{
-		// If a collision is detected
-		for (int i = 0; i < 4; ++i)
-		{
-			int x = int(tilePos.x + tile[i].x);
-			int y = int(tilePos.y + tile[i].y);
+		int x = int(tilePos.x + tile[i].x);
+		int y = int(tilePos.y + tile[i].y);
 
-			board[x][y] = true;
-			boardColors[x][y] = tileColors[i];
-			genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
+		board[x][y] = true;
+		boardColors[x][y] = tileColors[i];
+		genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
 
-		}
-
-		updateBoard();
-
-		checkFullRow();
-		matchFruit();
-
-		newTile();
-
-		return true;
 	}
-	else
-		return false;
+
+	updateBoard();
+
+	checkFullRow();
+	matchFruit();
+
+	newTile();
+
+	return true;
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 // Given (x,y), tries to move the tile x squares to the right and y squares down
 // Returns true if the tile was successfully moved, or false if there was some issue
-void moveTile(vec2 direction)
+bool moveTile(vec2 direction)
 {
+	bool flag = true;
 	// Bound tileBound = getTileBound(tile);
 	// vec2 futureTilePos = tilePos + direction;
 	if( checkInBound(tilePos + direction) )
-		tilePos += direction;
+	{
+		if ( checkTilesGridsCollision(tilePos + direction) )
+		{
+			flag = false;
+		}
+		else
+		{
+			// If there is no collision in the future position
+			tilePos += direction;
+		}
+	}
+	else
+		flag = false;
 
 #ifdef DEBUG
 	cout << "moveTile() - Horizontal Movement: " << direction.x << ", Vertical Movement: " << direction.y << endl;
 	cout << "moveTile() - Curret position - " << tilePos.x << ", " << tilePos.y << endl;
 #endif
 
-	updateTile();
+	if( flag ) updateTile();
+
+	return flag;
 
 }
 
+void moveDownTileToEnd()
+{
+	bool flag = false; 
+	for (int i = 0; i < BOARD_HEIGHT; ++i)
+	{
+		if( !moveTile(vec2(0.0, -1.0)) ){
+			flag = true;
+			break;
+		}
+	}
+
+	if (flag == true)
+	{
+		setTile();
+		updateTile();
+		newTile();
+	}
+	else
+	{	
+#ifdef DEBUG
+		cout << "moveDownTileToEnd() - [Error] " << endl;
+#endif
+		return;
+	}
+
+}
 
 // ================================================================================================================= 
 // Initialization controller
@@ -468,7 +535,7 @@ void processSpecialKey(int key, int x, int y)
 		rotateTile();
 		break;
 	case GLUT_KEY_DOWN :
-		displacement -= vec2(0, step);
+		moveDownTileToEnd();
 		break;
 	case GLUT_KEY_LEFT :
 		displacement -= vec2(step, 0);
@@ -478,7 +545,18 @@ void processSpecialKey(int key, int x, int y)
 		break;
 	}
 
-	moveTile(displacement);
+	if( displacement != vec2(0, 0) && false == moveTile(displacement) )
+	{
+		if (displacement.y < 0)
+		{
+			setTile();
+			updateTile();
+			newTile();
+		}
+		else
+			updateTile();
+
+	}
 
 }
 
@@ -498,7 +576,7 @@ void processKeyboard(unsigned char key, int x, int y)
 		case 'r': // 'r' key restarts the game
 			restartGame();
 			break;
-		case 's':
+		case ' ':
 			shiftTileColor();
 			break;
 	}
@@ -509,7 +587,19 @@ void processKeyboard(unsigned char key, int x, int y)
 void processTimer(int val)
 {
 	cout << "running timer" << endl;
-	moveTile(vec2(0.0, velocity ));
+
+	if ( false == moveTile(vec2(0.0, velocity )) )
+	{
+		if (velocity < 0)
+		{
+			setTile();
+			updateTile();
+			newTile();
+		}
+		else
+			updateTile();
+	}
+
 	glutPostRedisplay();
 	glutTimerFunc(1000, processTimer, 0);
 }
@@ -517,11 +607,11 @@ void processTimer(int val)
 
 void processIdle()
 {
-	// When the game agent is idle, check if the current tile is arrived at a position 
-	// that it could never fail. If it is, then set the tile 
-	if ( checkGridCollision() )
+
+	if(checkEndOfGame())
 	{
-		setTile();
+		cout << "Game Over..." << endl;
+		exit(EXIT_SUCCESS);
 	}
 
 	glutPostRedisplay();
