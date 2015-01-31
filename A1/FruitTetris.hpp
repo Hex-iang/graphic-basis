@@ -100,6 +100,9 @@ GLuint vboIDs[6];
 
 GLfloat velocity 	= -1.0;
 GLfloat step 		=  1.0;
+
+bool ifAllowTimer 	= true;
+bool ifGameStop 	= false;
 // Velocity for each timer movement and step for keyboard movement
 
 // The 'tile' array will always be some element [i][j] of this array (an array of vec2)
@@ -115,7 +118,7 @@ vec2 allRotationsLshape[4][4] =
 
 // All rotations for S and L shapes
 // ============================================================================================
-vec2 allRotationsSshape[2][4] = 
+vec2 allRotationsSshape[4][4] = 
 	{
 		{vec2(-1, -1), vec2( 0,-1), vec2(0, 0), vec2( 1, 0)},
 		{vec2( 1, -1), vec2( 1, 0), vec2(0, 0), vec2( 0, 1)},
@@ -123,7 +126,7 @@ vec2 allRotationsSshape[2][4] =
 		{vec2(-1,  1), vec2(-1, 0), vec2(0, 0), vec2( 0,-1)}
 	};
 
-vec2 allRotationsIshape[2][4] = 
+vec2 allRotationsIshape[4][4] = 
 	{
 		{vec2(-2, 0), vec2(-1, 0), vec2(0, 0), vec2( 1, 0)},
 		{vec2( 0,-2), vec2( 0,-1), vec2(0, 0), vec2( 0, 1)},
@@ -264,3 +267,36 @@ void genBoardVertexColorsFromBoardColors()
 		}
 	}
 }
+
+
+// ===========================================================================================
+// Function Declaration
+void updateBoard();
+void updateTile();
+void newTile();
+bool rotateTile();
+void shiftTileColor();
+void moveDownRow(int startRow);
+void moveDownRows(bool eliminatedRows[]);
+void eliminateRow(int row);
+bool checkFullRow(int row);
+bool matchFruit(int startRow, int endRow);
+bool checkEndOfGame();
+bool setTile();
+bool moveTile(vec2 direction);
+void moveDownTileToEnd();
+void initGrid();
+void initBoard();
+void initCurrentTile();
+void init();
+void restartGame();
+void processDisplay();
+void processReshape(GLsizei w, GLsizei h);
+void processSpecialKey(int key, int x, int y);
+void processKeyboard(unsigned char key, int x, int y);
+void processTimer(int val);
+void processIdle();
+void newGame();
+void pauseResumeGame();
+void tryStopGame();
+

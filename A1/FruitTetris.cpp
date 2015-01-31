@@ -194,18 +194,77 @@ void shiftTileColor()
 
 //-------------------------------------------------------------------------------------------------------------------
 // check the rows inside the range and see if they are full
-void eliminateRow()
+void moveDownRow(int startRow)
 {
+	for (int row = startRow; row < BOARD_HEIGHT; ++row)
+	{
+		bool isBlackRow = false;
 
+		// If the row to move down is the top row, add a black row
+		if (row == UP_BOUND)
+			isBlackRow = true;
+
+		if (isBlackRow)
+		{
+			for (int col = 0; col < BOARD_WIDTH; ++col)
+			{
+				board[col][row] = false;
+				boardColors[col][row] = black;
+			}				
+		}
+		else
+		{
+			for (int col = 0; col < BOARD_WIDTH; ++col)
+			{
+				board[col][row] = board[col][row + 1];
+				boardColors[col][row] = boardColors[col][row + 1];
+			}			
+		}
+	}
+}
+
+void moveDownRows(bool eliminatedRows[])
+{
+	for (int i = UP_BOUND; i >= 0; --i)
+	{
+		if (eliminatedRows[i])
+		{
+			moveDownRow(i);
+		}
+	}
+}
+
+void eliminateRow(int row)
+{
+	for (int i = 0; i < BOARD_WIDTH; ++i)
+	{
+		board[i][row] = false;
+		boardColors[i][row] = black;
+	}
 }
 
 bool checkFullRow(int row)
 {
 	bool isRowFull = true;
-	for (int i = 0; i < BOARD_WIDTH; ++i)
+	for (int i = 0; i < BOARD_WIDTH; ++i){
 		isRowFull = isRowFull && board[i][row];
+	}
 
-	return isRowFull
+#ifdef DEBUG
+	cout << "checkFullRow() - [Row Status] : " << endl;
+	for (int i = 0; i < BOARD_WIDTH; ++i)
+	{
+		cout << "[" << (board[i][row]? 'T' : 'F') << "],"; 
+	}
+	cout << endl;
+	if ( isRowFull )
+	{
+		cout << "checkFullRow() - [A full row detected] : Row[" << row << "]" << endl;
+	}
+#endif
+
+
+	return isRowFull;
 }
 
 
@@ -216,7 +275,8 @@ bool matchFruit(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
 	return false;
 }
 
-bool checkEndOfGame(){
+bool checkEndOfGame()
+{
 	bool flag = false;
 	for (int i = 0; i < BOARD_WIDTH; ++i)
 	{
@@ -260,11 +320,21 @@ bool setTile()
 	TileBound tileBound = getTileBound(tile);
 	int start = tileBound.down + tilePos.y;
 	int end = tileBound.up + tilePos.y;
-	for (int i = start; i < end ; ++i)
-	{
-		if( checkFullRow(i) )
+	bool eliminatedRows[BOARD_HEIGHT] = { false };
+
+	for (int i = start; i < end + 1; ++i)
+	{		
+		if( checkFullRow(i) ){
+			eliminatedRows[i] = true;
 			eliminateRow(i);
+		}
 	}
+
+	moveDownRows(eliminatedRows);
+
+	genBoardVertexColorsFromBoardColors();
+	// After reset the board, update the buffer object
+	updateBoard();
 
 	matchFruit();
 
@@ -277,6 +347,8 @@ bool setTile()
 // Returns true if the tile was successfully moved, or false if there was some issue
 bool moveTile(vec2 direction)
 {
+	if(ifGameStop) return false;
+
 	bool flag = true;
 	// Bound tileBound = getTileBound(tile);
 	// vec2 futureTilePos = tilePos + direction;
@@ -315,6 +387,7 @@ bool moveTile(vec2 direction)
 
 void moveDownTileToEnd()
 {
+	if(ifGameStop) return;
 
 #ifdef DEBUG
 	cout << "moveDownTileToEnd() - [Straight down.] from ["<< tilePos.x <<"][" << tilePos.y << "]"<< endl;
@@ -497,17 +570,12 @@ void init()
 	// Create 3 Vertex Array Objects, each representing one 'object'. Store the names in array vaoIDs
 	glGenVertexArrays(3, &vaoIDs[0]);
 
-	// Initialize the grid, the board, and the current tile
-	initGrid();
-	initBoard();
-	initCurrentTile();
-
 	// The location of the uniform variables in the shader program
 	locxsize = glGetUniformLocation(program, "xsize"); 
 	locysize = glGetUniformLocation(program, "ysize");
 
 	// Game initialization
-	newTile(); 	
+	newGame();
 	// create new next tile
 
 	// set to default
@@ -515,17 +583,36 @@ void init()
 	glClearColor(0, 0, 0, 0);
 }
 
+void newGame()
+{
+	cout << "New Game" << endl;
+	cout << "============================================================" << endl;
+	
+	// Global variable for controlling game logic
+	ifGameStop = false;
+	ifAllowTimer = true;
 
+	initGrid();
+	initBoard();
+	initCurrentTile();
+	newTile();	
+}
+
+void pauseResumeGame()
+{
+	ifAllowTimer = ! ifAllowTimer;
+
+	if( false == ifAllowTimer )
+	{
+		cout << "pauseGame() - [Do something]" << endl;
+	}
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 // Starts the game over - empties the board, creates new tiles, resets line counters
 void restartGame()
 {
-	cout << "Restart Game..." << endl;
-	initGrid();
-	initBoard();
-	initCurrentTile();
-	newTile(); 
+	newGame();
 }
 
 
@@ -615,6 +702,9 @@ void processKeyboard(unsigned char key, int x, int y)
 		case 'q':
 			exit (EXIT_SUCCESS);
 			break;
+		case 'p':
+			pauseResumeGame();
+			break;
 		case 'r': // 'r' key restarts the game
 			restartGame();
 			break;
@@ -628,34 +718,46 @@ void processKeyboard(unsigned char key, int x, int y)
 //-------------------------------------------------------------------------------------------------------------------
 void processTimer(int val)
 {
-	cout << "running timer" << endl;
-
-	if ( false == moveTile(vec2(0.0, velocity )) )
+	if (ifAllowTimer)
 	{
-		if (velocity < 0)
+		cout << "running timer" << endl;
+
+		if ( false == moveTile(vec2(0.0, velocity )) )
 		{
-			setTile();
-			updateTile();
-			newTile();
+			if (velocity < 0)
+			{
+				setTile();
+				updateTile();
+				newTile();
+			}
+			else
+				updateTile();
 		}
-		else
-			updateTile();
+	}
+	else
+	{
+		cout << "timer stopped" << endl;
+
 	}
 
 	glutPostRedisplay();
-	glutTimerFunc(1000, processTimer, 0);
+	glutTimerFunc(1000, processTimer, 1);
 }
 //-------------------------------------------------------------------------------------------------------------------
 
-void processIdle()
+void tryStopGame()
 {
-
 	if(checkEndOfGame())
 	{
+		ifGameStop = true;
 		cout << "Game Over..." << endl;
 		exit(EXIT_SUCCESS);
 	}
+}
 
+void processIdle()
+{
+	tryStopGame();
 	glutPostRedisplay();
 }
 
@@ -682,7 +784,7 @@ int main(int argc, char **argv)
 	glutKeyboardFunc(processKeyboard);
 	glutIdleFunc(processIdle);
 	// Callback function for timer 
-	glutTimerFunc(1000, processTimer, 0);
+	glutTimerFunc(1000, processTimer, 1);
 
 	glutMainLoop(); // Start main loop
 	return 0;
