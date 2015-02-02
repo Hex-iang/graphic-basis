@@ -28,6 +28,17 @@ using namespace std;
 // #define _IN_BOUND(x, y)	 (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 #define _IN_BOUND(x, y)	 (y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 
+#define _vec4_equal(a,b) (a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w) 
+
+#define _MATCH_COLOR(color) ( _vec4_equal(color, black) 	? "black" 	: \
+							( _vec4_equal(color, orange)	? "orange" 	: \
+							( _vec4_equal(color, red)		? "red" 	: \
+							( _vec4_equal(color, green)		? "green" 	: \
+							( _vec4_equal(color, purple)	? "purple"	: \
+							( _vec4_equal(color, yellow)	? "yellow"	: \
+							( _vec4_equal(color, white)		? "white"	: "Unknown color" \
+								)))))))
+
 //  constant variable
 // ============================================================================================
 
@@ -276,27 +287,37 @@ void updateTile();
 void newTile();
 bool rotateTile();
 void shiftTileColor();
+
 void moveDownRow(int startRow);
 void moveDownRows(bool eliminatedRows[]);
-void eliminateRow(int row);
+void eliminateFullRow(int row);
 bool checkFullRow(int row);
-bool matchFruit(int startRow, int endRow);
-bool checkEndOfGame();
 bool setTile();
 bool moveTile(vec2 direction);
 void moveDownTileToEnd();
+
 void initGrid();
 void initBoard();
 void initCurrentTile();
 void init();
-void restartGame();
+
 void processDisplay();
 void processReshape(GLsizei w, GLsizei h);
 void processSpecialKey(int key, int x, int y);
 void processKeyboard(unsigned char key, int x, int y);
 void processTimer(int val);
 void processIdle();
+
 void newGame();
 void pauseResumeGame();
 void tryStopGame();
+void restartGame();
+bool checkEndOfGame();
+
+
+bool matchFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
+void printEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
+void cleanUpEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
+void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
+bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 

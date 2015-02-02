@@ -1,3 +1,4 @@
+#include "unistd.h"
 #include "FruitTetris.hpp"
 // =================================================================================================================
 // Tile Controller Function  
@@ -234,7 +235,7 @@ void moveDownRows(bool eliminatedRows[])
 	}
 }
 
-void eliminateRow(int row)
+void eliminateFullRow(int row)
 {
 	for (int i = 0; i < BOARD_WIDTH; ++i)
 	{
@@ -270,9 +271,143 @@ bool checkFullRow(int row)
 
 //-------------------------------------------------------------------------------------------------------------------
 // match fruits when a tile is set and see if there is a elimination 
-bool matchFruit(int startRow = DOWN_BOUND, int endRow = UP_BOUND)
+
+// Basically for each falling fruit, the idea behind is to
+// match the 3*3 grid and set all matching to true 
+bool matchFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
 {
+	// Basically a board-global matching
+	bool flag = false;
+
+	for (int y = 0; y < BOARD_HEIGHT; ++y)
+	{
+		for (int i = LEFT_BOUND; i < RIGHT_BOUND - 1; ++i)
+		{
+		
+			if( _vec4_equal(boardColors[i + 0][y], boardColors[i + 1][y]) && 
+				_vec4_equal(boardColors[i + 1][y], boardColors[i + 2][y]) &&
+				!_vec4_equal(boardColors[i][y], black) 				  	  )
+			{
+
+#ifdef DEBUG 
+				cout << "matchFruitTiles() - [row fruit tiles detected]" << endl;
+				cout << "matchFruitTiles() - tile["<< i + 0 << "][" << y <<"] = " << _MATCH_COLOR(boardColors[i + 0][y]) << endl;
+				cout << "matchFruitTiles() - tile["<< i + 1 << "][" << y <<"] = " << _MATCH_COLOR(boardColors[i + 1][y]) << endl;
+				cout << "matchFruitTiles() - tile["<< i + 2 << "][" << y <<"] = " << _MATCH_COLOR(boardColors[i + 2][y]) << endl;
+#endif
+				eliminatedFruitTiles[(i + 0)][y] = true;
+				eliminatedFruitTiles[(i + 1)][y] = true;
+				eliminatedFruitTiles[(i + 2)][y] = true;
+
+				flag = true;
+			}
+		}
+	}
+
+	for (int x = 0; x < BOARD_WIDTH; ++x)
+	{	
+		for (int i = DOWN_BOUND; i < UP_BOUND - 1; ++i)
+		{		
+			if( _vec4_equal(boardColors[x][i + 0], boardColors[x][i + 1]) && 
+				_vec4_equal(boardColors[x][i + 1], boardColors[x][i + 2]) &&
+				!_vec4_equal(boardColors[x][i], black) 				  )
+			{
+
+#ifdef DEBUG 
+				cout << "matchFruitTiles() - [column fruit tiles detected]" << endl;
+				cout << "matchFruitTiles() - tile["<< x << "][" << i + 0 <<"] = " << _MATCH_COLOR(boardColors[x][i + 0]) << endl;
+				cout << "matchFruitTiles() - tile["<< x << "][" << i + 1 <<"] = " << _MATCH_COLOR(boardColors[x][i + 1]) << endl;
+				cout << "matchFruitTiles() - tile["<< x << "][" << i + 2 <<"] = " << _MATCH_COLOR(boardColors[x][i + 2]) << endl;
+#endif
+				eliminatedFruitTiles[x][i + 0] = true;
+				eliminatedFruitTiles[x][i + 1] = true;
+				eliminatedFruitTiles[x][i + 2] = true;
+
+				flag = true;
+			}
+		}
+
+	}
+	
+	printEliminationTiles(eliminatedFruitTiles);
+	return flag;
+}
+
+bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
+{
+	for (int col = 0; col < BOARD_WIDTH; ++col)
+	{
+		for (int row = 0; row < BOARD_HEIGHT; ++row)
+		{
+			if (eliminatedFruitTiles[col][row])
+			{
+				board[col][row] = false;
+				boardColors[col][row] = black;
+			}
+		}
+	}
+
 	return false;
+}
+
+void moveDownFruitTileCol(int startRow, int col)
+{
+	for (int row = startRow; row < BOARD_HEIGHT; ++row)
+	{
+		bool isBlackRow = false;
+
+		// If the row to move down is the top row, add a black row
+		if (row == UP_BOUND)
+			isBlackRow = true;
+
+		if (isBlackRow)
+		{
+			board[col][row] = false;
+			boardColors[col][row] = black;				
+		}
+		else
+		{
+			board[col][row] = board[col][row + 1];
+			boardColors[col][row] = boardColors[col][row + 1];
+		}
+	}
+}
+
+void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
+{
+	for (int row = UP_BOUND; row >= 0; --row)
+	{
+		for (int col = 0; col < BOARD_WIDTH; ++col)
+		{
+			if (eliminatedFruitTiles[col][row])
+				moveDownFruitTileCol(row, col);
+		}
+	}	
+}
+
+void cleanUpEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
+{
+	for (int i = 0; i < BOARD_WIDTH; ++i)
+	{	
+		for (int j = 0; j < BOARD_HEIGHT; ++j)
+		{
+			eliminatedFruitTiles[i][j] = false;
+		}
+	}
+}
+
+void printEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
+{
+	cout << "printEliminationTiles() - [Fruit Elimination Matrix]" << endl;
+	for (int j = UP_BOUND; j >= 0; --j)
+	{	
+		for (int i = 0; i < BOARD_WIDTH; ++i)
+		{
+			cout << "[" << (eliminatedFruitTiles[i][j] ? "@" : "_") << "]";
+		}
+		cout << endl;
+	}
+	cout << endl;
 }
 
 bool checkEndOfGame()
@@ -316,6 +451,7 @@ bool setTile()
 
 	updateBoard();
 
+	// The first priority is to eliminate row, since it will deminish more tiles
 	// Perform row checking..
 	TileBound tileBound = getTileBound(tile);
 	int start = tileBound.down + tilePos.y;
@@ -326,17 +462,46 @@ bool setTile()
 	{		
 		if( checkFullRow(i) ){
 			eliminatedRows[i] = true;
-			eliminateRow(i);
+			eliminateFullRow(i);
 		}
 	}
 
 	moveDownRows(eliminatedRows);
-
 	genBoardVertexColorsFromBoardColors();
-	// After reset the board, update the buffer object
 	updateBoard();
 
-	matchFruit();
+
+	// The second priority is to eliminate fruit tiles
+	bool eliminatedFruitTiles[BOARD_WIDTH][BOARD_HEIGHT] = {false};
+	// After reset the board, update the buffer object
+
+	cleanUpEliminationTiles(eliminatedFruitTiles);
+	if( matchFruitTiles(eliminatedFruitTiles))
+	{
+		cout << "eliminating fruit..." << endl;
+		eliminateFruitTiles(eliminatedFruitTiles);
+		moveDownFruitTilesCols(eliminatedFruitTiles);
+		genBoardVertexColorsFromBoardColors();
+		updateBoard();
+	}
+
+// 	while( matchFruitTiles(eliminatedFruitTiles))
+// 	{
+
+// #ifdef DEBUG
+// 		cout << "setTile() -[eliminate fruit tiles]" << endl;
+// #endif
+// 		// if fruit tiles could continue matching, do it iteratively
+// 		eliminatedFruitTiles(eliminatedFruitTiles);
+// 		moveDownFruitTilesCols(eliminatedFruitTiles);
+
+// 		// Update the tiles to status after elimination
+// 		genBoardVertexColorsFromBoardColors();
+// 		updateBoard();
+// 		sleep(0.1);
+// 		cleanUpEliminationTiles(eliminatedFruitTiles);
+// 	}
+
 
 	return true;
 
