@@ -476,31 +476,31 @@ bool setTile()
 	// After reset the board, update the buffer object
 
 	cleanUpEliminationTiles(eliminatedFruitTiles);
-	if( matchFruitTiles(eliminatedFruitTiles))
+	// if( matchFruitTiles(eliminatedFruitTiles))
+	// {
+	// 	cout << "eliminating fruit..." << endl;
+	// 	eliminateFruitTiles(eliminatedFruitTiles);
+	// 	moveDownFruitTilesCols(eliminatedFruitTiles);
+	// 	genBoardVertexColorsFromBoardColors();
+	// 	updateBoard();
+	// }
+
+	while( matchFruitTiles(eliminatedFruitTiles))
 	{
-		cout << "eliminating fruit..." << endl;
-		eliminateFruitTiles(eliminatedFruitTiles);
+
+#ifdef DEBUG
+		cout << "setTile() -[eliminate fruit tiles]" << endl;
+#endif
+		// if fruit tiles could continue matching, do it iteratively
+		eliminatedFruitTiles(eliminatedFruitTiles);
 		moveDownFruitTilesCols(eliminatedFruitTiles);
+
+		// Update the tiles to status after elimination
 		genBoardVertexColorsFromBoardColors();
 		updateBoard();
+		sleep(0.1);
+		cleanUpEliminationTiles(eliminatedFruitTiles);
 	}
-
-// 	while( matchFruitTiles(eliminatedFruitTiles))
-// 	{
-
-// #ifdef DEBUG
-// 		cout << "setTile() -[eliminate fruit tiles]" << endl;
-// #endif
-// 		// if fruit tiles could continue matching, do it iteratively
-// 		eliminatedFruitTiles(eliminatedFruitTiles);
-// 		moveDownFruitTilesCols(eliminatedFruitTiles);
-
-// 		// Update the tiles to status after elimination
-// 		genBoardVertexColorsFromBoardColors();
-// 		updateBoard();
-// 		sleep(0.1);
-// 		cleanUpEliminationTiles(eliminatedFruitTiles);
-// 	}
 
 
 	return true;
