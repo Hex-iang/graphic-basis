@@ -1,13 +1,12 @@
-#include "unistd.h"
-#include "FruitTetris3d.hpp"
+#include "FruitTetris.hpp"
+#include "Utility.hpp"
+#include "Tile.hpp"
+
 // =================================================================================================================
 // Tile Controller Function  
 
-
 //-------------------------------------------------------------------------------------------------------------------
-
 // When the current tile is moved or rotated (or created), update the VBO containing its vertex position data
-
 void updateBoard()
 {
     // Update board colors
@@ -19,506 +18,8 @@ void updateBoard()
     glBindVertexArray(0);       
 }
 
-void updateTile()
-{
-    // For each of the 4 'cells' of the tile,
-    for (int i = 0; i < 4; i++) 
-    {
-        // Calculate the grid coordinates of the cell
-        GLfloat x = tilePos.x + tile[i].x; 
-        GLfloat y = tilePos.y + tile[i].y;
-
-
-        // Contraints that make the tile outside the UP_BOUND of board invisible
-        // ==============================================================================
-        point4 p1 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0), .4, 1); 
-        point4 p2 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0), .4, 1);
-        point4 p3 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0), .4, 1);
-        point4 p4 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0), .4, 1);
-
-        // if ( y > UP_BOUND ) continue;
-
-        // Two points are used by two triangles each
-        point4 newPoints[6] = {p1, p2, p3, p2, p3, p4}; 
-
-        // Put new data in the VBO
-        point4 pointsColors[6];
-
-        genColorVertexFromTileColor(pointsColors, tileColors[i]);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
-        glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(color4), 6*sizeof(color4), pointsColors);
-
-
-        glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]); 
-        glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(point4), 6*sizeof(point4), newPoints);
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}
-
 //-------------------------------------------------------------------------------------------------------------------
-// Called at the start of play and every time a tile is placed
-void newTile()
-{
-    // First generate a random tile
-
-    tileType = rand() % TILE_TYPE_NUM;
-    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
-            ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
-
-    rotateType = rand() % ( allRotationShapeSize[tileType] );
-
-
-#ifdef DEBUG
-    cout << "newTile() - [Generate Randomness] TileType: " << tileType << ", RotateType: " << rotateType 
-        << ", RotationShape: " << allRotationShapeSize[tileType] << endl;
-#endif
-
-    // Update the geometry VBO of current tile
-    for (int i = 0; i < 4; i++){
-        tile[i] = pAllRotationShape[rotateType][i];
-    }
-
-    TileBound tileBound = getTileBound(tile);
-    int coverage = ( RIGHT_BOUND - int(tileBound.right) + int(tileBound.left) + 1);
-
-    int hpos = rand() % coverage - int(tileBound.left);
-    int vpos = UP_BOUND - tileBound.up;
-    tilePos = vec2(hpos , vpos);
-    // Put the tile at the top of the board
-    
-#ifdef DEBUG
-    cout << "newTile() - [Get Tile Boundary] Bound(" << tileBound.left << ", " << tileBound.right
-        <<", " << tileBound.down << ", " << tileBound.up << ")" << endl;
-    cout << "newTile() - [Boundaries] Right: " << (RIGHT_BOUND - int(tileBound.right)) 
-        << ", Left: " << (- int(tileBound.left)) << ", Coverage: " << coverage << endl;
-    cout << "newTile() - [New Tile Position] x = " << hpos << ", y = " << vpos << endl;
-#endif
-
-    // You should randomlize the color in structure tileColors
-    fillTileWithRandomColor();
-
-    // Call update function to draw the tile with its position as well as its color
-    updateTile(); 
-
-    glBindVertexArray(0);
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-// Rotate the current tile 
-bool rotateTile()
-{
-    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
-            ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
-
-    // First test if the rotated version are in the boundary
-    if (!testRotation(tilePos))
-    {
-        cout << "Test rotation0 - False" << endl << endl;
-        // Add logic to rescue a tile if it could be rotate with a unit movement.
-        if ( testRotation(tilePos + vec2(1, 0)) )
-        {
-            cout << "Test rotation1 - True"<< endl;
-            tilePos += vec2(1, 0);
-        }
-        else if ( testRotation(tilePos + vec2(-1, 0)) )
-        {
-            cout << "Test rotation2 - True" << endl;
-            tilePos += vec2(-1, 0);
-        }
-        else if ( testRotation(tilePos + vec2( 0, 1)) )
-        {
-            cout << "Test rotation3 - True" << endl;
-            tilePos += vec2(0, 1);
-        }
-        else if ( testRotation(tilePos + vec2( 2, 0)) )
-        {
-            cout << "Test rotation4 - True" << endl;
-            tilePos += vec2(2, 0);          
-        }
-        else if ( testRotation(tilePos + vec2(-2, 0)))
-        {
-            cout << "Test rotation5 - True" << endl;
-            tilePos += vec2(-2, 0);
-        }
-        else if ( testRotation(tilePos + vec2( 0, 2)) )
-        {
-            cout << "Test rotation5 - True" << endl;
-            tilePos += vec2(0, 2);
-        }
-        else{
-
-#ifdef DEBUG
-        cout << "rotateTile() [Failure Rotation]"<< endl;
-#endif      
-            updateTile();
-            return false;
-
-        }
-    }
-
-    // Testing succeed, do actual rotation
-
-    rotateType = (rotateType + 1) % allRotationShapeSize[tileType];
-    // Update the geometry VBO of current tile
-    for (int i = 0; i < 4; i++){
-        tile[i] = pAllRotationShape[rotateType][i];
-
-#ifdef DEBUG
-        cout << "rotateTile() [Change Rotation] - Tile#" << i << " - " << tilePos.x + tile[i].x << "," << tilePos.y + tile[i].y << endl;
-#endif
-    }
-
-
-#ifdef DEBUG
-    cout << "rotateTile() [Change Rotation] - TileType: " << tileType << ", RotateType: " << rotateType 
-        << ", RotationShape: " << allRotationShapeSize[tileType] << endl;
-#endif
-    updateTile();
-    return true;
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-// shift Teris color 
-
-void shiftTileColor()
-{
-    color4 oldColor = tileColors[3];
-
-    tileColors[3] = tileColors[2];
-    tileColors[2] = tileColors[1];
-    tileColors[1] = tileColors[0];
-    tileColors[0] = oldColor;
-    updateTile();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-// check the rows inside the range and see if they are full
-void moveDownRow(int startRow)
-{
-    for (int row = startRow; row < BOARD_HEIGHT; ++row)
-    {
-        bool isBlackRow = false;
-
-        // If the row to move down is the top row, add a black row
-        if (row == UP_BOUND)
-            isBlackRow = true;
-
-        if (isBlackRow)
-        {
-            for (int col = 0; col < BOARD_WIDTH; ++col)
-            {
-                board[col][row] = false;
-                boardColors[col][row] = black;
-            }               
-        }
-        else
-        {
-            for (int col = 0; col < BOARD_WIDTH; ++col)
-            {
-                board[col][row] = board[col][row + 1];
-                boardColors[col][row] = boardColors[col][row + 1];
-            }           
-        }
-    }
-}
-
-void moveDownRows(bool eliminatedRows[])
-{
-    for (int i = UP_BOUND; i >= 0; --i)
-    {
-        if (eliminatedRows[i])
-        {
-            moveDownRow(i);
-        }
-    }
-}
-
-void eliminateFullRow(int row)
-{
-    for (int i = 0; i < BOARD_WIDTH; ++i)
-    {
-        board[i][row] = false;
-        boardColors[i][row] = black;
-    }
-}
-
-bool checkFullRow(int row)
-{
-    bool isRowFull = true;
-    for (int i = 0; i < BOARD_WIDTH; ++i){
-        isRowFull = isRowFull && board[i][row];
-    }
-
-#ifdef DEBUG
-    cout << "checkFullRow() - [Row Status] : " << endl;
-    for (int i = 0; i < BOARD_WIDTH; ++i)
-    {
-        cout << "[" << (board[i][row]? 'T' : 'F') << "],"; 
-    }
-    cout << endl;
-    if ( isRowFull )
-    {
-        cout << "checkFullRow() - [A full row detected] : Row[" << row << "]" << endl;
-    }
-#endif
-
-
-    return isRowFull;
-}
-
-void checkFullRowsAndEliminate()
-{
-    // Perform row checking..
-    TileBound tileBound = getTileBound(tile);
-    int start = tileBound.down + tilePos.y;
-    int end = tileBound.up + tilePos.y;
-    bool eliminatedRows[BOARD_HEIGHT] = { false };
-
-    for (int i = start; i < end + 1; ++i)
-    {       
-        if( checkFullRow(i) ){
-            eliminatedRows[i] = true;
-            eliminateFullRow(i);
-        }
-    }
-
-    moveDownRows(eliminatedRows);
-    genBoardVertexColorsFromBoardColors();
-    updateBoard();
-    usleep(500);
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-// match fruits when a tile is set and see if there is a elimination 
-
-// Basically for each falling fruit, the idea behind is to
-// match the 3*3 grid and set all matching to true 
-bool matchFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
-{
-    // Basically a board-global matching
-    bool flag = false;
-
-    for (int y = 0; y < BOARD_HEIGHT; ++y)
-    {
-        for (int i = LEFT_BOUND; i < RIGHT_BOUND - 1; ++i)
-        {
-        
-            if( _color4_equal(boardColors[i + 0][y], boardColors[i + 1][y]) && 
-                _color4_equal(boardColors[i + 1][y], boardColors[i + 2][y]) &&
-                !_color4_equal(boardColors[i][y], black)                    )
-            {
-
-#ifdef DEBUG 
-                cout << "matchFruitTiles() - [row fruit tiles detected]" << endl;
-                cout << "matchFruitTiles() - tile["<< i + 0 << "][" << y <<"] = " << _MATCH_COLOR(boardColors[i + 0][y]) << endl;
-                cout << "matchFruitTiles() - tile["<< i + 1 << "][" << y <<"] = " << _MATCH_COLOR(boardColors[i + 1][y]) << endl;
-                cout << "matchFruitTiles() - tile["<< i + 2 << "][" << y <<"] = " << _MATCH_COLOR(boardColors[i + 2][y]) << endl;
-#endif
-                eliminatedFruitTiles[(i + 0)][y] = true;
-                eliminatedFruitTiles[(i + 1)][y] = true;
-                eliminatedFruitTiles[(i + 2)][y] = true;
-
-                flag = true;
-            }
-        }
-    }
-
-    for (int x = 0; x < BOARD_WIDTH; ++x)
-    {   
-        for (int i = DOWN_BOUND; i < UP_BOUND - 1; ++i)
-        {       
-            if( _color4_equal(boardColors[x][i + 0], boardColors[x][i + 1]) && 
-                _color4_equal(boardColors[x][i + 1], boardColors[x][i + 2]) &&
-                !_color4_equal(boardColors[x][i], black)                )
-            {
-
-#ifdef DEBUG 
-                cout << "matchFruitTiles() - [column fruit tiles detected]" << endl;
-                cout << "matchFruitTiles() - tile["<< x << "][" << i + 0 <<"] = " << _MATCH_COLOR(boardColors[x][i + 0]) << endl;
-                cout << "matchFruitTiles() - tile["<< x << "][" << i + 1 <<"] = " << _MATCH_COLOR(boardColors[x][i + 1]) << endl;
-                cout << "matchFruitTiles() - tile["<< x << "][" << i + 2 <<"] = " << _MATCH_COLOR(boardColors[x][i + 2]) << endl;
-#endif
-                eliminatedFruitTiles[x][i + 0] = true;
-                eliminatedFruitTiles[x][i + 1] = true;
-                eliminatedFruitTiles[x][i + 2] = true;
-
-                flag = true;
-            }
-        }
-
-    }
-    
-    printEliminationTiles(eliminatedFruitTiles);
-    return flag;
-}
-
-bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
-{
-    bool flag = false;
-    for (int col = 0; col < BOARD_WIDTH; ++col)
-    {
-        for (int row = 0; row < BOARD_HEIGHT; ++row)
-        {
-            if (eliminatedFruitTiles[col][row])
-            {
-                flag = true;
-                board[col][row] = false;
-                boardColors[col][row] = black;
-            }
-        }
-    }
-
-    return flag;
-}
-
-
-void moveDownFruitTileCol(int startRow, int col)
-{
-    for (int row = startRow; row < BOARD_HEIGHT; ++row)
-    {
-        bool isBlackRow = false;
-
-        // If the row to move down is the top row, add a black row
-        if (row == UP_BOUND)
-            isBlackRow = true;
-
-        if (isBlackRow)
-        {
-            board[col][row] = false;
-            boardColors[col][row] = black;              
-        }
-        else
-        {
-            board[col][row] = board[col][row + 1];
-            boardColors[col][row] = boardColors[col][row + 1];
-        }
-    }
-}
-
-// void moveDownRestTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
-// {
-//     bool flag;
-//     vec2 newPos = tilePos;
-//     for (int i = 0; i < 4; ++i)
-//     {
-//         int x = int(tilePos.x + tile[i].x);
-//         int y = int(tilePos.y + tile[i].y);
-
-//         if( eliminatedFruitTiles[x][y] )
-//         {
-//             tileColors[i] = black;
-//             flag = true;
-//         }
-//     }
-
-//     // If the true condition is reached
-//     if (flag)
-//     {
-//         while(!checkTilesGridsCollision(newPos + vec2(0, -1)))
-//         {
-//             // if the current tile can move down
-//             newPos += vec2(0, -1);
-//         }
-
-//         for (int i = 0; i < 4; ++i)
-//         {
-//             if ( !_color4_equal(tileColors[i], black) ){
-//                 int x = int(tilePos.x + tile[i].x);
-//                 int y = int(tilePos.y + tile[i].y);
-//                 int new_x = int(newPos.x + tile[i].x);
-//                 int new_y = int(newPos.y + tile[i].x);
-//     #ifdef DEBUG
-//             cout << "moveDownRestTiles() - [Renew Tile] oldPos.x = " << tilePos.x << ", tilePos.y = " << tilePos.y
-//             << "\newPos.x = " << newPos.x  << ", newPos.y = " << newPos.y << endl;
-//             cout << "moveDownRestTiles() - [Renew Tile] oldx = " << x << ", oldy = " << y
-//             << "\tnewx = " << new_x  << ", newy = " << new_y << endl;
-//     #endif
-//                 // revert first setting
-//                 board[x][y] = false;
-//                 boardColors[x][y] = black;
-
-//                 // apply current setting
-//                 board[x][y] = true;
-//                 boardColors[new_x][new_y]= tileColors[i];
-//                 genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
-//             }
-//         }
-
-//         updateBoard();
-//     }
-
-// }
-
-void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
-{
-    for (int row = UP_BOUND; row >= 0; --row)
-    {
-        for (int col = 0; col < BOARD_WIDTH; ++col)
-        {
-            if (eliminatedFruitTiles[col][row]){
-                moveDownFruitTileCol(row, col);
-            }
-        }
-    }   
-}
-
-void cleanUpEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
-{
-    for (int i = 0; i < BOARD_WIDTH; ++i)
-    {   
-        for (int j = 0; j < BOARD_HEIGHT; ++j)
-        {
-            eliminatedFruitTiles[i][j] = false;
-        }
-    }
-}
-
-void printEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
-{
-    cout << "printEliminationTiles() - [Fruit Elimination Matrix]" << endl;
-    for (int j = UP_BOUND; j >= 0; --j)
-    {   
-        for (int i = 0; i < BOARD_WIDTH; ++i)
-        {
-            cout << "[" << (eliminatedFruitTiles[i][j] ? "@" : "_") << "]";
-        }
-        cout << endl;
-    }
-    cout << endl;
-}
-
-void checkFruitMatchAndEliminate()
-{
-    // The second priority is to eliminate fruit tiles
-    bool eliminatedFruitTiles[BOARD_WIDTH][BOARD_HEIGHT] = {false};
-    // After reset the board, update the buffer object
-
-    cleanUpEliminationTiles(eliminatedFruitTiles);
-
-    while( matchFruitTiles(eliminatedFruitTiles))
-    {
-        // set the matching tile color to be black, and make the tile falling again since it is 
-
-#ifdef DEBUG
-        cout << "checkFruitMatchAndEliminate() -[eliminate fruit tiles]" << endl;
-#endif
-        // if fruit tiles could continue matching, do it iteratively
-        eliminateFruitTiles(eliminatedFruitTiles);
-        moveDownFruitTilesCols(eliminatedFruitTiles);
-        // moveDownRestTiles(eliminatedFruitTiles);
-
-        genBoardVertexColorsFromBoardColors();
-        updateBoard();
-        usleep(500);
-
-        // Update the tiles to status after elimination
-        cleanUpEliminationTiles(eliminatedFruitTiles);
-    }
-
-}
+// 
 bool checkEndOfGame()
 {
     bool flag = false;
@@ -560,91 +61,27 @@ void setTile()
     }
 
     updateBoard();
-
-
 }
 
-//-------------------------------------------------------------------------------------------------------------------
-// Given (x,y), tries to move the tile x squares to the right and y squares down
-// Returns true if the tile was successfully moved, or false if there was some issue
-bool moveTile(vec2 direction)
+void unsetTile()
 {
-    if(ifGameStop) return false;
-
-    bool flag = true;
-    // Bound tileBound = getTileBound(tile);
-    // vec2 futureTilePos = tilePos + direction;
-    if( checkInBound(tilePos + direction) )
+    for (int i = 0; i < 4; ++i)
     {
-        if ( checkTilesGridsCollision(tilePos + direction) )
-        {
+        int x = int(tilePos.x + tile[i].x);
+        int y = int(tilePos.y + tile[i].y);
+
+        if ( !_color4_equal(tileColors[i], black) ){
+
 #ifdef DEBUG
-    cout << "moveTile() - [Collision detected] " << endl;
+        cout << "setTile() - [Setting Tile] x = " << x << ", y = " << y << endl;
 #endif
-            flag = false;
-        }
-        else
-        {
-            // If there is no collision in the future position
-            tilePos += direction;
-        }
-    }
-    else{
-
-#ifdef DEBUG
-    cout << "moveTile() - [Out of Bound] " << endl;
-#endif      
-        flag = false;
-    }
-
-#ifdef DEBUG
-    cout << "moveTile() - Horizontal Movement: " << direction.x << ", Vertical Movement: " << direction.y << endl;
-    cout << "moveTile() - Curret position - " << tilePos.x << ", " << tilePos.y << endl;
-#endif
-
-    if( flag ) updateTile();
-
-    return flag;
-
-}
-
-void moveDownTileToEnd()
-{
-    if(ifGameStop) return;
-
-#ifdef DEBUG
-    cout << "moveDownTileToEnd() - [Straight down.] from ["<< tilePos.x <<"][" << tilePos.y << "]"<< endl;
-#endif
-    bool flag = false; 
-    for (int i = 0; i <= BOARD_HEIGHT; ++i)
-    {
-        if( !moveTile(vec2(0.0, -1.0)) ){
-            flag = true;
-            break;
+            board[x][y] = false;
+            boardColors[x][y] = black;
+            genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
         }
     }
 
-    if (flag == true)
-    {
-        
-#ifdef DEBUG
-    cout << "moveDownTileToEnd() - [Straight down.] to ["<< tilePos.x <<"][" << tilePos.y << "]"<< endl;
-#endif
-
-        checkFruitMatchAndEliminate();
-        setTile();
-        checkFullRowsAndEliminate();
-    
-        newTile();
-    }
-#ifdef DEBUG
-    else
-    {   
-        cout << "moveDownTileToEnd() - [Error] " << endl;
-        return;
-    }
-#endif
-
+    updateBoard();
 }
 
 // ================================================================================================================= 
@@ -673,7 +110,6 @@ void initGrid()
     // Make all grid lines white
     for (int i = 0; i < 64; i++)
         gridcolours[i] = white;
-
 
     // *** set up buffer objects
     // Set up first VAO (representing grid lines)
@@ -787,7 +223,7 @@ void init()
     srand(time(NULL));
 
     // Load shaders and use the shader program
-    GLuint program = InitShader("vshader3d.glsl", "fshader3d.glsl");
+    GLuint program = InitShader("vshader.glsl", "fshader.glsl");
     glUseProgram(program);
 
     // Get the location of the attributes (for glVertexAttribPointer() calls)
@@ -817,7 +253,7 @@ void newGame()
     
     // Global variable for controlling game logic
     ifGameStop = false;
-    ifAllowTimer = true;
+    ifPause = false;
 
     initGrid();
     initBoard();
@@ -827,9 +263,9 @@ void newGame()
 
 void pauseResumeGame()
 {
-    ifAllowTimer = ! ifAllowTimer;
+    ifPause = ! ifPause;
 
-    if( false == ifAllowTimer )
+    if( true == ifPause )
     {
         cout << "pauseGame() - [Do something]" << endl;
     }
@@ -855,6 +291,34 @@ void processDisplay()
     // x and y sizes are passed to the shader program to maintain shape of the vertices on screen
     glUniform1i(locysize, ysize);
 
+    GLfloat currentFrame = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0;
+    deltaTime += (currentFrame - lastFrame);
+    lastFrame = currentFrame;
+
+    if (deltaTime > 0.5)
+    {
+        deltaTime = 0;
+
+#ifdef DEBUG
+        cout << "processDisplay() - [Tile Dropping]" << endl;
+#endif
+        if( !ifPause && !ifGameStop)
+        {
+            if ( false == moveTile(vec2(0.0, velocity )) )
+            {
+
+                setTile();
+                checkFullRowsAndEliminate();
+                checkFruitMatchAndEliminate();
+
+                newTile();
+                updateTile();
+
+            }
+        }
+
+    }
+
     glBindVertexArray(vaoIDs[1]); // Bind the VAO representing the grid cells (to be drawn first)
     glDrawArrays(GL_TRIANGLES, 0, 1200); // Draw the board (10*20*2 = 400 triangles)
 
@@ -863,7 +327,6 @@ void processDisplay()
 
     glBindVertexArray(vaoIDs[0]); // Bind the VAO representing the grid lines (to be drawn on top of everything else)
     glDrawArrays(GL_LINES, 0, 64); // Draw the grid lines (21+11 = 32 lines)
-
 
     glutPostRedisplay();
     glutSwapBuffers();
@@ -907,11 +370,13 @@ void processSpecialKey(int key, int x, int y)
     {
         if (displacement.y < 0)
         {
-            checkFruitMatchAndEliminate();
             setTile();
             checkFullRowsAndEliminate();
+            checkFruitMatchAndEliminate();
 
             newTile();
+            updateTile();
+
         }
         else
             updateTile();
@@ -948,35 +413,6 @@ void processKeyboard(unsigned char key, int x, int y)
     glutPostRedisplay();
 }
 
-//-------------------------------------------------------------------------------------------------------------------
-void processTimer(int val)
-{
-    if (ifAllowTimer)
-    {
-        cout << "running timer" << endl;
-
-        if ( false == moveTile(vec2(0.0, velocity )) )
-        {
-            if (velocity < 0)
-            {
-                checkFruitMatchAndEliminate();
-                setTile();
-                checkFullRowsAndEliminate();
-                newTile();
-            }
-            else
-                updateTile();
-        }
-    }
-    else
-    {
-        cout << "timer stopped" << endl;
-
-    }
-
-    glutPostRedisplay();
-    glutTimerFunc(1000, processTimer, 1);
-}
 //-------------------------------------------------------------------------------------------------------------------
 
 void tryStopGame()
@@ -1018,7 +454,6 @@ int main(int argc, char **argv)
     glutKeyboardFunc(processKeyboard);
     glutIdleFunc(processIdle);
     // Callback function for timer 
-    glutTimerFunc(1000, processTimer, 1);
 
     glutMainLoop(); // Start main loop
     return 0;

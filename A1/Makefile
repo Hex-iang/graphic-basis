@@ -28,7 +28,7 @@ CC= g++ -std=c++11
 CFLAGS= -O3 -g -Wall -pedantic -DGL_GLEXT_PROTOTYPES
 
 # The name of the final executable 
-EXECUTABLE= FruitTetris
+EXECUTABLE = FruitTetris
 
 # The basic library we are using add the other libraries you want to link
 # to your program here 
