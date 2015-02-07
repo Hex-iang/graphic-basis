@@ -269,27 +269,6 @@ bool checkFullRow(int row)
     return isRowFull;
 }
 
-void checkFullRowsAndEliminate()
-{
-    // Perform row checking..
-    TileBound tileBound = getTileBound(tile);
-    int start = tileBound.down + tilePos.y;
-    int end = tileBound.up + tilePos.y;
-    bool eliminatedRows[BOARD_HEIGHT] = { false };
-
-    for (int i = start; i < end + 1; ++i)
-    {       
-        if( checkFullRow(i) ){
-            eliminatedRows[i] = true;
-            eliminateFullRow(i);
-        }
-    }
-
-    moveDownRows(eliminatedRows);
-    genBoardVertexColorsFromBoardColors();
-    updateBoard();
-    usleep(500);
-}
 
 //-------------------------------------------------------------------------------------------------------------------
 // match fruits when a tile is set and see if there is a elimination 
@@ -374,7 +353,6 @@ bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
     return flag;
 }
 
-
 void moveDownFruitTileCol(int startRow, int col)
 {
     for (int row = startRow; row < BOARD_HEIGHT; ++row)
@@ -398,60 +376,6 @@ void moveDownFruitTileCol(int startRow, int col)
     }
 }
 
-// void moveDownRestTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
-// {
-//     bool flag;
-//     vec2 newPos = tilePos;
-//     for (int i = 0; i < 4; ++i)
-//     {
-//         int x = int(tilePos.x + tile[i].x);
-//         int y = int(tilePos.y + tile[i].y);
-
-//         if( eliminatedFruitTiles[x][y] )
-//         {
-//             tileColors[i] = black;
-//             flag = true;
-//         }
-//     }
-
-//     // If the true condition is reached
-//     if (flag)
-//     {
-//         while(!checkTilesGridsCollision(newPos + vec2(0, -1)))
-//         {
-//             // if the current tile can move down
-//             newPos += vec2(0, -1);
-//         }
-
-//         for (int i = 0; i < 4; ++i)
-//         {
-//             if ( !_color4_equal(tileColors[i], black) ){
-//                 int x = int(tilePos.x + tile[i].x);
-//                 int y = int(tilePos.y + tile[i].y);
-//                 int new_x = int(newPos.x + tile[i].x);
-//                 int new_y = int(newPos.y + tile[i].x);
-//     #ifdef DEBUG
-//             cout << "moveDownRestTiles() - [Renew Tile] oldPos.x = " << tilePos.x << ", tilePos.y = " << tilePos.y
-//             << "\newPos.x = " << newPos.x  << ", newPos.y = " << newPos.y << endl;
-//             cout << "moveDownRestTiles() - [Renew Tile] oldx = " << x << ", oldy = " << y
-//             << "\tnewx = " << new_x  << ", newy = " << new_y << endl;
-//     #endif
-//                 // revert first setting
-//                 board[x][y] = false;
-//                 boardColors[x][y] = black;
-
-//                 // apply current setting
-//                 board[x][y] = true;
-//                 boardColors[new_x][new_y]= tileColors[i];
-//                 genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
-//             }
-//         }
-
-//         updateBoard();
-//     }
-
-// }
-
 void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
 {
     for (int row = UP_BOUND; row >= 0; --row)
@@ -461,6 +385,7 @@ void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
             if (eliminatedFruitTiles[col][row]){
                 moveDownFruitTileCol(row, col);
             }
+
         }
     }   
 }
@@ -490,35 +415,6 @@ void printEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
     cout << endl;
 }
 
-void checkFruitMatchAndEliminate()
-{
-    // The second priority is to eliminate fruit tiles
-    bool eliminatedFruitTiles[BOARD_WIDTH][BOARD_HEIGHT] = {false};
-    // After reset the board, update the buffer object
-
-    cleanUpEliminationTiles(eliminatedFruitTiles);
-
-    while( matchFruitTiles(eliminatedFruitTiles))
-    {
-        // set the matching tile color to be black, and make the tile falling again since it is 
-
-#ifdef DEBUG
-        cout << "checkFruitMatchAndEliminate() -[eliminate fruit tiles]" << endl;
-#endif
-        // if fruit tiles could continue matching, do it iteratively
-        eliminateFruitTiles(eliminatedFruitTiles);
-        moveDownFruitTilesCols(eliminatedFruitTiles);
-        // moveDownRestTiles(eliminatedFruitTiles);
-
-        genBoardVertexColorsFromBoardColors();
-        updateBoard();
-        usleep(500);
-
-        // Update the tiles to status after elimination
-        cleanUpEliminationTiles(eliminatedFruitTiles);
-    }
-
-}
 bool checkEndOfGame()
 {
     bool flag = false;
@@ -539,7 +435,7 @@ bool checkEndOfGame()
 
 //-------------------------------------------------------------------------------------------------------------------
 // Places the current tile - update the board vertex colour VBO and the array maintaining occupied cells
-void setTile()
+bool setTile()
 {
     // First check if the collision between tile and grid is detected
     // If a collision is detected
@@ -557,10 +453,58 @@ void setTile()
             boardColors[x][y] = tileColors[i];
             genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
         }
+
     }
 
     updateBoard();
 
+    // The first priority is to eliminate row, since it will deminish more tiles
+    // Perform row checking..
+    TileBound tileBound = getTileBound(tile);
+    int start = tileBound.down + tilePos.y;
+    int end = tileBound.up + tilePos.y;
+    bool eliminatedRows[BOARD_HEIGHT] = { false };
+
+    for (int i = start; i < end + 1; ++i)
+    {       
+        if( checkFullRow(i) ){
+            eliminatedRows[i] = true;
+            eliminateFullRow(i);
+        }
+    }
+
+    moveDownRows(eliminatedRows);
+    genBoardVertexColorsFromBoardColors();
+    updateBoard();
+    usleep(500);
+
+
+    // The second priority is to eliminate fruit tiles
+    bool eliminatedFruitTiles[BOARD_WIDTH][BOARD_HEIGHT] = {false};
+    // After reset the board, update the buffer object
+
+    cleanUpEliminationTiles(eliminatedFruitTiles);
+
+    while( matchFruitTiles(eliminatedFruitTiles))
+    {
+        // set the matching tile color to be black, and make the tile falling again since it is 
+
+#ifdef DEBUG
+        cout << "setTile() -[eliminate fruit tiles]" << endl;
+#endif
+        // if fruit tiles could continue matching, do it iteratively
+        eliminateFruitTiles(eliminatedFruitTiles);
+        moveDownFruitTilesCols(eliminatedFruitTiles);
+        genBoardVertexColorsFromBoardColors();
+        updateBoard();
+        usleep(500);
+
+        // Update the tiles to status after elimination
+        cleanUpEliminationTiles(eliminatedFruitTiles);
+    }
+
+
+    return true;
 
 }
 
@@ -630,11 +574,7 @@ void moveDownTileToEnd()
 #ifdef DEBUG
     cout << "moveDownTileToEnd() - [Straight down.] to ["<< tilePos.x <<"][" << tilePos.y << "]"<< endl;
 #endif
-
-        checkFruitMatchAndEliminate();
         setTile();
-        checkFullRowsAndEliminate();
-    
         newTile();
     }
 #ifdef DEBUG
@@ -907,10 +847,7 @@ void processSpecialKey(int key, int x, int y)
     {
         if (displacement.y < 0)
         {
-            checkFruitMatchAndEliminate();
             setTile();
-            checkFullRowsAndEliminate();
-
             newTile();
         }
         else
@@ -959,9 +896,7 @@ void processTimer(int val)
         {
             if (velocity < 0)
             {
-                checkFruitMatchAndEliminate();
                 setTile();
-                checkFullRowsAndEliminate();
                 newTile();
             }
             else

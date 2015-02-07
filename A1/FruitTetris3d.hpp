@@ -46,6 +46,11 @@ typedef Angel::vec4  point4;
 //  constant variable
 // ============================================================================================
 
+// 3D projection
+
+
+// ============================================================================================
+
 const int TILE_TYPE_L 	= 0;
 const int TILE_TYPE_S 	= 1;
 const int TILE_TYPE_I 	= 2;
@@ -182,8 +187,7 @@ bool checkTilesGridsCollision(vec2 newPos)
 		int x = int(newPos.x + tile[i].x);
 		int y = int(newPos.y + tile[i].y);
 
-		// if the tile is not black and it have collision to some other tiles
-		if ( (flag = ( checkTileGridCollision(x, y) && !_color4_equal(tile[i], black)) ) )
+		if ( (flag = checkTileGridCollision(x, y)) )
 			break;
 	}
 	return flag;
@@ -293,7 +297,7 @@ void moveDownRow(int startRow);
 void moveDownRows(bool eliminatedRows[]);
 void eliminateFullRow(int row);
 bool checkFullRow(int row);
-void setTile();
+bool setTile();
 bool moveTile(vec2 direction);
 void moveDownTileToEnd();
 
@@ -321,5 +325,4 @@ void printEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 void cleanUpEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
-void checkFruitMatchAndEliminate();
-void checkFullRowsAndEliminate();
+
