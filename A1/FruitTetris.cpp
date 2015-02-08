@@ -10,7 +10,6 @@
 void updateBoard()
 {
     // Update board colors
-
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_COLOR]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(boardVertexColors), boardVertexColors);
 
@@ -38,51 +37,6 @@ bool checkEndOfGame()
     return flag;
 }
 
-//-------------------------------------------------------------------------------------------------------------------
-// Places the current tile - update the board vertex colour VBO and the array maintaining occupied cells
-void setTile()
-{
-    // First check if the collision between tile and grid is detected
-    // If a collision is detected
-    for (int i = 0; i < 4; ++i)
-    {
-        int x = int(tilePos.x + tile[i].x);
-        int y = int(tilePos.y + tile[i].y);
-
-        if ( !_color4_equal(tileColors[i], black) ){
-
-#ifdef DEBUG
-        cout << "setTile() - [Setting Tile] x = " << x << ", y = " << y << endl;
-#endif
-            board[x][y] = true;
-            boardColors[x][y] = tileColors[i];
-            genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
-        }
-    }
-
-    updateBoard();
-}
-
-void unsetTile()
-{
-    for (int i = 0; i < 4; ++i)
-    {
-        int x = int(tilePos.x + tile[i].x);
-        int y = int(tilePos.y + tile[i].y);
-
-        if ( !_color4_equal(tileColors[i], black) ){
-
-#ifdef DEBUG
-        cout << "setTile() - [Setting Tile] x = " << x << ", y = " << y << endl;
-#endif
-            board[x][y] = false;
-            boardColors[x][y] = black;
-            genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
-        }
-    }
-
-    updateBoard();
-}
 
 // ================================================================================================================= 
 // Initialization controller
@@ -143,9 +97,6 @@ void initBoard()
 {
     // *** Generate the geometric data
     point4 boardpoints[BOARD_WIDTH*BOARD_HEIGHT*3*2];
-    // for (int i = 0; i < BOARD_WIDTH*BOARD_HEIGHT*3*2; i++)
-    //  boardVertexColors[i] = black; 
-    // Let the empty cells on the board be black
 
     // Each cell is a square (2 triangles with 6 vertices)
     for (int i = 0; i < 20; i++){
@@ -204,13 +155,13 @@ void initCurrentTile()
 
     // Current tile vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]);
-    glBufferData(GL_ARRAY_BUFFER, 24*sizeof(point4), NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, BOARD_WIDTH*BOARD_HEIGHT*3*2*sizeof(point4), NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(vPosition);
 
     // Current tile vertex colours
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
-    glBufferData(GL_ARRAY_BUFFER, 24*sizeof(color4), NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, BOARD_WIDTH*BOARD_HEIGHT*3*2*sizeof(color4), NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(vColor);
 }
@@ -254,6 +205,8 @@ void newGame()
     // Global variable for controlling game logic
     ifGameStop = false;
     ifPause = false;
+    
+    dropTiles.clear();
 
     initGrid();
     initBoard();
@@ -267,7 +220,7 @@ void pauseResumeGame()
 
     if( true == ifPause )
     {
-        cout << "pauseGame() - [Do something]" << endl;
+        cout << "pauseGame() - [Press again to resume]" << endl;
     }
 }
 
@@ -295,35 +248,57 @@ void processDisplay()
     deltaTime += (currentFrame - lastFrame);
     lastFrame = currentFrame;
 
-    if (deltaTime > 0.5)
+    if (deltaTime > 0.4 && !ifGameStop)
     {
         deltaTime = 0;
 
-#ifdef DEBUG
-        cout << "processDisplay() - [Tile Dropping]" << endl;
-#endif
         if( !ifPause && !ifGameStop)
         {
-            if ( false == moveTile(vec2(0.0, velocity )) )
+            if( dropTiles.empty()){
+                if ( false == moveTile(vec2(0.0, velocity )) )
+                {
+
+                    setTile();
+                    checkFullRowsAndEliminate();
+                    checkFruitMatchAndEliminate();
+
+                    if( dropTiles.empty()){
+                        newTile();
+                        updateTile();
+                    }
+                    else{
+                        unsetDropTiles();
+                        updateDropTile();
+                    }
+
+                }
+            }
+            else
             {
+                if( fallTiles( vec2(0.0, velocity) ))
+                {
 
-                setTile();
-                checkFullRowsAndEliminate();
-                checkFruitMatchAndEliminate();
+                    checkFullRowsAndEliminate();
+                    checkFruitMatchAndEliminate(); 
 
-                newTile();
-                updateTile();
-
+                    if( dropTiles.empty()){
+                        newTile();
+                        updateTile();
+                    }
+                    else{
+                        unsetDropTiles();
+                        updateDropTile();
+                    }
+                }
             }
         }
-
     }
 
     glBindVertexArray(vaoIDs[1]); // Bind the VAO representing the grid cells (to be drawn first)
     glDrawArrays(GL_TRIANGLES, 0, 1200); // Draw the board (10*20*2 = 400 triangles)
 
     glBindVertexArray(vaoIDs[2]); // Bind the VAO representing the current tile (to be drawn on top of the board)
-    glDrawArrays(GL_TRIANGLES, 0, 24); // Draw the current tile (8 triangles)
+    glDrawArrays(GL_TRIANGLES, 0, 24 + max(int(6*dropTiles.size() - 24), 0)); // Draw the current tile (8 triangles)
 
     glBindVertexArray(vaoIDs[0]); // Bind the VAO representing the grid lines (to be drawn on top of everything else)
     glDrawArrays(GL_LINES, 0, 64); // Draw the grid lines (21+11 = 32 lines)
@@ -356,7 +331,7 @@ void processSpecialKey(int key, int x, int y)
         rotateTile();
         break;
     case GLUT_KEY_DOWN :
-        moveDownTileToEnd();
+        displacement -= vec2(0, step);
         break;
     case GLUT_KEY_LEFT :
         displacement -= vec2(step, 0);
@@ -366,23 +341,25 @@ void processSpecialKey(int key, int x, int y)
         break;
     }
 
-    if( displacement != vec2(0, 0) && false == moveTile(displacement) )
-    {
-        if (displacement.y < 0)
+    if( dropTiles.empty() && !ifPause && !ifGameStop ){
+        if( displacement != vec2(0, 0) && false == moveTile(displacement) )
         {
-            setTile();
-            checkFullRowsAndEliminate();
-            checkFruitMatchAndEliminate();
+            if (displacement.y < 0)
+            {
+                setTile();
+                checkFullRowsAndEliminate();
+                checkFruitMatchAndEliminate();
 
-            newTile();
-            updateTile();
+                if( dropTiles.empty())
+                    newTile();
+                else
+                    unsetDropTiles();
 
+                updateTile();
+
+            }
         }
-        else
-            updateTile();
-
     }
-
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -415,19 +392,21 @@ void processKeyboard(unsigned char key, int x, int y)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-void tryStopGame()
+bool tryStopGame()
 {
     if(checkEndOfGame())
     {
         ifGameStop = true;
         cout << "Game Over..." << endl;
-        exit(EXIT_SUCCESS);
+        cout << "Please Press 'r' To Restart..." << endl;
+        return true;
     }
+
+    return false;
 }
 
 void processIdle()
 {
-    tryStopGame();
     glutPostRedisplay();
 }
 

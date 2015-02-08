@@ -20,7 +20,7 @@ LIBDIR=/usr/lib
 SOURCE= FruitTetris.cpp include/InitShader.cpp
 
 # The compiler we are using 
-CC= g++ -std=c++11
+CC= g++
 
 # The flags that will be used to compile the object file.
 # If you want to debug your program,

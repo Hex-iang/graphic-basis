@@ -25,7 +25,7 @@ bool checkInBound(vec2 newPos)
 // Check if the a tile has collision with board objects
 bool checkTileGridCollision( int x, int y)
 {
-	return ( (_IN_BOUND(x,y) && board[x][y] ) || (_IN_BOUND(x, y) && y < 0) );
+	return ( (_IN_BOUND(x,y) && board[x][y] ) || (y < 0) );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ bool checkTilesGridsCollision(vec2 newPos)
 		int y = int(newPos.y + tile[i].y);
 
 		// if the tile is not black and it have collision to some other tiles
-		if ( (flag = ( checkTileGridCollision(x, y) && !_color4_equal(tileColors[i], black)) ) )
+		if ( (flag =  checkTileGridCollision(x, y) ) ) 
 			break;
 	}
 	return flag;
@@ -60,9 +60,6 @@ bool testRotation(vec2 currentTilePos)
 		int x = int(currentTilePos.x + pAllRotationShape[nextShape][i].x);
 		int y = int(currentTilePos.y + pAllRotationShape[nextShape][i].y);
 
-#ifdef DEBUG
-		cout << "testRotation() - [Ratated tile#"<< i <<" x:" << x << ", y:" << y << "]" << endl;
-#endif
 
 		if ( !_IN_BOUND(x,y) || checkTileGridCollision(x, y) )
 			return false;
@@ -127,10 +124,8 @@ const TileBound getTileBound( vec2 * pTile)
 // Fill Tile with random colors
 void fillTileWithRandomColor()
 {
-	// Fill up the four tiles with different colors
-	for (int i = 0; i < 4; i++){
-		color4 newTileColor = tileColorsSet[rand() % TILE_COLOR_NUM];
-		// Set up the current tile with new color
-		tileColors[i] = newTileColor;
+	for (int i = 0; i < 4; ++i)
+	{
+		tileColors[i] = tileColorsSet[rand() % TILE_COLOR_NUM];
 	}
 }

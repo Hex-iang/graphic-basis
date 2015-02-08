@@ -3,11 +3,10 @@
 #include <iostream>
 #include <ctime>
 #include <algorithm>
-#include <random>
 #include "unistd.h"
 #include "include/Angel.h"
 #include <vector>
-
+#include <iomanip>
 using namespace std;
 
 // ============================================================================================
@@ -18,16 +17,22 @@ using namespace std;
 #define DEBUG 				1
 
 
-#define VBO_GRID_POSITION	0
-#define VBO_GRID_COLOR		1
-#define VBO_BOARD_POSITION	2
-#define VBO_BOARD_COLOR		3
-#define VBO_TILE_POSITION	4
-#define VBO_TILE_COLOR 		5
+#define VBO_GRID_POSITION		0
+#define VBO_GRID_COLOR			1
+#define VBO_BOARD_POSITION		2
+#define VBO_BOARD_COLOR			3
+#define VBO_TILE_POSITION		4
+#define VBO_TILE_COLOR 			5
+
+// #define VBO_DROPTILE_COLOR 		6
+// #define VBO_DROPTILE_POSITION 	7
+
+
 
 #define VAO_GRID			0
 #define VAO_BOARD			1
 #define VAO_TILE			2
+// #define VAO_DROPTILE		3
 
 // #define _IN_BOUND(x, y)	 (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 #define _IN_BOUND(x, y)	 (y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
@@ -84,25 +89,32 @@ const color4 tileColorsSet[5] = {
 int xsize = 400; 
 int ysize = 720;
 
-// current tile
-vec2 tile[4];
-color4 tileColors[4];
-
 class Tile{
 public:
-	Tile(vec2 _pos, color4 _color) : Position(_pos), Color(_color){};
+	Tile(vec2 _pos, color4 _color) : Position(_pos), Color(_color){ }
+	Tile(const Tile & _tile ) { this->Position = _tile.Position; this->Color = _tile.Color; }
 
-private:
+	bool operator== (const Tile &other) const {
+		return _color4_equal(this->Color, other.Color) && this->Position.x == other.Position.x && this->Position.y == other.Position.y;
+  	}
+
+	bool operator!=(const Tile &other) const {
+		return !(*this == other);
+	}
+
 	vec2 Position;
 	color4 Color;
 };
 
-vector<Tile> DropTiles;
+vec2 tile[4];
+color4 tileColors[4];
+
+vector< vector<Tile> > dropTiles;
 
 // An array of 4 2d vectors representing displacement from a 'center' piece of the tile, on the grid
 vec2 tilePos = vec2(5, 19);
 // The position of the current tile using grid coordinates ((0,0) is the bottom left corner)
-int tileType 	= TILE_TYPE_L;
+int tileType 		= TILE_TYPE_L;
 int rotateType 		= 0;
 
 //board[x][y] represents whether the cell (x,y) is occupied
@@ -225,12 +237,12 @@ void processIdle();
 
 void newGame();
 void pauseResumeGame();
-void tryStopGame();
+bool tryStopGame();
 void restartGame();
 bool checkEndOfGame();
 
 bool matchFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
-void printEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
+void printBoolBoardSizeArray(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 void cleanUpEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
@@ -238,3 +250,8 @@ bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 bool checkTileSupport();
 bool checkFruitMatchAndEliminate();
 void checkFullRowsAndEliminate();
+bool fallTiles();
+void updateDropTile();
+void setDropTile(vector<Tile> &_tile);
+bool searchConnectToBottom(vec2 vertex);
+void addTileToDropTiles(Tile _newDropTile);
