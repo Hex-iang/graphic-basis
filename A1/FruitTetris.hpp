@@ -95,7 +95,8 @@ public:
 	Tile(const Tile & _tile ) { this->Position = _tile.Position; this->Color = _tile.Color; }
 
 	bool operator== (const Tile &other) const {
-		return _color4_equal(this->Color, other.Color) && this->Position.x == other.Position.x && this->Position.y == other.Position.y;
+		return _color4_equal(this->Color, other.Color) && 
+				( this->Position.x == other.Position.x && this->Position.y == other.Position.y );
   	}
 
 	bool operator!=(const Tile &other) const {
