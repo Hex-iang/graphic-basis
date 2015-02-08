@@ -737,7 +737,7 @@ void cleanVBOTileBuffer()
 void updateDropTile()
 {
     // Clear the buffer object before update it 
-    cleanVBOTileBuffer();
+    // cleanVBOTileBuffer();
     int idx = 0;
 
     for (vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end(); it++) 
@@ -778,7 +778,7 @@ void updateDropTile()
 void updateTile()
 {
     // First Clean up buffer
-    cleanVBOTileBuffer();
+    // cleanVBOTileBuffer();
     // For each of the 4 'cells' of the tile,
     for (int i = 0; i < 4; i++) 
     {
