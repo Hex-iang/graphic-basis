@@ -7,8 +7,6 @@ out vec4 color;
 uniform int xsize;
 uniform int ysize;
 
-
-
 void main() 
 {
 	mat4 scale = mat4(	2.0/xsize, 	0.0, 		0.0, 	0.0,
