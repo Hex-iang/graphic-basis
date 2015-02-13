@@ -11,3 +11,6 @@ c. Key stroke interaction and tile movement
 d. Game Logic
 
 ## Game Control Specification 
+
+Key_Up_Arrow	=>	rotate tile orientation
+Key_Down_Arrow	=>

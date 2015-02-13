@@ -127,22 +127,33 @@ void shiftTileColor()
 bool moveTile(vec2 direction)
 {
     bool flag = true;
+    bool inFlag = true;
 
     for ( vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end() ; ++iter)
     {
         int x = int(iter->Position.x + direction.x);
         int y = int(iter->Position.y + direction.y);
 
-        if( checkTileGridCollision( x, y ) )
+// #ifdef DEBUG
+//         cout << "moveTile() - Position: " << x << ", " << y << endl;
+// #endif
+
+        if( true == checkTileGridCollision( x, y ) )
         {
-#ifdef DEBUG
-        cout << "moveTile() - [Collision detected]" << endl;
-#endif
+// #ifdef DEBUG
+//         cout << "moveTile() - [Collision detected]" << endl;
+// #endif
             flag = false;
+        }
+
+        if( !_IN_BOUND(x, y))
+        {
+            // If current tile is not in the boundary, not update its
+            inFlag = false;
         }
     }
 
-    if ( flag )
+    if ( flag && inFlag)
     {
         // Add velocity to all iteratorable item in the out vector
         tilePos += direction;
@@ -245,6 +256,7 @@ void checkFullRowsAndEliminate()
     }
 
     moveDownRows(eliminatedRows);
+    addUnsupportedTilesToDropTiles();
     genBoardVertexColorsFromBoardColors();
     updateBoard();
 }
@@ -354,9 +366,9 @@ void printDropTiles()
 void printTiles()
 {
     cout << "printTiles() - [Print Current Tile]" << endl;
-    for ( vector<Tile>::iterator iter = it->begin(); iter != it->end() ; ++iter)
+    for ( vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end() ; ++iter)
     {
-        cout << "Tile#"<< distance(it->begin(), iter) << "Position[" << iter->Position.x << "][" << iter->Position.y << "] ";
+        cout << "Tile#"<< distance(tiles.begin(), iter) << "Position[" << iter->Position.x << "][" << iter->Position.y << "] ";
         cout << "Color = " << _MATCH_COLOR(iter->Color) << endl;
     }    
 }
@@ -446,7 +458,11 @@ void printBoolBoardSizeArray(bool _array[][BOARD_HEIGHT])
 bool searchConnectToBottom(vec2 vertex)
 {
     vector<vec2> stack;
-    bool discovered[BOARD_WIDTH][BOARD_HEIGHT] = {false};
+    bool discovered[BOARD_WIDTH][BOARD_HEIGHT];
+    for (int i = 0; i < BOARD_WIDTH; ++i)
+        for (int j = 0; j < BOARD_HEIGHT; ++j)
+            discovered[i][j] = false;
+
 
     stack.push_back(vertex);
 
@@ -458,23 +474,29 @@ bool searchConnectToBottom(vec2 vertex)
         int current_y = int(current.y);
         if( !discovered[current_x][current_y] )
         {
+// #ifdef DEBUG
+//             cout << "searchConnectToBottom() - exploring node[" << current_x << "][" << current_y << "]" << endl;
+// #endif
             discovered[current_x][current_y] = true;
             if( board[current_x][current_y]){
                 if( current_y == 0)
                 {
+// #ifdef DEBUG
+//                     cout << "searchConnectToBottom() - Current component connected to bottom"<<endl;
+// #endif
                     // if we searched to the bottom
                     return true;
                 }
-                else
-                {
-                    if( _ON_BOARD(current_x + 1, current_y)) stack.push_back(vec2(current_x + 1, current_y    ));
-                    if( _ON_BOARD(current_x - 1, current_y)) stack.push_back(vec2(current_x - 1, current_y    ));
-                    if( _ON_BOARD(current_x, current_y - 1)) stack.push_back(vec2(current_x    , current_y - 1));
-                    if( _ON_BOARD(current_x, current_y + 1)) stack.push_back(vec2(current_x    , current_y + 1));
-                }
+
+                if( _ON_BOARD(current_x + 1, current_y) ) stack.push_back(vec2(current_x + 1, current_y    ));
+                if( _ON_BOARD(current_x - 1, current_y) ) stack.push_back(vec2(current_x - 1, current_y    ));
+                if( _ON_BOARD(current_x, current_y - 1) ) stack.push_back(vec2(current_x    , current_y - 1));
+                if( _ON_BOARD(current_x, current_y + 1) ) stack.push_back(vec2(current_x    , current_y + 1));
+
             }
         }
     }
+
     return false;
 }
 
@@ -483,7 +505,10 @@ vector<Tile> searchConnectedComponent(bool (&graph)[BOARD_WIDTH][BOARD_HEIGHT], 
 {
     vector<Tile> connectedTile;
     vector<vec2> stack;
-    bool discovered[BOARD_WIDTH][BOARD_HEIGHT] = {false};
+    bool discovered[BOARD_WIDTH][BOARD_HEIGHT];
+    for (int i = 0; i < BOARD_WIDTH; ++i)
+        for (int j = 0; j < BOARD_HEIGHT; ++j)
+            discovered[i][j] = false;
 
     stack.push_back(vertex);
 
@@ -530,7 +555,6 @@ void addTileToDropTiles(Tile _newDropTile)
 
             graph[x][y] = true;
             cgraph[x][y] = iter->Color;
-            cout << "addTileToDropTiles() - Color: " << _MATCH_COLOR(cgraph[x][y]) << endl;
         }
     }
     
@@ -605,9 +629,13 @@ void addUnsupportedTilesToDropTiles()
     {
         for (int col = 0; col < BOARD_WIDTH; ++col)
         {
-            if( !_COLOR4_EQUAL(boardColors[col][row], black) && !searchConnectToBottom(board[col][row]) )
+            if( !_COLOR4_EQUAL(boardColors[col][row], black) && !searchConnectToBottom(vec2(col, row)) )
             {
                 Tile unSupportedTile(vec2(col, row), boardColors[col][row]);
+#ifdef DEBUG
+                cout << "addUnsupportedTilesToDropTiles() - Add UnsupportedTiles Conponent:" << 
+                "[" << unSupportedTile.Position.x << "][" << unSupportedTile.Position.y<< "]" << endl;
+#endif
                 unSupportedTiles.push_back(unSupportedTile);
             }
         }

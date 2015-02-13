@@ -13,24 +13,6 @@ bool checkTileGridCollision( int x, int y)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-// check whether the tile has collision with the adjacent grid object
-bool checkTilesGridsCollision(vec2 newPos)
-{
-	bool flag = false;
-
-    for ( vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end() ; ++iter)
-	{
-		int x = int(iter->Position.x);
-		int y = int(iter->Position.y);
-
-		// if the tile is not black and it have collision to some other tiles
-		if ( (flag =  checkTileGridCollision(x, y) ) ) 
-			break;
-	}
-	return flag;
-}
-
-//-------------------------------------------------------------------------------------------------------------------
 // Test if the rotation condition is met
 bool testRotation(vec2 currentTilePos)
 {
