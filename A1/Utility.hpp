@@ -4,22 +4,6 @@
 // =============================================================================================
 // Utility functions
 
-//-------------------------------------------------------------------------------------------------------------------
-// check whether a tile is outside the bound
-bool checkInBound(vec2 newPos)
-{
-	bool flag = true;
-	for (int i = 0; i < 4; ++i)
-	{
-		GLfloat x = newPos.x + tile[i].x;
-		GLfloat y = newPos.y + tile[i].y;
-
-		if (!_IN_BOUND(x, y))
-			flag = false;
-	}
-
-	return flag;
-}
 
 //-------------------------------------------------------------------------------------------------------------------
 // Check if the a tile has collision with board objects
@@ -34,10 +18,10 @@ bool checkTilesGridsCollision(vec2 newPos)
 {
 	bool flag = false;
 
-	for (int i = 0; i < 4; ++i)
+    for ( vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end() ; ++iter)
 	{
-		int x = int(newPos.x + tile[i].x);
-		int y = int(newPos.y + tile[i].y);
+		int x = int(iter->Position.x);
+		int y = int(iter->Position.y);
 
 		// if the tile is not black and it have collision to some other tiles
 		if ( (flag =  checkTileGridCollision(x, y) ) ) 
@@ -78,13 +62,6 @@ void genColorVertexFromTileColor(color4 * pPointColor, color4 _color)
 }
 
 
-void genColorVertexsFromTileColors(color4 * pPointsColors)
-{
-	for (int i = 0; i < 4; i++){
-		genColorVertexFromTileColor( &pPointsColors[i*6], tileColors[i]);
-	}
-}
-
 //-------------------------------------------------------------------------------------------------------------------
 void genBoardVertexColorFromBoardColor(int x ,int y, color4 _color)
 {
@@ -122,10 +99,7 @@ const TileBound getTileBound( vec2 * pTile)
 
 //-------------------------------------------------------------------------------------------------------------------
 // Fill Tile with random colors
-void fillTileWithRandomColor()
+color4 genRandomColor()
 {
-	for (int i = 0; i < 4; ++i)
-	{
-		tileColors[i] = tileColorsSet[rand() % TILE_COLOR_NUM];
-	}
+	return tileColorsSet[rand() % TILE_COLOR_NUM];
 }

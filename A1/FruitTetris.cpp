@@ -258,17 +258,17 @@ void processDisplay()
                 if ( false == moveTile(vec2(0.0, velocity )) )
                 {
 
-                    setTile();
+                    setTiles();
                     checkFullRowsAndEliminate();
                     checkFruitMatchAndEliminate();
 
                     if( dropTiles.empty()){
                         newTile();
-                        updateTile();
+                        updateTiles();
                     }
                     else{
-                        unsetDropTiles();
-                        updateDropTile();
+                        unsetTiles();
+                        updateDropTiles();
                     }
 
                 }
@@ -283,11 +283,11 @@ void processDisplay()
 
                     if( dropTiles.empty()){
                         newTile();
-                        updateTile();
+                        updateTiles();
                     }
                     else{
-                        unsetDropTiles();
-                        updateDropTile();
+                        unsetTiles();
+                        updateDropTiles();
                     }
                 }
             }
@@ -297,8 +297,15 @@ void processDisplay()
     glBindVertexArray(vaoIDs[1]); // Bind the VAO representing the grid cells (to be drawn first)
     glDrawArrays(GL_TRIANGLES, 0, 1200); // Draw the board (10*20*2 = 400 triangles)
 
+
+    // Calculating the tiles/dropTiles number 
+    int tileSize = tiles.size();
+    for( vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end(); it++ ){
+        tileSize += it->size();
+    }
+
     glBindVertexArray(vaoIDs[2]); // Bind the VAO representing the current tile (to be drawn on top of the board)
-    glDrawArrays(GL_TRIANGLES, 0, 24 + max(int(6*dropTiles.size() - 24), 0)); // Draw the current tile (8 triangles)
+    glDrawArrays(GL_TRIANGLES, 0, tileSize*6); // Draw the current tile (8 triangles)
 
     glBindVertexArray(vaoIDs[0]); // Bind the VAO representing the grid lines (to be drawn on top of everything else)
     glDrawArrays(GL_LINES, 0, 64); // Draw the grid lines (21+11 = 32 lines)
@@ -346,16 +353,16 @@ void processSpecialKey(int key, int x, int y)
         {
             if (displacement.y < 0)
             {
-                setTile();
+                setTiles();
                 checkFullRowsAndEliminate();
                 checkFruitMatchAndEliminate();
 
                 if( dropTiles.empty())
                     newTile();
                 else
-                    unsetDropTiles();
+                    unsetTiles();
 
-                updateTile();
+                updateTiles();
 
             }
         }

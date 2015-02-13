@@ -37,15 +37,17 @@ using namespace std;
 // #define _IN_BOUND(x, y)	 (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 #define _IN_BOUND(x, y)	 (y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 
-#define _color4_equal(a,b) (a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w) 
+#define _ON_BOARD(x, y)  (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 
-#define _MATCH_COLOR(color) ( _color4_equal(color, black) 	? "black" 	: \
-							( _color4_equal(color, orange)	? "orange" 	: \
-							( _color4_equal(color, red)		? "red" 	: \
-							( _color4_equal(color, green)	? "green" 	: \
-							( _color4_equal(color, purple)	? "purple"	: \
-							( _color4_equal(color, yellow)	? "yellow"	: \
-							( _color4_equal(color, white)	? "white"	: "Unknown color" \
+#define _COLOR4_EQUAL(a,b) (a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w) 
+
+#define _MATCH_COLOR(color) ( _COLOR4_EQUAL(color, black) 	? "black" 	: \
+							( _COLOR4_EQUAL(color, orange)	? "orange" 	: \
+							( _COLOR4_EQUAL(color, red)		? "red" 	: \
+							( _COLOR4_EQUAL(color, green)	? "green" 	: \
+							( _COLOR4_EQUAL(color, purple)	? "purple"	: \
+							( _COLOR4_EQUAL(color, yellow)	? "yellow"	: \
+							( _COLOR4_EQUAL(color, white)	? "white"	: "Unknown color" \
 								)))))))
 
 
@@ -95,7 +97,7 @@ public:
 	Tile(const Tile & _tile ) { this->Position = _tile.Position; this->Color = _tile.Color; }
 
 	bool operator== (const Tile &other) const {
-		return _color4_equal(this->Color, other.Color) && 
+		return _COLOR4_EQUAL(this->Color, other.Color) && 
 				( this->Position.x == other.Position.x && this->Position.y == other.Position.y );
   	}
 
@@ -107,9 +109,7 @@ public:
 	color4 Color;
 };
 
-vec2 tile[4];
-color4 tileColors[4];
-
+vector<Tile> tiles;
 vector< vector<Tile> > dropTiles;
 
 // An array of 4 2d vectors representing displacement from a 'center' piece of the tile, on the grid
@@ -196,9 +196,8 @@ void genBoardVertexColorFromBoardColor(int x ,int y, color4 _color);
 void genBoardVertexColorsFromBoardColors();
 
 void genColorVertexFromTileColor(color4 * pPointColor, color4 _color);
-void genColorVertexsFromTileColors(color4 * pPointsColors);
 
-void fillTileWithRandomColor();
+color4 genRandomColor();
 const TileBound getTileBound( vec2 * pTile);
 
 bool checkInBound(vec2 newPos);
@@ -209,12 +208,11 @@ bool testRotation(vec2 currentTilePos);
 // ===========================================================================================
 // Function Declaration
 void updateBoard();
-void updateTile();
+void updateTiles();
 void newTile();
 bool rotateTile();
 void shiftTileColor();
-void unsetTile();
-bool checkTileSupport();
+void unsetTiles();
 
 void moveDownRow(int startRow);
 void moveDownRows(bool eliminatedRows[]);
@@ -248,11 +246,12 @@ void cleanUpEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 
-bool checkTileSupport();
+void addUnsupportedTilesToDropTiles();
 bool checkFruitMatchAndEliminate();
 void checkFullRowsAndEliminate();
 bool fallTiles();
-void updateDropTile();
-void setDropTile(vector<Tile> &_tile);
+void updateDropTiles();
+void setDropTiles(vector<Tile> &_tile);
 bool searchConnectToBottom(vec2 vertex);
 void addTileToDropTiles(Tile _newDropTile);
+void addTilesToDropTiles(vector<Tile> _newDropTiles);

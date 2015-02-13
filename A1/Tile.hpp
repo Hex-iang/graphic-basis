@@ -6,6 +6,7 @@
 // Called at the start of play and every time a tile is placed
 void newTile()
 {
+    tiles.clear();
     // First generate a random tile
     if( tryStopGame() ) return ;
 
@@ -15,17 +16,9 @@ void newTile()
 
     rotateType = rand() % ( allRotationShapeSize[tileType] );
 
-// #ifdef DEBUG
-//     cout << "newTile() - [Generate Randomness] TileType: " << tileType << ", RotateType: " << rotateType 
-//         << ", RotationShape: " << allRotationShapeSize[tileType] << endl;
-// #endif
-
     // Update the geometry VBO of current tile
-    for (int i = 0; i < 4; i++){
-        tile[i] = pAllRotationShape[rotateType][i];
-    }
 
-    TileBound tileBound = getTileBound(tile);
+    TileBound tileBound = getTileBound(pAllRotationShape[rotateType]);
     int coverage = ( RIGHT_BOUND - int(tileBound.right) + int(tileBound.left) + 1);
 
     int hpos = rand() % coverage - int(tileBound.left);
@@ -33,11 +26,14 @@ void newTile()
     tilePos = vec2(hpos , vpos);
     // Put the tile at the top of the board
     
-    // You should randomlize the color in structure tileColors
-    fillTileWithRandomColor();
+    for ( int i = 0; i < 4; i++)
+    {
+        Tile tmpTile( pAllRotationShape[rotateType][i] + tilePos, genRandomColor());
+        tiles.push_back(tmpTile);
+    }
 
     // Call update function to draw the tile with its position as well as its color
-    updateTile(); 
+    updateTiles(); 
 
     glBindVertexArray(0);
 }
@@ -46,7 +42,7 @@ void newTile()
 // Rotate the current tile 
 bool rotateTile()
 {
-    if(!dropTiles.empty() || ifPause || ifGameStop) return false;
+    if(!dropTiles.empty() || ifPause || ifGameStop || tiles.empty()) return false;
 
     vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
             ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
@@ -84,7 +80,7 @@ bool rotateTile()
 #ifdef DEBUG
             cout << "rotateTile() [Failure Rotation]"<< endl;
 #endif
-            updateTile();
+            updateTiles();
             return false;
         }
     }
@@ -93,16 +89,19 @@ bool rotateTile()
 
     rotateType = (rotateType + 1) % allRotationShapeSize[tileType];
     // Update the geometry VBO of current tile
-    for (int i = 0; i < 4; i++){
-        tile[i] = pAllRotationShape[rotateType][i];
-    }
-
+    for ( int i = 0; i < 4; i++){
+// #ifdef DEBUG
+//         cout << "rotateTile() [Rotating tiles] position before: " << tiles[i].Position.x << ", "<< tiles[i].Position.y << endl;
+// #endif
+        tiles[i].Position = ( tilePos + pAllRotationShape[rotateType][i]);
 
 // #ifdef DEBUG
-//     cout << "rotateTile() - [Change Rotation] TileType: " << tileType << ", RotateType: " << rotateType 
-//         << ", RotationShape: " << allRotationShapeSize[tileType] << endl;
+//         cout << "rotateTile() [Rotating tiles] position after: " << tiles[i].Position.x << ", "<< tiles[i].Position.y << endl;
 // #endif
-    updateTile();
+
+    }
+
+    updateTiles();
     return true;
 }
 
@@ -110,15 +109,15 @@ bool rotateTile()
 // shift Teris color 
 void shiftTileColor()
 {
-    if (!dropTiles.empty() && !ifGameStop && !ifPause) return;
+    if (!dropTiles.empty() && !ifGameStop && !ifPause && tiles.empty() ) return;
 
-    color4 oldColor = tileColors[3];
+    color4 oldColor = tiles[3].Color;
 
-    tileColors[3] = tileColors[2];
-    tileColors[2] = tileColors[1];
-    tileColors[1] = tileColors[0];
-    tileColors[0] = oldColor;
-    updateTile();
+    tiles[3].Color = tiles[2].Color;
+    tiles[2].Color = tiles[1].Color;
+    tiles[1].Color = tiles[0].Color;
+    tiles[0].Color = oldColor;
+    updateTiles();
 }
 
 
@@ -128,28 +127,32 @@ void shiftTileColor()
 bool moveTile(vec2 direction)
 {
     bool flag = true;
-    // Bound tileBound = getTileBound(tile);
-    // vec2 futureTilePos = tilePos + direction;
-    if( checkInBound(tilePos + direction) )
+
+    for ( vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end() ; ++iter)
     {
-        if ( checkTilesGridsCollision(tilePos + direction) )
+        int x = int(iter->Position.x + direction.x);
+        int y = int(iter->Position.y + direction.y);
+
+        if( checkTileGridCollision( x, y ) )
         {
+#ifdef DEBUG
+        cout << "moveTile() - [Collision detected]" << endl;
+#endif
             flag = false;
         }
-        else
-        {
-            // If there is no collision in the future position
-            tilePos += direction;
-        }
-    }
-    else{
-        flag = false;
     }
 
-    if( flag ) updateTile();
+    if ( flag )
+    {
+        // Add velocity to all iteratorable item in the out vector
+        tilePos += direction;
+        for ( vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end() ; ++iter){
+            iter->Position += direction;
+        }
+        updateTiles();
+    }
 
     return flag;
-
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -217,12 +220,6 @@ bool checkFullRow(int row)
     }
 
 #ifdef DEBUG
-    // cout << "checkFullRow() - [Row Status] : " << endl;
-    // for (int i = 0; i < BOARD_WIDTH; ++i)
-    // {
-    //     cout << "[" << (board[i][row]? 'T' : 'F') << "],"; 
-    // }
-    // cout << endl;
     if ( isRowFull )
     {
         cout << "checkFullRow() - [A full row detected] : Row[" << row << "]" << endl;
@@ -264,9 +261,9 @@ bool matchFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
         for (int i = LEFT_BOUND; i < RIGHT_BOUND - 1; ++i)
         {
         
-            if( _color4_equal(boardColors[i + 0][y], boardColors[i + 1][y]) && 
-                _color4_equal(boardColors[i + 1][y], boardColors[i + 2][y]) &&
-                !_color4_equal(boardColors[i][y], black)                    )
+            if( _COLOR4_EQUAL(boardColors[i + 0][y], boardColors[i + 1][y]) && 
+                _COLOR4_EQUAL(boardColors[i + 1][y], boardColors[i + 2][y]) &&
+                !_COLOR4_EQUAL(boardColors[i][y], black)                    )
             {
 
 #ifdef DEBUG 
@@ -288,9 +285,9 @@ bool matchFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
     {   
         for (int i = DOWN_BOUND; i < UP_BOUND - 1; ++i)
         {       
-            if( _color4_equal(boardColors[x][i + 0], boardColors[x][i + 1]) && 
-                _color4_equal(boardColors[x][i + 1], boardColors[x][i + 2]) &&
-                !_color4_equal(boardColors[x][i], black)                )
+            if( _COLOR4_EQUAL(boardColors[x][i + 0], boardColors[x][i + 1]) && 
+                _COLOR4_EQUAL(boardColors[x][i + 1], boardColors[x][i + 2]) &&
+                !_COLOR4_EQUAL(boardColors[x][i], black)                )
             {
 
 #ifdef DEBUG 
@@ -354,9 +351,19 @@ void printDropTiles()
     cout << endl;
 }
 
+void printTiles()
+{
+    cout << "printTiles() - [Print Current Tile]" << endl;
+    for ( vector<Tile>::iterator iter = it->begin(); iter != it->end() ; ++iter)
+    {
+        cout << "Tile#"<< distance(it->begin(), iter) << "Position[" << iter->Position.x << "][" << iter->Position.y << "] ";
+        cout << "Color = " << _MATCH_COLOR(iter->Color) << endl;
+    }    
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 // Move donw a column of tiles that have fruit matching tiles beneath
+// void addUnsupportedTilesToDropList(bool eliminatedFruitTiles[][BOARD_HEIGHT])
 void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
 {
     for (int col = 0; col < BOARD_WIDTH; ++col)
@@ -397,7 +404,7 @@ void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
         }
     }
 
-    updateDropTile();
+    updateDropTiles();
 
 }
 
@@ -449,22 +456,29 @@ bool searchConnectToBottom(vec2 vertex)
         stack.pop_back();
         int current_x = int(current.x);
         int current_y = int(current.y);
-        if( board[current_x][current_y] && !discovered[current_x][current_y] )
+        if( !discovered[current_x][current_y] )
         {
             discovered[current_x][current_y] = true;
-            if( current_y == 0)
-                return true;
-            else{
-                stack.push_back(vec2(current_x + 1, current_y    ));
-                stack.push_back(vec2(current_x - 1, current_y    ));
-                stack.push_back(vec2(current_x    , current_y - 1));
-                stack.push_back(vec2(current_x    , current_y + 1));
+            if( board[current_x][current_y]){
+                if( current_y == 0)
+                {
+                    // if we searched to the bottom
+                    return true;
+                }
+                else
+                {
+                    if( _ON_BOARD(current_x + 1, current_y)) stack.push_back(vec2(current_x + 1, current_y    ));
+                    if( _ON_BOARD(current_x - 1, current_y)) stack.push_back(vec2(current_x - 1, current_y    ));
+                    if( _ON_BOARD(current_x, current_y - 1)) stack.push_back(vec2(current_x    , current_y - 1));
+                    if( _ON_BOARD(current_x, current_y + 1)) stack.push_back(vec2(current_x    , current_y + 1));
+                }
             }
         }
     }
     return false;
 }
 
+// Search the connected component in the graph and drop down it if not connected
 vector<Tile> searchConnectedComponent(bool (&graph)[BOARD_WIDTH][BOARD_HEIGHT], color4 (&cgraph)[BOARD_WIDTH][BOARD_HEIGHT], vec2 vertex )
 {
     vector<Tile> connectedTile;
@@ -479,21 +493,25 @@ vector<Tile> searchConnectedComponent(bool (&graph)[BOARD_WIDTH][BOARD_HEIGHT], 
         stack.pop_back();
         int current_x = int(current.x);
         int current_y = int(current.y);
-        if( graph[current_x][current_y] && !discovered[current_x][current_y] )
+        if( !discovered[current_x][current_y] )
         {
             discovered[current_x][current_y] = true;
-            graph[current_x][current_y] = false;
-            connectedTile.push_back(Tile(current, cgraph[current_x][current_y]));
+            if( graph[current_x][current_y] )
+            {
+                graph[current_x][current_y] = false;
+                connectedTile.push_back(Tile(current, cgraph[current_x][current_y]));
 
-            stack.push_back(vec2(current_x + 1, current_y    ));
-            stack.push_back(vec2(current_x - 1, current_y    ));
-            stack.push_back(vec2(current_x    , current_y - 1));
-            stack.push_back(vec2(current_x    , current_y + 1));
+                if( _ON_BOARD(current_x + 1, current_y)) stack.push_back(vec2(current_x + 1, current_y    ));
+                if( _ON_BOARD(current_x - 1, current_y)) stack.push_back(vec2(current_x - 1, current_y    ));
+                if( _ON_BOARD(current_x, current_y - 1)) stack.push_back(vec2(current_x    , current_y - 1));
+                if( _ON_BOARD(current_x, current_y + 1)) stack.push_back(vec2(current_x    , current_y + 1));
+            }
         }
     }
     return connectedTile;
 }
 
+// Add one tile to the drop tiles and update the dropping tile set
 void addTileToDropTiles(Tile _newDropTile)
 {
     bool graph[BOARD_WIDTH][BOARD_HEIGHT] = {false};
@@ -534,50 +552,99 @@ void addTileToDropTiles(Tile _newDropTile)
     }
 }
 
-bool checkTileSupport()
+void addTilesToDropTiles(vector<Tile> _newDropTiles)
 {
-    bool flag[4] = {false};
+    bool graph[BOARD_WIDTH][BOARD_HEIGHT] = {false};
+    color4 cgraph[BOARD_WIDTH][BOARD_HEIGHT];
+    for (int i = 0; i < BOARD_WIDTH; ++i)
+        for (int j = 0; j < BOARD_HEIGHT; ++j)
+            cgraph[i][j] = black;
 
-    for (int i = 0; i < 4; ++i)
+    // Setup the graph with current dropping tiles
+    for (vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end(); ++it)
     {
-        int y = int(tilePos.y + tile[i].y);
-        int x = int(tilePos.x + tile[i].x);
-        if ( !_color4_equal(boardColors[x][y], black) )
+        for (vector<Tile>::iterator iter = it->begin(); iter < it->end(); ++iter)
         {
+            int x = int(iter->Position.x);
+            int y = int(iter->Position.y);
 
-            if( searchConnectToBottom(vec2(x, y)) ){
-                flag[i] = true; 
-            }
-            else
-            {       
-                Tile item(vec2(x, y), boardColors[x][y]);
-                bool NotExisted = true;
-                for (vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end(); ++it)
-                {
-                    for (vector<Tile>::iterator iter = it->begin(); iter != it->end(); ++iter)
-                    {
-                        if ( item == (*iter) )
-                        {
-                            cout << "checkTileSupport() - DropTile matching Got" << endl;
-                            NotExisted = false;
-                        }    
-                    }
-                }
-
-                if (NotExisted){
-#ifdef DEBUG
-                    cout << "checkTileSupport() -[Add tile to dropTiles] tile[" << x << "][" << y << "], Board-Color:"
-                     << _MATCH_COLOR(boardColors[x][y]) << ", Tile-Color: " << _MATCH_COLOR(tileColors[i]) << endl;
-#endif       
-                    addTileToDropTiles(item);
-                }
-            }
-
+            graph[x][y] = true;
+            cgraph[x][y] = iter->Color;
+            cout << "addTileToDropTiles() - Color: " << _MATCH_COLOR(cgraph[x][y]) << endl;
         }
     }
+    
+    dropTiles.clear();
+    // Add a list of tiles to Drop Tiles
+    for (vector<Tile>::iterator iter = _newDropTiles.begin(); iter != _newDropTiles.end(); ++iter)
+    {
+        int new_x = int(iter->Position.x);
+        int new_y = int(iter->Position.y);
+        graph[new_x][new_y] = true;
+        cgraph[new_x][new_y] = iter->Color;
+    }
+
+    for (int row = 0; row < BOARD_HEIGHT; ++row)
+    {
+        for (int col = 0; col < BOARD_WIDTH; ++col)
+        {
+            if( graph[col][row]){
+                vector<Tile> tileSet = searchConnectedComponent(graph, cgraph, vec2(col, row) );
+                dropTiles.push_back(tileSet);
+            }
+        }
+    }
+}
+
+// Make all non-supportted tiles falling
+void addUnsupportedTilesToDropTiles()
+{
+    vector<Tile> unSupportedTiles;
+
+    for (int row = 0; row < BOARD_HEIGHT; ++row)
+    {
+        for (int col = 0; col < BOARD_WIDTH; ++col)
+        {
+            if( !_COLOR4_EQUAL(boardColors[col][row], black) && !searchConnectToBottom(board[col][row]) )
+            {
+                Tile unSupportedTile(vec2(col, row), boardColors[col][row]);
+                unSupportedTiles.push_back(unSupportedTile);
+            }
+        }
+    }
+
+    for (vector<Tile>::iterator iter = unSupportedTiles.begin(); iter != unSupportedTiles.end(); ++iter) 
+    {
+        int y = int(iter->Position.y);
+        int x = int(iter->Position.x);
+
+        Tile item(vec2(x, y), boardColors[x][y]);
+        bool NotExisted = true;
+
+        for (vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end(); ++it)
+        {
+            for (vector<Tile>::iterator iter = it->begin(); iter != it->end(); ++iter)
+            {
+                if ( item == (*iter) )
+                {
+                    cout << "addUnsupportedTilesToDropTiles() - DropTile matching Got" << endl;
+                    NotExisted = false;
+                }    
+            }
+        }
+
+        if (NotExisted){
+#ifdef DEBUG
+            cout << "addUnsupportedTilesToDropTiles() -[Add tile to dropTiles] tile[" << x << "][" << y << "], Board-Color:"
+             << _MATCH_COLOR(boardColors[x][y]) << ", Tile-Color: " << _MATCH_COLOR(iter->Color) << endl;
+#endif       
+            addTilesToDropTiles(unSupportedTiles);
+        }
+
+    }
     printDropTiles();
-    updateDropTile();
-    return flag[0] || flag[1] || flag[2] || flag[3];
+    updateDropTiles();
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -598,7 +665,7 @@ bool checkFruitMatchAndEliminate()
         eliminateFruitTiles(eliminatedFruitTiles);
         moveDownFruitTilesCols(eliminatedFruitTiles);
 
-        checkTileSupport();
+        addUnsupportedTilesToDropTiles();
 
         genBoardVertexColorsFromBoardColors();
         updateBoard();
@@ -627,7 +694,7 @@ bool fallTiles(vec2 direction)
 
         if ( !inFlag )
         {
-            setDropTile(*it);
+            setDropTiles(*it);
             it = dropTiles.erase(it);
 
             genBoardVertexColorsFromBoardColors();
@@ -639,19 +706,19 @@ bool fallTiles(vec2 direction)
             for ( vector<Tile>::iterator iter = it->begin(); iter != it->end() ; ++iter)
                 iter->Position += direction;
             ++it;
-            updateDropTile();
+            updateDropTiles();
 
         }
     }
 
-    // updateDropTile();
+    // updateDropTiles();
 
     return dropTiles.empty();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 // Places the current tile - update the board vertex colour VBO and the array maintaining occupied cells
-void setDropTile(vector<Tile> &_tile)
+void setDropTiles(vector<Tile> &_tile)
 {
     // First check if the collision between tile and grid is detected
     // If a collision is detected
@@ -660,10 +727,10 @@ void setDropTile(vector<Tile> &_tile)
         int x = int(iter->Position.x);
         int y = int(iter->Position.y);
 
-        if ( !_color4_equal(iter->Color, black) ){
+        if ( !_COLOR4_EQUAL(iter->Color, black) ){
 
     #ifdef DEBUG
-        cout << "setDropTile() - [Setting Tile] x = " << x << ", y = " << y << ", Color:"<<  _MATCH_COLOR(iter->Color) << endl;
+        cout << "setDropTiles() - [Setting Tile] x = " << x << ", y = " << y << ", Color:"<<  _MATCH_COLOR(iter->Color) << endl;
     #endif
             board[x][y] = true;
             boardColors[x][y] = iter->Color;
@@ -673,33 +740,35 @@ void setDropTile(vector<Tile> &_tile)
 }
 
 
-void setTile()
+void setTiles()
 {
     // First check if the collision between tile and grid is detected
     // If a collision is detected
-    for (int i = 0; i < 4; ++i)
+    for (vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end(); ++iter) 
     {
-        int x = int(tilePos.x + tile[i].x);
-        int y = int(tilePos.y + tile[i].y);
+        int x = int(iter->Position.x);
+        int y = int(iter->Position.y);
 
-        if ( !_color4_equal(tileColors[i], black) ){
+        if ( !_COLOR4_EQUAL(iter->Color, black) ){
 
 #ifdef DEBUG
-        cout << "setTile() - [Setting Tile] x = " << x << ", y = " << y 
-        << ", Color: " << _MATCH_COLOR(tileColors[i])<< endl;
+        cout << "setTiles() - [Setting Tile] x = " << x << ", y = " << y 
+        << ", Color: " << _MATCH_COLOR(iter->Color)<< endl;
 #endif
             board[x][y] = true;
-            boardColors[x][y] = tileColors[i];
+            boardColors[x][y] = iter->Color;
             // genBoardVertexColorFromBoardColor(x, y, boardColors[x][y]);
         }
     }
+    // After the tile is setted, clear it up
+    tiles.clear();
 
     printBoolBoardSizeArray(board);
     genBoardVertexColorsFromBoardColors();
     updateBoard();
 }
 
-void unsetDropTiles()
+void unsetTiles()
 {
     for (vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end(); ++it)
     {
@@ -709,7 +778,7 @@ void unsetDropTiles()
             int y = int(iter->Position.y);
 
 #ifdef DEBUG
-            cout << "unsetDropTiles() - [Unsetting Tile] x = " << x << ", y = " << y 
+            cout << "unsetDropTiless() - [Unsetting Tile] x = " << x << ", y = " << y 
             << ", Color: " << _MATCH_COLOR(iter->Color)<< endl;
 #endif
             board[x][y] = false;
@@ -734,7 +803,7 @@ void cleanVBOTileBuffer()
     glBufferSubData(GL_ARRAY_BUFFER, 0, BOARD_WIDTH*BOARD_HEIGHT*3*2*sizeof(point4), blank);
 }
 
-void updateDropTile()
+void updateDropTiles()
 {
     // Clear the buffer object before update it 
     // cleanVBOTileBuffer();
@@ -775,16 +844,16 @@ void updateDropTile()
     glBindVertexArray(0); 
 }
 
-void updateTile()
+void updateTiles()
 {
     // First Clean up buffer
     // cleanVBOTileBuffer();
-    // For each of the 4 'cells' of the tile,
-    for (int i = 0; i < 4; i++) 
+    int idx = 0;
+    for (vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end(); ++iter) 
     {
         // Calculate the grid coordinates of the cell
-        GLfloat x = tilePos.x + tile[i].x; 
-        GLfloat y = tilePos.y + tile[i].y;
+        GLfloat x = iter->Position.x; 
+        GLfloat y = iter->Position.y;
 
 
         // Contraints that make the tile outside the UP_BOUND of board invisible
@@ -802,14 +871,15 @@ void updateTile()
         // Put new data in the VBO
         color4 pointsColors[6];
 
-        genColorVertexFromTileColor(pointsColors, tileColors[i]);
+        genColorVertexFromTileColor(pointsColors, iter->Color);
 
         glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
-        glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(color4), 6*sizeof(color4), pointsColors);
+        glBufferSubData(GL_ARRAY_BUFFER, idx*6*sizeof(color4), 6*sizeof(color4), pointsColors);
 
 
         glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]); 
-        glBufferSubData(GL_ARRAY_BUFFER, i*6*sizeof(point4), 6*sizeof(point4), newPoints);
+        glBufferSubData(GL_ARRAY_BUFFER, idx*6*sizeof(point4), 6*sizeof(point4), newPoints);
+        idx++;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
