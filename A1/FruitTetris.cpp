@@ -248,7 +248,7 @@ void processDisplay()
     deltaTime += (currentFrame - lastFrame);
     lastFrame = currentFrame;
 
-    if (deltaTime > 0.4 && !ifGameStop)
+    if (deltaTime > 0.4 && !ifGameStop && dropTiles.empty())
     {
         deltaTime = 0;
 
@@ -273,24 +273,29 @@ void processDisplay()
 
                 }
             }
-            else
+        }
+    }
+    else if(deltaTime > 0.1 && !ifGameStop && !dropTiles.empty())
+    {
+        deltaTime = 0;
+        if( !ifPause && !ifGameStop)
+        {
+            if( fallTiles( vec2(0.0, velocity) ))
             {
-                if( fallTiles( vec2(0.0, velocity) ))
-                {
 
-                    checkFullRowsAndEliminate();
-                    checkFruitMatchAndEliminate(); 
+                checkFullRowsAndEliminate();
+                checkFruitMatchAndEliminate(); 
 
-                    if( dropTiles.empty()){
-                        newTile();
-                        updateTiles();
-                    }
-                    else{
-                        unsetTiles();
-                        updateDropTiles();
-                    }
+                if( dropTiles.empty()){
+                    newTile();
+                    updateTiles();
+                }
+                else{
+                    unsetTiles();
+                    updateDropTiles();
                 }
             }
+            
         }
     }
 
