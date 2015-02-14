@@ -118,10 +118,27 @@ vec2 tilePos = vec2(5, 19);
 int tileType 		= TILE_TYPE_L;
 int rotateType 		= 0;
 
+// Option for compiling 2D version game or 3D version game
+#define _3DGAME
+
+#ifdef _3DGAME
+// in 3d game, there will be 12 triangles per cube
+const int TRIANGLE_VERTEX_NUM 	= 12;
+const int TILE_VERTEX_NUM 		= 36;
+const int QUAD_VERTEX_NUM 		= 6;
+const int GRID_LINE_VERTEX_NUM	= 590;
+#else
+// in 2d game, there will be 2 triangles
+const int TRIANGLE_VERTEX_NUM 	= 2;
+const int TILE_VERTEX_NUM 		= 6;
+const int GRID_LINE_NUM 		= 32;
+const int GRID_LINE_VERTEX_NUM	= 64;
+#endif
+
 //board[x][y] represents whether the cell (x,y) is occupied
 bool board[BOARD_WIDTH][BOARD_HEIGHT];
 color4 boardColors[BOARD_WIDTH][BOARD_HEIGHT];
-color4 boardVertexColors[BOARD_WIDTH * BOARD_HEIGHT * 3 * 2];
+color4 boardVertexColors[BOARD_WIDTH * BOARD_HEIGHT * TILE_VERTEX_NUM];
 
 // location of vertex attributes in the shader program
 GLuint vPosition;
@@ -187,7 +204,8 @@ vec2 allRotationsIshape[4][4] =
 //-------------------------------------------------------------------------------------------------------------------
 struct TileBound{
 	GLfloat left, right, up, down;
-	TileBound(int _left, int _right, int _up, int _down):left(_left), right(_right), up(_up), down(_down){}
+	TileBound(int _left, int _right, int _up, int _down):
+		left(_left), right(_right), up(_up), down(_down){}
 };
 
 // ===========================================================================================
@@ -222,6 +240,7 @@ void setTile();
 bool moveTile(vec2 direction);
 void moveDownTileToEnd();
 
+void quad( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4);
 void initGrid();
 void initBoard();
 void initCurrentTile();

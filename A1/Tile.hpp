@@ -819,16 +819,70 @@ void unsetTiles()
     updateBoard();
 }
 
-void cleanVBOTileBuffer()
-{
-    // Clean up Color and Position buffer
-    color4 blank[BOARD_WIDTH*BOARD_HEIGHT*3*2];
-    for (int i = 0; i < BOARD_WIDTH*BOARD_HEIGHT*3*2; ++i) blank[i] = black;
+// 3D DISPLAY FUNCTION 
 
-    glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, BOARD_WIDTH*BOARD_HEIGHT*3*2*sizeof(color4), blank);
-    glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, BOARD_WIDTH*BOARD_HEIGHT*3*2*sizeof(point4), blank);
+
+void updateTiles()
+{
+
+    int idx = 0;
+    for (vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end(); ++iter) 
+    {
+        // Calculate the grid coordinates of the cell
+        GLfloat x = iter->Position.x; 
+        GLfloat y = iter->Position.y;
+        point4 newPoints[TILE_VERTEX_NUM];
+
+
+        // Contraints that make the tile outside the UP_BOUND of board invisible
+        // ==============================================================================
+        point4 p1 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0),  0.4, 1); 
+        point4 p2 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0),  0.4, 1);
+        point4 p3 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0),  0.4, 1);
+        point4 p4 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0),  0.4, 1);
+
+#ifdef _3DGAME 
+        point4 p5 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0), 33.4, 1);
+        point4 p6 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0), 33.4, 1);
+        point4 p7 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0), 33.4, 1);
+        point4 p8 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0), 33.4, 1);
+
+        // Two points are used by two triangles each
+//             point4 newPoints[TILE_VERTEX_NUM] = 
+//                                    {p1, p2, p3, p2, p3, p4,
+//                                     p1, p2, p6, p1, p5, p6,
+//                                     p1, p3, p5, p3, p5, p7,
+//                                     p2, p4, p6, p4, p6, p8,
+//                                     p3, p4, p7, p4, p7, p8,
+//                                     p5, p6, p8, p5, p7, p8}; 
+
+        quad( &newPoints[ 0*QUAD_VERTEX_NUM], p1, p2, p3, p4);
+        quad( &newPoints[ 1*QUAD_VERTEX_NUM], p1, p2, p6, p5);
+        quad( &newPoints[ 2*QUAD_VERTEX_NUM], p1, p5, p8, p4);
+        quad( &newPoints[ 3*QUAD_VERTEX_NUM], p2, p6, p7, p3);
+        quad( &newPoints[ 4*QUAD_VERTEX_NUM], p3, p4, p8, p7);
+        quad( &newPoints[ 5*QUAD_VERTEX_NUM], p5, p6, p7, p8);
+#else
+        // point4 newPoints[TILE_VERTEX_NUM] = {p1, p2, p3, p2, p3, p4};
+        quad( newPoints, p1, p2, p3, p4);
+#endif
+
+        // Put new data in the VBO
+        color4 pointsColors[TILE_VERTEX_NUM];
+
+        genColorVertexFromTileColor(pointsColors, iter->Color);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
+        glBufferSubData(GL_ARRAY_BUFFER, idx*TILE_VERTEX_NUM*sizeof(color4), TILE_VERTEX_NUM*sizeof(color4), pointsColors);
+
+
+        glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]); 
+        glBufferSubData(GL_ARRAY_BUFFER, idx*TILE_VERTEX_NUM*sizeof(point4), TILE_VERTEX_NUM*sizeof(point4), newPoints);
+        idx++;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
 
 void updateDropTiles()
@@ -843,26 +897,52 @@ void updateDropTiles()
         {
             GLfloat x = iter->Position.x; 
             GLfloat y = iter->Position.y;
+            point4 newPoints[TILE_VERTEX_NUM];
             // Contraints that make the tile outside the UP_BOUND of board invisible
             // ==============================================================================
-            point4 p1 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0), .4, 1); 
-            point4 p2 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0), .4, 1);
-            point4 p3 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0), .4, 1);
-            point4 p4 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0), .4, 1);
+            point4 p1 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0),  0.4, 1); 
+            point4 p2 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0),  0.4, 1);
+            point4 p3 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0),  0.4, 1);
+            point4 p4 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0),  0.4, 1);
+
+#ifdef _3DGAME 
+            point4 p5 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0), 33.4, 1);
+            point4 p6 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0), 33.4, 1);
+            point4 p7 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0), 33.4, 1);
+            point4 p8 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0), 33.4, 1);
 
             // Two points are used by two triangles each
-            point4 newPoints[6] = {p1, p2, p3, p2, p3, p4}; 
+//             point4 newPoints[TILE_VERTEX_NUM] = 
+//                                    {p1, p2, p3, p2, p3, p4,
+//                                     p1, p2, p6, p1, p5, p6,
+//                                     p1, p3, p5, p3, p5, p7,
+//                                     p2, p4, p6, p4, p6, p8,
+//                                     p3, p4, p7, p4, p7, p8,
+//                                     p5, p6, p8, p5, p7, p8}; 
+
+            quad( &newPoints[ 0*QUAD_VERTEX_NUM], p1, p2, p3, p4);
+            quad( &newPoints[ 1*QUAD_VERTEX_NUM], p1, p2, p6, p5);
+            quad( &newPoints[ 2*QUAD_VERTEX_NUM], p1, p5, p8, p4);
+            quad( &newPoints[ 3*QUAD_VERTEX_NUM], p2, p6, p7, p3);
+            quad( &newPoints[ 4*QUAD_VERTEX_NUM], p3, p4, p8, p7);
+            quad( &newPoints[ 5*QUAD_VERTEX_NUM], p5, p6, p7, p8);
+#else
+            // point4 newPoints[TILE_VERTEX_NUM] = {p1, p2, p3, p2, p3, p4};
+            quad( newPoints, p1, p2, p3, p4);
+
+#endif
 
             // Put new data in the VBO
-            color4 pointsColors[6];
+            color4 pointsColors[TILE_VERTEX_NUM];
 
             genColorVertexFromTileColor(pointsColors, iter->Color);
 
             glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
-            glBufferSubData(GL_ARRAY_BUFFER, idx*6*sizeof(color4), 6*sizeof(color4), pointsColors);
+            glBufferSubData(GL_ARRAY_BUFFER, idx*TILE_VERTEX_NUM*sizeof(color4), TILE_VERTEX_NUM*sizeof(color4), pointsColors);
 
             glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]); 
-            glBufferSubData(GL_ARRAY_BUFFER, idx*6*sizeof(point4), 6*sizeof(point4), newPoints);
+            glBufferSubData(GL_ARRAY_BUFFER, idx*TILE_VERTEX_NUM*sizeof(point4), TILE_VERTEX_NUM*sizeof(point4), newPoints);
+
             idx++;
 
         }
@@ -872,44 +952,3 @@ void updateDropTiles()
     glBindVertexArray(0); 
 }
 
-void updateTiles()
-{
-    // First Clean up buffer
-    // cleanVBOTileBuffer();
-    int idx = 0;
-    for (vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end(); ++iter) 
-    {
-        // Calculate the grid coordinates of the cell
-        GLfloat x = iter->Position.x; 
-        GLfloat y = iter->Position.y;
-
-
-        // Contraints that make the tile outside the UP_BOUND of board invisible
-        // ==============================================================================
-        point4 p1 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0), .4, 1); 
-        point4 p2 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0), .4, 1);
-        point4 p3 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0), .4, 1);
-        point4 p4 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0), .4, 1);
-
-        // if ( y > UP_BOUND ) continue;
-
-        // Two points are used by two triangles each
-        point4 newPoints[6] = {p1, p2, p3, p2, p3, p4}; 
-
-        // Put new data in the VBO
-        color4 pointsColors[6];
-
-        genColorVertexFromTileColor(pointsColors, iter->Color);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
-        glBufferSubData(GL_ARRAY_BUFFER, idx*6*sizeof(color4), 6*sizeof(color4), pointsColors);
-
-
-        glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]); 
-        glBufferSubData(GL_ARRAY_BUFFER, idx*6*sizeof(point4), 6*sizeof(point4), newPoints);
-        idx++;
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}

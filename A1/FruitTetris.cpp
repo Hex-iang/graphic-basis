@@ -43,26 +43,41 @@ bool checkEndOfGame()
 
 //-------------------------------------------------------------------------------------------------------------------
 // Init back grid of the board
+#ifdef _3DGAME 
+
 void initGrid()
 {
     // ***Generate geometry data
-    point4 gridpoints[64]; 
+    point4 gridpoints[GRID_LINE_VERTEX_NUM]; 
     // Array containing the 64 points of the 32 total lines ( 21 horizontal line + 11 vertical line ) to be later put in the VBO
-    point4 gridcolours[64]; 
+    point4 gridcolours[GRID_LINE_VERTEX_NUM]; 
     // One colour per vertex
-    
+  
     // Vertical lines 
     for (int i = 0; i < 11; i++){
-        gridpoints[2*i]     = point4((33.0 + (33.0 * i)), 33.0, 0, 1);
-        gridpoints[2*i + 1] = point4((33.0 + (33.0 * i)), 693.0, 0, 1);
+        gridpoints[4*i + 0] = point4((33.0 + (33.0 * i)),   33.0,     0,      1);
+        gridpoints[4*i + 1] = point4((33.0 + (33.0 * i)),   693.0,    0,      1);
+        gridpoints[4*i + 2] = point4((33.0 + (33.0 * i)),   33.0,     33.0,   1);
+        gridpoints[4*i + 3] = point4((33.0 + (33.0 * i)),   693.0,    33.0,   1);
     }
+
     // Horizontal lines
     for (int i = 0; i < 21; i++){
-        gridpoints[22 + 2*i]     = point4(33.0, (33.0 + (33.0 * i)), 0, 1);
-        gridpoints[22 + 2*i + 1] = point4(363.0, (33.0 + (33.0 * i)), 0, 1);
+        gridpoints[44 + 4*i + 0] = point4(33.0,     (33.0 + (33.0 * i)),    0,      1);
+        gridpoints[44 + 4*i + 1] = point4(363.0,    (33.0 + (33.0 * i)),    0,      1);
+        gridpoints[44 + 4*i + 2] = point4(33.0,     (33.0 + (33.0 * i)),    33.0,   1);
+        gridpoints[44 + 4*i + 3] = point4(363.0,    (33.0 + (33.0 * i)),    33.0,   1);
     }
+
+    for (int i = 0; i < 21; i++){
+        for (int j = 0; j < 11; j++){
+            gridpoints[128 + i*22 + 2*j + 0] = point4( (33.0 + (33.0 * j)),     (33.0 + (33.0 * i)),    0,          1);
+            gridpoints[128 + i*22 + 2*j + 1] = point4( (33.0 + (33.0 * j)),     (33.0 + (33.0 * i)),    33.0,       1);
+        }
+    }
+
     // Make all grid lines white
-    for (int i = 0; i < 64; i++)
+    for (int i = 0; i < GRID_LINE_VERTEX_NUM; i++)
         gridcolours[i] = white;
 
     // *** set up buffer objects
@@ -90,30 +105,90 @@ void initGrid()
     glEnableVertexAttribArray(vColor); 
     // Enable the attribute
 }
+#else
+void initGrid()
+{
+    // ***Generate geometry data
+    point4 gridpoints[GRID_LINE_VERTEX_NUM]; 
+    // Array containing the 64 points of the 32 total lines ( 21 horizontal line + 11 vertical line ) to be later put in the VBO
+    point4 gridcolours[GRID_LINE_VERTEX_NUM]; 
+    // One colour per vertex
+  
+    // Vertical lines 
+    for (int i = 0; i < 11; i++){
+        gridpoints[2*i]     = point4((33.0 + (33.0 * i)), 33.0, 0, 1);
+        gridpoints[2*i + 1] = point4((33.0 + (33.0 * i)), 693.0, 0, 1);
+    }
+    // Horizontal lines
+    for (int i = 0; i < 21; i++){
+        gridpoints[22 + 2*i]     = point4(33.0,     (33.0 + (33.0 * i)), 0, 1);
+        gridpoints[22 + 2*i + 1] = point4(363.0,    (33.0 + (33.0 * i)), 0, 1);
+    }
+    // Make all grid lines white
+    for (int i = 0; i < GRID_LINE_VERTEX_NUM; i++)
+        gridcolours[i] = white;
+
+    // *** set up buffer objects
+    // Set up first VAO (representing grid lines)
+    glBindVertexArray(vaoIDs[VAO_GRID]);
+    // Bind the first VAO
+    glGenBuffers(2, vboIDs); 
+    // Create two Vertex Buffer Objects for this VAO (positions, colours)
+
+    // Grid vertex positions
+    glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_GRID_POSITION]); 
+    // Bind the first grid VBO (vertex positions)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(gridpoints), gridpoints, GL_STATIC_DRAW); 
+    // Put the grid points in the VBO
+    glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0)); 
+    glEnableVertexAttribArray(vPosition); 
+    // Enable the attribute
+    
+    // Grid vertex colours
+    glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_GRID_COLOR]); 
+    // Bind the second grid VBO (vertex colours)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(gridcolours), gridcolours, GL_STATIC_DRAW); 
+    // Put the grid colours in the VBO
+    glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+    glEnableVertexAttribArray(vColor); 
+    // Enable the attribute
+}
+#endif
 
 //-------------------------------------------------------------------------------------------------------------------
 // Init playing board
 void initBoard()
 {
     // *** Generate the geometric data
-    point4 boardpoints[BOARD_WIDTH*BOARD_HEIGHT*3*2];
+    point4 boardpoints[BOARD_WIDTH*BOARD_HEIGHT*TILE_VERTEX_NUM];
 
     // Each cell is a square (2 triangles with 6 vertices)
-    for (int i = 0; i < 20; i++){
-        for (int j = 0; j < 10; j++)
+    for (int i = 0; i < BOARD_HEIGHT; i++){
+        for (int j = 0; j < BOARD_WIDTH; j++)
         {       
             point4 p1 = point4(33.0 + (j * 33.0), 33.0 + (i * 33.0), .5, 1);
             point4 p2 = point4(33.0 + (j * 33.0), 66.0 + (i * 33.0), .5, 1);
-            point4 p3 = point4(66.0 + (j * 33.0), 33.0 + (i * 33.0), .5, 1);
-            point4 p4 = point4(66.0 + (j * 33.0), 66.0 + (i * 33.0), .5, 1);
-            
+            point4 p3 = point4(66.0 + (j * 33.0), 66.0 + (i * 33.0), .5, 1);
+            point4 p4 = point4(66.0 + (j * 33.0), 33.0 + (i * 33.0), .5, 1);
+
+#ifdef _3DGAME 
+            point4 p5 = point4(33.0 + (j * 33.0), 33.0 + (i * 33.0), 33.5, 1);
+            point4 p6 = point4(33.0 + (j * 33.0), 66.0 + (i * 33.0), 33.5, 1);
+            point4 p7 = point4(66.0 + (j * 33.0), 66.0 + (i * 33.0), 33.5, 1);
+            point4 p8 = point4(66.0 + (j * 33.0), 33.0 + (i * 33.0), 33.5, 1);
+
+            // Two points are used by two triangles each
+            quad( &boardpoints[ TILE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 0*QUAD_VERTEX_NUM], p1, p2, p3, p4);
+            quad( &boardpoints[ TILE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 1*QUAD_VERTEX_NUM], p1, p2, p6, p5);
+            quad( &boardpoints[ TILE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 2*QUAD_VERTEX_NUM], p1, p5, p8, p4);
+            quad( &boardpoints[ TILE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 3*QUAD_VERTEX_NUM], p2, p6, p7, p3);
+            quad( &boardpoints[ TILE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 4*QUAD_VERTEX_NUM], p3, p4, p8, p7);
+            quad( &boardpoints[ TILE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 5*QUAD_VERTEX_NUM], p5, p6, p7, p8);
+
+#else           
             // Two points are reused
-            boardpoints[6*(10*i + j)    ] = p1;
-            boardpoints[6*(10*i + j) + 1] = p2;
-            boardpoints[6*(10*i + j) + 2] = p3;
-            boardpoints[6*(10*i + j) + 3] = p2;
-            boardpoints[6*(10*i + j) + 4] = p3;
-            boardpoints[6*(10*i + j) + 5] = p4;
+            quad( &boardpoints[ TILE_VERTEX_NUM*(BOARD_WIDTH*i + j) ], p1, p2, p3, p4);
+#endif
         }
     }
 
@@ -155,13 +230,13 @@ void initCurrentTile()
 
     // Current tile vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]);
-    glBufferData(GL_ARRAY_BUFFER, BOARD_WIDTH*BOARD_HEIGHT*3*2*sizeof(point4), NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, BOARD_WIDTH*BOARD_HEIGHT*TILE_VERTEX_NUM*sizeof(point4), NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(vPosition);
 
     // Current tile vertex colours
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
-    glBufferData(GL_ARRAY_BUFFER, BOARD_WIDTH*BOARD_HEIGHT*3*2*sizeof(color4), NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, BOARD_WIDTH*BOARD_HEIGHT*TILE_VERTEX_NUM*sizeof(color4), NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(vColor);
 }
@@ -300,7 +375,7 @@ void processDisplay()
     }
 
     glBindVertexArray(vaoIDs[1]); // Bind the VAO representing the grid cells (to be drawn first)
-    glDrawArrays(GL_TRIANGLES, 0, 1200); // Draw the board (10*20*2 = 400 triangles)
+    glDrawArrays(GL_TRIANGLES, 0, BOARD_WIDTH*BOARD_HEIGHT*TILE_VERTEX_NUM); // Draw the board (10*20*2 = 400 triangles)
 
 
     // Calculating the tiles/dropTiles number 
@@ -310,10 +385,10 @@ void processDisplay()
     }
 
     glBindVertexArray(vaoIDs[2]); // Bind the VAO representing the current tile (to be drawn on top of the board)
-    glDrawArrays(GL_TRIANGLES, 0, tileSize*6); // Draw the current tile (8 triangles)
+    glDrawArrays(GL_TRIANGLES, 0, tileSize*TILE_VERTEX_NUM); // Draw the current tile (8 triangles)
 
     glBindVertexArray(vaoIDs[0]); // Bind the VAO representing the grid lines (to be drawn on top of everything else)
-    glDrawArrays(GL_LINES, 0, 64); // Draw the grid lines (21+11 = 32 lines)
+    glDrawArrays(GL_LINES, 0, GRID_LINE_VERTEX_NUM); // Draw the grid lines (21+11 = 32 lines)
 
     glutPostRedisplay();
     glutSwapBuffers();

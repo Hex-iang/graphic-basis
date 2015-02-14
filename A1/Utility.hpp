@@ -34,11 +34,12 @@ bool testRotation(vec2 currentTilePos)
 	return true;
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------
 // Generate color vertexs of 4 tile structure from global variable tileColors
 void genColorVertexFromTileColor(color4 * pPointColor, color4 _color)
 {
-	for (int j = 0; j < 6; j++){
+	for (int j = 0; j < TILE_VERTEX_NUM; j++){
 		*(pPointColor + j) = _color;
 	}
 }
@@ -47,9 +48,9 @@ void genColorVertexFromTileColor(color4 * pPointColor, color4 _color)
 //-------------------------------------------------------------------------------------------------------------------
 void genBoardVertexColorFromBoardColor(int x ,int y, color4 _color)
 {
-	for (int i = 0; i < 6; ++i)
+	for (int i = 0; i < TILE_VERTEX_NUM; ++i)
 	{
-		boardVertexColors[(x + y*BOARD_WIDTH)*6 + i] = _color;
+		boardVertexColors[(x + y*BOARD_WIDTH)*TILE_VERTEX_NUM + i] = _color;
 	}
 }
 
@@ -63,6 +64,7 @@ void genBoardVertexColorsFromBoardColors()
 		}
 	}
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------
 // The the tile boundary 
@@ -84,4 +86,16 @@ const TileBound getTileBound( vec2 * pTile)
 color4 genRandomColor()
 {
 	return tileColorsSet[rand() % TILE_COLOR_NUM];
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// Generate points for a quad
+void quad( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4)
+{
+    pPoints[0] = p1;
+    pPoints[1] = p2;
+    pPoints[2] = p3;
+    pPoints[3] = p1;
+    pPoints[4] = p3;
+    pPoints[5] = p4;
 }
