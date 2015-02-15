@@ -16,13 +16,12 @@ using namespace std;
 // ----------------------------------------------------------------------------------------------
 // Option for compiling 2D version game or 3D version game
 #define _3DGAME
+//#define DEBUG
 // ----------------------------------------------------------------------------------------------
 
 
 #define TILE_TYPE_NUM 		3
 #define TILE_COLOR_NUM		5
-#define DEBUG 				1
-
 
 #define VBO_GRID_POSITION		0
 #define VBO_GRID_COLOR			1

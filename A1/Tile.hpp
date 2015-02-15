@@ -386,7 +386,7 @@ void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
             if (eliminatedFruitTiles[col][row]){
                 flag = true;
             }
-            else if ( flag == true && board[col][row] && !searchConnectToBottom(vec2(col, row)) )
+            else if ( flag == true && board[col][row]) // && !searchConnectToBottom(vec2(col, row)) )
             {
                 // if eliminate fruit match make the tile not connected to bottom
                 Tile item(vec2(col, row), boardColors[col][row]);
@@ -655,7 +655,9 @@ void addUnsupportedTilesToDropTiles()
             {
                 if ( item == (*iter) )
                 {
+#ifdef DEBUG
                     cout << "addUnsupportedTilesToDropTiles() - DropTile matching Got" << endl;
+#endif
                     NotExisted = false;
                 }    
             }
@@ -670,7 +672,9 @@ void addUnsupportedTilesToDropTiles()
         }
 
     }
+#ifdef DEBUG
     printDropTiles();
+#endif
     updateDropTiles();
 
 }
@@ -791,7 +795,9 @@ void setTiles()
     // After the tile is setted, clear it up
     tiles.clear();
 
+#ifdef DEBUG
     printBoolBoardSizeArray(board);
+#endif
     genBoardVertexColorsFromBoardColors();
     updateBoard();
 }
@@ -814,7 +820,10 @@ void unsetTiles()
         }
     }
 
+#ifdef DEBUG
     printBoolBoardSizeArray(board);
+#endif
+
     genBoardVertexColorsFromBoardColors();
     updateBoard();
 }

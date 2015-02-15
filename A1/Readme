@@ -1,16 +1,96 @@
 # Programming Assignment 1 Instruction
+* Arthur: Hexiang Hu
+* Copyright reserved, please don't share the code
 
 ## Functionality Specification
 
 a. Tile and Grid and Tile Downward Movement
+    * Functionality completely implemented
 
 b. Stack-up
+    * Functionality completely implemented
 
 c. Key stroke interaction and tile movement
+    * Functionality completely implemented
 
 d. Game Logic
+    * Teris Game Logic: When a row is completely filled, the entire row will be
+     eliminated in no time, all tile above will be moved down for one row 
+     immediately.
+
+    * Fruit Match Logic: When three(or more) same fruits are in a row or
+     column, the matched fruits will be eliminated in no time and tile above
+      will be added to a dropTile list. 
+        ** In the dropTile list, connected tiles will be regarded as a whole
+        object and drop together (when any part get collision with the
+        exisiting tiles, it get stuck); however, non-connected tiles will be
+        drop separately
+
+    * Additional non-support check:
+        ** When tiles are eliminated(through Teris or Fruit Match), it will
+        start detected non-supported tiles (those not connected to the bottom) 
+        and add them to the drop list and drop as the rule of dropping fruit
+        ** When tiles are dropped and set to the board, this game will first 
+        detect full row and then detect fruit match 
+
+## Additional Feature
+    * This Teris game is implemented as a 2D/3D bi-compiling version, which
+    means that you can compile a complete 2D version or 3D version through
+    defining a macro called _3DGAME in FruitTeris.hpp (line#18).
+
+    * With 3D version of the game, you can make the game look like a 2D game by
+     converting the viewpoint. A shortcut to do this is to press key '2' and '3'.
+        ** '2' - convert to 2D viewpoint, '3' - convert to 3D viewpoint
+
+    * The logic for searching non-supportted tiles after elimination uses a simple
+    depth first search
+
+    * The logic for maintaining the dropTile list with connected tile clusters also
+    used a simple depth first algorithm
+
+    * There is a limited viewpoint change option in 3D mode, which allow user to change
+    the camera position (not the camera target point). The control specification is shown 
+    in the Game control specification part 
+
+    * To get detailed debug informations, user can compile the code through defining a macro
+    called DEBUG.( You can just uncomment the line#19)
+
+    * Game can be paused by pressing 'p'
+
 
 ## Game Control Specification 
 
-Key_Up_Arrow	=>	rotate tile orientation
-Key_Down_Arrow	=>	
+* Special Keys:
+
+Key_Up      =>  rotate tile orientation
+Key_Down    =>  move tile down 1 step
+Key_Left    =>  move tile left 1 step
+Key_Right   =>  move tile right 1 step
+ESC         => quit the game
+
+* Other Keys:
+'p'         => pause the game
+'r'         => restart the game
+'q'         => quit the game
+
+'w'         => move camera position along x axis a bit
+'s'         => move back camera position along x axis a bit
+
+'a'         => move camera position along y axis a bit
+'d'         => move back camera position along y axis a bit
+
+'z'         => move camera position along z axis a bit
+'x'         => move back camera position along z axis a bit
+
+## Source code structure
+* Header
+    ** Tile.hpp
+        *** All function implementations related to tiles
+    ** FruitTeris.hpp
+        *** Definition of global data structure
+        *** Declaration of functions
+    ** Utility.hpp
+        *** Helper functions for simplifies the openGL buffer content generation
+* Code
+    ** FruitTeris.hpp
+        *** Main Game logic function and call back function
