@@ -12,6 +12,13 @@ using namespace std;
 // ============================================================================================
 // macros for tile types
 
+
+// ----------------------------------------------------------------------------------------------
+// Option for compiling 2D version game or 3D version game
+#define _3DGAME
+// ----------------------------------------------------------------------------------------------
+
+
 #define TILE_TYPE_NUM 		3
 #define TILE_COLOR_NUM		5
 #define DEBUG 				1
@@ -77,19 +84,19 @@ const color4 white  		= color4(1.0, 1.0, 1.0, 1.0);
 const color4 black  		= color4(0.0, 0.0, 0.0, 1.0);
 
 // extra colors for fruits 
-const color4 orange 		= color4(1.0, 0.5, 0.0, 1.0); 
-const color4 red 			= color4(1.0, 0.0, 0.0, 1.0);
-const color4 green 			= color4(0.0, 1.0, 0.0, 1.0);
-const color4 purple			= color4(1.0, 0.0, 1.0, 1.0);
-const color4 yellow 		= color4(1.0, 1.0, 0.0, 1.0);
+const color4 orange 		= color4(1.0, 	0.549,	0.0,  	1.0); 
+const color4 red 			= color4(1.0, 	0.0, 	0.0, 	1.0);
+const color4 green 			= color4(0.486, 0.988, 	0.0, 	1.0);
+const color4 purple			= color4(1.0, 	0.0, 	1.0, 	1.0);
+const color4 yellow 		= color4(1.0, 	0.843, 	0.0, 	1.0);
 
 const color4 tileColorsSet[5] = {
 	orange, red, green, purple, yellow
 };
 
 // xsize and ysize represent the window size - updated if window is reshaped to prevent stretching of the game
-int xsize = 400; 
-int ysize = 720;
+int xsize = 600; 
+int ysize = 800;
 
 class Tile{
 public:
@@ -118,34 +125,33 @@ vec2 tilePos = vec2(5, 19);
 int tileType 		= TILE_TYPE_L;
 int rotateType 		= 0;
 
-// Option for compiling 2D version game or 3D version game
-#define _3DGAME
+
+GLuint  model_view;  // model-view matrix uniform shader variable location
 
 #ifdef _3DGAME
 // in 3d game, there will be 12 triangles per cube
 const int TRIANGLE_VERTEX_NUM 	= 12;
 const int TILE_VERTEX_NUM 		= 36;
 const int QUAD_VERTEX_NUM 		= 6;
-const int GRID_LINE_VERTEX_NUM	= 590;
+const int QUAD_LINE_VERTEX_NUM  = 8;
+const int TILE_LINE_VERTEX_NUM  = 48;
+const int GRID_LINE_VERTEX_NUM	= (BOARD_WIDTH + 1)*(BOARD_HEIGHT + 1)*TILE_LINE_VERTEX_NUM;
 const GLfloat START_POINT_X = -200;
 const GLfloat START_POINT_Y = -360;
-const GLfloat START_POINT_Z = -33;
+const GLfloat START_POINT_Z = -33.0;
 
-GLfloat eyex = 0.3, eyey 	= 1.0, eyez = 1;
+GLfloat eyex = 0.95, eyey 	= 0.95, eyez = 0.25;
 GLfloat atx  = 1.0, aty 	= 1.0, atz  = 0;
-
-
-GLuint  model_view;  // model-view matrix uniform shader variable location
-
 #else
 // in 2d game, there will be 2 triangles
 const int TRIANGLE_VERTEX_NUM 	= 2;
 const int TILE_VERTEX_NUM 		= 6;
-const int GRID_LINE_NUM 		= 32;
 const int GRID_LINE_VERTEX_NUM	= 64;
-const GLfloat START_POINT_X = -200;
-const GLfloat START_POINT_Y = -360;
-const GLfloat START_POINT_Z = 0;
+const GLfloat START_POINT_X 	= -200;
+const GLfloat START_POINT_Y 	= -360;
+const GLfloat START_POINT_Z 	= -33.0;
+
+GLfloat eyez = 0.5;
 
 #endif
 

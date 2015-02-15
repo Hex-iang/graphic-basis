@@ -99,3 +99,19 @@ void quad( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4)
     pPoints[4] = p3;
     pPoints[5] = p4;
 }
+//-------------------------------------------------------------------------------------------------------------------
+// Generate line grid for a quad
+void quadLine( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4)
+{
+    pPoints[0] = p1;
+    pPoints[1] = p2;
+
+    pPoints[2] = p2;
+    pPoints[3] = p3;
+
+    pPoints[4] = p3;
+    pPoints[5] = p4;
+
+    pPoints[6] = p4;
+    pPoints[7] = p1;
+}
