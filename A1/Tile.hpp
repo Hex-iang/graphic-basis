@@ -836,16 +836,18 @@ void updateTiles()
 
         // Contraints that make the tile outside the UP_BOUND of board invisible
         // ==============================================================================
-        point4 p1 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0),  0.4, 1); 
-        point4 p2 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0),  0.4, 1);
-        point4 p3 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0),  0.4, 1);
-        point4 p4 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0),  0.4, 1);
+
+        point4 p1 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + .4, 1);
+        point4 p2 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + .4, 1);
+        point4 p3 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + .4, 1);
+        point4 p4 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + .4, 1);
 
 #ifdef _3DGAME 
-        point4 p5 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0), 33.4, 1);
-        point4 p6 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0), 33.4, 1);
-        point4 p7 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0), 33.4, 1);
-        point4 p8 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0), 33.4, 1);
+        point4 p5 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33.4, 1);
+        point4 p6 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33.4, 1);
+        point4 p7 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33.4, 1);
+        point4 p8 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33.4, 1);
+
 
         // Two points are used by two triangles each
 //             point4 newPoints[TILE_VERTEX_NUM] = 
@@ -900,16 +902,16 @@ void updateDropTiles()
             point4 newPoints[TILE_VERTEX_NUM];
             // Contraints that make the tile outside the UP_BOUND of board invisible
             // ==============================================================================
-            point4 p1 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0),  0.4, 1); 
-            point4 p2 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0),  0.4, 1);
-            point4 p3 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0),  0.4, 1);
-            point4 p4 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0),  0.4, 1);
+            point4 p1 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + .4, 1);
+            point4 p2 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + .4, 1);
+            point4 p3 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + .4, 1);
+            point4 p4 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + .4, 1);
 
 #ifdef _3DGAME 
-            point4 p5 = point4(33.0 + (x * 33.0), 33.0 + (y * 33.0), 33.4, 1);
-            point4 p6 = point4(33.0 + (x * 33.0), 66.0 + (y * 33.0), 33.4, 1);
-            point4 p7 = point4(66.0 + (x * 33.0), 66.0 + (y * 33.0), 33.4, 1);
-            point4 p8 = point4(66.0 + (x * 33.0), 33.0 + (y * 33.0), 33.4, 1);
+            point4 p5 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33.4, 1);
+            point4 p6 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33.4, 1);
+            point4 p7 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33.4, 1);
+            point4 p8 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33.4, 1);
 
             // Two points are used by two triangles each
 //             point4 newPoints[TILE_VERTEX_NUM] = 

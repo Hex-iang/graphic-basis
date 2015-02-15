@@ -6,10 +6,7 @@ out vec4 color;
 
 uniform int xsize;
 uniform int ysize;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 model_view;
 
 
 void main() 
@@ -21,9 +18,12 @@ void main()
 
 	// First, center the image by translating each vertex by half of the original window size
 	// Then, multiply by the scale matrix to maintain size after the window is reshaped
-	vec4 newPos = vPosition + vec4(-200, -360, 0, 0);
-	// gl_Position = projection * view_model * scale * newPos; 
-	gl_Position = scale * newPos;
+	// vec4 newPos = vPosition + vec4(-200, -360, -33, 0);
+	// gl_Position = scale * newPos;
+	// gl_Position = scale * vPosition;
+	gl_Position = model_view * ( scale * vPosition);
+	// gl_Position = model_view * scale * vPosition;
+	// gl_Position = model_view * newPos;
 	
 	color = vColor;	
 } 

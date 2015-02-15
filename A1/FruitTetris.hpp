@@ -127,12 +127,26 @@ const int TRIANGLE_VERTEX_NUM 	= 12;
 const int TILE_VERTEX_NUM 		= 36;
 const int QUAD_VERTEX_NUM 		= 6;
 const int GRID_LINE_VERTEX_NUM	= 590;
+const GLfloat START_POINT_X = -200;
+const GLfloat START_POINT_Y = -360;
+const GLfloat START_POINT_Z = -33;
+
+GLfloat eyex = 0.3, eyey 	= 1.0, eyez = 1;
+GLfloat atx  = 1.0, aty 	= 1.0, atz  = 0;
+
+
+GLuint  model_view;  // model-view matrix uniform shader variable location
+
 #else
 // in 2d game, there will be 2 triangles
 const int TRIANGLE_VERTEX_NUM 	= 2;
 const int TILE_VERTEX_NUM 		= 6;
 const int GRID_LINE_NUM 		= 32;
 const int GRID_LINE_VERTEX_NUM	= 64;
+const GLfloat START_POINT_X = -200;
+const GLfloat START_POINT_Y = -360;
+const GLfloat START_POINT_Z = 0;
+
 #endif
 
 //board[x][y] represents whether the cell (x,y) is occupied
@@ -247,7 +261,7 @@ void initCurrentTile();
 void init();
 
 void processDisplay();
-void processReshape(GLsizei w, GLsizei h);
+void processReshape(GLsizei width, GLsizei height);
 void processSpecialKey(int key, int x, int y);
 void processKeyboard(unsigned char key, int x, int y);
 void processTimer(int val);

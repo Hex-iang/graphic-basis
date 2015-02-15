@@ -55,24 +55,24 @@ void initGrid()
   
     // Vertical lines 
     for (int i = 0; i < 11; i++){
-        gridpoints[4*i + 0] = point4((33.0 + (33.0 * i)),   33.0,     0,      1);
-        gridpoints[4*i + 1] = point4((33.0 + (33.0 * i)),   693.0,    0,      1);
-        gridpoints[4*i + 2] = point4((33.0 + (33.0 * i)),   33.0,     33.0,   1);
-        gridpoints[4*i + 3] = point4((33.0 + (33.0 * i)),   693.0,    33.0,   1);
+        gridpoints[4*i]     = point4((START_POINT_X + 33.0 + (33.0 * i)), START_POINT_Y + 33.0,    START_POINT_Z, 1);
+        gridpoints[4*i + 1] = point4((START_POINT_X + 33.0 + (33.0 * i)), START_POINT_Y + 693.0,   START_POINT_Z, 1);
+        gridpoints[4*i + 2] = point4((START_POINT_X + 33.0 + (33.0 * i)), START_POINT_Y + 33.0,    START_POINT_Z + 33.0, 1);
+        gridpoints[4*i + 3] = point4((START_POINT_X + 33.0 + (33.0 * i)), START_POINT_Y + 693.0,   START_POINT_Z + 33.0, 1);
     }
 
     // Horizontal lines
     for (int i = 0; i < 21; i++){
-        gridpoints[44 + 4*i + 0] = point4(33.0,     (33.0 + (33.0 * i)),    0,      1);
-        gridpoints[44 + 4*i + 1] = point4(363.0,    (33.0 + (33.0 * i)),    0,      1);
-        gridpoints[44 + 4*i + 2] = point4(33.0,     (33.0 + (33.0 * i)),    33.0,   1);
-        gridpoints[44 + 4*i + 3] = point4(363.0,    (33.0 + (33.0 * i)),    33.0,   1);
+        gridpoints[44 + 4*i + 0] = point4(START_POINT_X + 33.0,     (START_POINT_Y + 33.0 + (33.0 * i)),    START_POINT_Z,      1);
+        gridpoints[44 + 4*i + 1] = point4(START_POINT_X + 363.0,    (START_POINT_Y + 33.0 + (33.0 * i)),    START_POINT_Z,      1);
+        gridpoints[44 + 4*i + 2] = point4(START_POINT_X + 33.0,     (START_POINT_Y + 33.0 + (33.0 * i)),    START_POINT_Z + 33.0,   1);
+        gridpoints[44 + 4*i + 3] = point4(START_POINT_X + 363.0,    (START_POINT_Y + 33.0 + (33.0 * i)),    START_POINT_Z + 33.0,   1);
     }
 
     for (int i = 0; i < 21; i++){
         for (int j = 0; j < 11; j++){
-            gridpoints[128 + i*22 + 2*j + 0] = point4( (33.0 + (33.0 * j)),     (33.0 + (33.0 * i)),    0,          1);
-            gridpoints[128 + i*22 + 2*j + 1] = point4( (33.0 + (33.0 * j)),     (33.0 + (33.0 * i)),    33.0,       1);
+            gridpoints[128 + i*22 + 2*j + 0] = point4( (START_POINT_X + 33.0 + (33.0 * j)),     (START_POINT_Y + 33.0 + (33.0 * i)),    START_POINT_Z + 0,          1);
+            gridpoints[128 + i*22 + 2*j + 1] = point4( (START_POINT_X + 33.0 + (33.0 * j)),     (START_POINT_Y + 33.0 + (33.0 * i)),    START_POINT_Z + 33.0,       1);
         }
     }
 
@@ -116,13 +116,13 @@ void initGrid()
   
     // Vertical lines 
     for (int i = 0; i < 11; i++){
-        gridpoints[2*i]     = point4((33.0 + (33.0 * i)), 33.0, 0, 1);
-        gridpoints[2*i + 1] = point4((33.0 + (33.0 * i)), 693.0, 0, 1);
+        gridpoints[2*i]     = point4((START_POINT_X + 33.0 + (33.0 * i)), START_POINT_Y + 33.0,    START_POINT_Z, 1);
+        gridpoints[2*i + 1] = point4((START_POINT_X + 33.0 + (33.0 * i)), START_POINT_y + 693.0,   START_POINT_Z, 1);
     }
     // Horizontal lines
     for (int i = 0; i < 21; i++){
-        gridpoints[22 + 2*i]     = point4(33.0,     (33.0 + (33.0 * i)), 0, 1);
-        gridpoints[22 + 2*i + 1] = point4(363.0,    (33.0 + (33.0 * i)), 0, 1);
+        gridpoints[22 + 2*i]     = point4(START_POINT_X + 33.0,     (START_POINT_Y + 33.0 + (33.0 * i)), START_POINT_Z, 1);
+        gridpoints[22 + 2*i + 1] = point4(START_POINT_X + 363.0,    (START_POINT_Y + 33.0 + (33.0 * i)), START_POINT_Z, 1);
     }
     // Make all grid lines white
     for (int i = 0; i < GRID_LINE_VERTEX_NUM; i++)
@@ -166,16 +166,16 @@ void initBoard()
     for (int i = 0; i < BOARD_HEIGHT; i++){
         for (int j = 0; j < BOARD_WIDTH; j++)
         {       
-            point4 p1 = point4(33.0 + (j * 33.0), 33.0 + (i * 33.0), .5, 1);
-            point4 p2 = point4(33.0 + (j * 33.0), 66.0 + (i * 33.0), .5, 1);
-            point4 p3 = point4(66.0 + (j * 33.0), 66.0 + (i * 33.0), .5, 1);
-            point4 p4 = point4(66.0 + (j * 33.0), 33.0 + (i * 33.0), .5, 1);
+            point4 p1 = point4(START_POINT_X + 33.0 + (j * 33.0), START_POINT_Y + 33.0  + (i * 33.0), START_POINT_Z + .5, 1);
+            point4 p2 = point4(START_POINT_X + 33.0 + (j * 33.0), START_POINT_Y + 66.0  + (i * 33.0), START_POINT_Z + .5, 1);
+            point4 p3 = point4(START_POINT_X + 66.0 + (j * 33.0), START_POINT_Y + 66.0  + (i * 33.0), START_POINT_Z + .5, 1);
+            point4 p4 = point4(START_POINT_X + 66.0 + (j * 33.0), START_POINT_Y + 33.0  + (i * 33.0), START_POINT_Z + .5, 1);
 
 #ifdef _3DGAME 
-            point4 p5 = point4(33.0 + (j * 33.0), 33.0 + (i * 33.0), 33.5, 1);
-            point4 p6 = point4(33.0 + (j * 33.0), 66.0 + (i * 33.0), 33.5, 1);
-            point4 p7 = point4(66.0 + (j * 33.0), 66.0 + (i * 33.0), 33.5, 1);
-            point4 p8 = point4(66.0 + (j * 33.0), 33.0 + (i * 33.0), 33.5, 1);
+            point4 p5 = point4(START_POINT_X + 33.0 + (j * 33.0), START_POINT_Y + 33.0  + (i * 33.0), START_POINT_Z + 33.5, 1);
+            point4 p6 = point4(START_POINT_X + 33.0 + (j * 33.0), START_POINT_Y + 66.0  + (i * 33.0), START_POINT_Z + 33.5, 1);
+            point4 p7 = point4(START_POINT_X + 66.0 + (j * 33.0), START_POINT_Y + 66.0  + (i * 33.0), START_POINT_Z + 33.5, 1);
+            point4 p8 = point4(START_POINT_X + 66.0 + (j * 33.0), START_POINT_Y + 33.0  + (i * 33.0), START_POINT_Z + 33.5, 1);
 
             // Two points are used by two triangles each
             quad( &boardpoints[ TILE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 0*QUAD_VERTEX_NUM], p1, p2, p3, p4);
@@ -249,7 +249,15 @@ void init()
     srand(time(NULL));
 
     // Load shaders and use the shader program
+#ifdef _3DGAME
+    // GLuint program = InitShader("vshader3d.glsl", "fshader3d.glsl");
     GLuint program = InitShader("vshader.glsl", "fshader.glsl");
+
+    model_view = glGetUniformLocation( program, "model_view" );
+
+#else
+    GLuint program = InitShader("vshader.glsl", "fshader.glsl");
+#endif
     glUseProgram(program);
 
     // Get the location of the attributes (for glVertexAttribPointer() calls)
@@ -269,6 +277,8 @@ void init()
 
     // set to default
     glBindVertexArray(0);
+
+    glEnable( GL_DEPTH_TEST );
     glClearColor(0, 0, 0, 0);
 }
 
@@ -374,9 +384,20 @@ void processDisplay()
         }
     }
 
+#ifdef _3DGAME
+
+    point4  eye( eyex, eyey, eyez, 1.0 );
+    point4  at( atx, aty, atz, 1.0 );
+    vec4    up( 0.0, 1.0, 0.0, 0.0 );
+
+    mat4  mv = LookAt( eye, at, up );
+    glUniformMatrix4fv( model_view, 1, GL_TRUE, mv );
+
+#endif
+
+
     glBindVertexArray(vaoIDs[1]); // Bind the VAO representing the grid cells (to be drawn first)
     glDrawArrays(GL_TRIANGLES, 0, BOARD_WIDTH*BOARD_HEIGHT*TILE_VERTEX_NUM); // Draw the board (10*20*2 = 400 triangles)
-
 
     // Calculating the tiles/dropTiles number 
     int tileSize = tiles.size();
@@ -398,11 +419,12 @@ void processDisplay()
 
 // Reshape callback will simply change xsize and ysize variables, which are passed to the vertex shader
 // to keep the game the same from stretching if the window is stretched
-void processReshape(GLsizei w, GLsizei h)
+void processReshape(GLsizei width, GLsizei height)
 {
-    xsize = w;
-    ysize = h;
-    glViewport(0, 0, w, h);
+    xsize = width;
+    ysize = height;
+    glViewport(0, 0, width, height);
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -470,6 +492,34 @@ void processKeyboard(unsigned char key, int x, int y)
         // 'r' key restarts the game
             restartGame();
             break;
+#ifdef _3DGAME
+//         case 't': 
+//             radius  *= 2.0; 
+//             break;
+//         case 'y': 
+//             radius  *= 0.5;
+//             break;
+        case 'w': 
+            eyex    += 0.01;
+            break;
+        case 's': 
+            eyex    -= 0.01; 
+            break;
+        case 'a': 
+            eyey    += 0.01; 
+            break;
+        case 'd': 
+            eyey    -= 0.01; 
+            break;
+         case 'k':
+            eyex    = 0;
+            eyey    = 0;
+            eyez    = 1;
+            atx     = 0;
+            aty     = 0;
+            atz     = 0;
+            break;
+#endif
         case ' ':
             shiftTileColor();
             break;
@@ -503,7 +553,7 @@ int main(int argc, char **argv)
 {
     // initialize glut
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(xsize, ysize);
     glutInitWindowPosition(680, 178); // Center the game window (well, on a 1920x1080 display)
     glutCreateWindow("Fruit Tetris");
