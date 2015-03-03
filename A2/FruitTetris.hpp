@@ -5,8 +5,12 @@
 #include <algorithm>
 #include "unistd.h"
 #include "include/Angel.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include <vector>
 #include <iomanip>
+#include "Camera.hpp"
 using namespace std;
 
 // ============================================================================================
@@ -15,8 +19,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------------------------------
 // Option for compiling 2D version game or 3D version game
-#define _3DGAME
-//#define DEBUG
+#define DEBUG
 // ----------------------------------------------------------------------------------------------
 
 
@@ -57,8 +60,8 @@ using namespace std;
 								)))))))
 
 
-typedef Angel::vec4  color4;
-typedef Angel::vec4  point4;
+typedef glm::vec4  color4;
+typedef glm::vec4  point4;
 
 //  constant variable
 // ============================================================================================
@@ -93,10 +96,68 @@ const color4 tileColorsSet[5] = {
 	orange, red, green, purple, yellow
 };
 
+//---------------------------------------------------------------------------------------------------------
+// OpenGL drawing related structure
+
 // xsize and ysize represent the window size - updated if window is reshaped to prevent stretching of the game
 int xsize = 600; 
 int ysize = 800;
 
+// Local ID for Shader Matrix
+
+GLuint  loc_model;  		// model matrix
+GLuint  loc_view;			// view matrix 
+GLuint  loc_projection;		// projection matrix
+
+// in 3D game, there will be 12 triangles per cube
+const int TRIANGLE_VERTEX_NUM 	= 12;
+const int TILE_VERTEX_NUM 		= 36;
+const int QUAD_VERTEX_NUM 		= 6;
+const int QUAD_LINE_VERTEX_NUM  = 8;
+const int TILE_LINE_VERTEX_NUM  = 48;
+const int GRID_LINE_VERTEX_NUM	= (BOARD_WIDTH + 1)*(BOARD_HEIGHT + 1)*TILE_LINE_VERTEX_NUM;
+
+const GLfloat START_POINT_X = 0;
+const GLfloat START_POINT_Y = 0;
+const GLfloat START_POINT_Z = 0;
+const GLfloat DEPTH_1 = EDGE_LEN * .01f;
+const GLfloat DEPTH_0 = EDGE_LEN * .0f;
+const GLfloat DEPTH_3 = EDGE_LEN * .03f;
+
+
+const GLfloat EDGE_LEN = 10.0;
+
+
+// Global Camera Class
+Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 20),	// camera position
+				glm::vec3( 0.0f, 1.0f, 0.0f)						// camera up direction
+				);
+
+// Global structure for different shader program
+GLuint UniversalShader;
+GLuint RobotArmShader;
+
+//board[x][y] represents whether the cell (x,y) is occupied
+bool board[BOARD_WIDTH][BOARD_HEIGHT];
+color4 boardColors[BOARD_WIDTH][BOARD_HEIGHT];
+color4 boardVertexColors[BOARD_WIDTH * BOARD_HEIGHT * TILE_VERTEX_NUM];
+
+// location of vertex attributes in the shader program
+GLuint vPosition;
+GLuint vColor;
+
+// VAO and VBO
+GLuint vaoIDs[3]; 
+// One VAO for each object: 0. the grid 1. the board 2. the current piece
+
+GLuint vboIDs[6]; 
+// Two Vertex Buffer Objects for each VAO (specifying vertex positions and colours, respectively)
+
+
+//---------------------------------------------------------------------------------------------------------
+// Game Related Global Structure
+
+// Structure for handling each individual tile
 class Tile{
 public:
 	Tile(vec2 _pos, color4 _color) : Position(_pos), Color(_color){ }
@@ -115,68 +176,17 @@ public:
 	color4 Color;
 };
 
+// Global structure for storing current tiles
 vector<Tile> tiles;
+// Global structure for storing dropping tiles
 vector< vector<Tile> > dropTiles;
 
-// An array of 4 2d vectors representing displacement from a 'center' piece of the tile, on the grid
 vec2 tilePos = vec2(5, 19);
-// The position of the current tile using grid coordinates ((0,0) is the bottom left corner)
 int tileType 		= TILE_TYPE_L;
 int rotateType 		= 0;
 
-
-GLuint  model_view;  // model-view matrix uniform shader variable location
-
-#ifdef _3DGAME
-// in 3d game, there will be 12 triangles per cube
-const int TRIANGLE_VERTEX_NUM 	= 12;
-const int TILE_VERTEX_NUM 		= 36;
-const int QUAD_VERTEX_NUM 		= 6;
-const int QUAD_LINE_VERTEX_NUM  = 8;
-const int TILE_LINE_VERTEX_NUM  = 48;
-const int GRID_LINE_VERTEX_NUM	= (BOARD_WIDTH + 1)*(BOARD_HEIGHT + 1)*TILE_LINE_VERTEX_NUM;
-const GLfloat START_POINT_X = -200;
-const GLfloat START_POINT_Y = -360;
-const GLfloat START_POINT_Z = -33.0;
-
-GLfloat eyex = 0.95, eyey 	= 0.95, eyez = 0.25;
-GLfloat atx  = 1.0, aty 	= 1.0, atz  = 0;
-#else
-// in 2d game, there will be 2 triangles
-const int TRIANGLE_VERTEX_NUM 	= 2;
-const int TILE_VERTEX_NUM 		= 6;
-const int GRID_LINE_VERTEX_NUM	= 64;
-const GLfloat START_POINT_X 	= -200;
-const GLfloat START_POINT_Y 	= -360;
-const GLfloat START_POINT_Z 	= -33.0;
-
-GLfloat eyez = 0.5;
-
-#endif
-
-//board[x][y] represents whether the cell (x,y) is occupied
-bool board[BOARD_WIDTH][BOARD_HEIGHT];
-color4 boardColors[BOARD_WIDTH][BOARD_HEIGHT];
-color4 boardVertexColors[BOARD_WIDTH * BOARD_HEIGHT * TILE_VERTEX_NUM];
-
-// location of vertex attributes in the shader program
-GLuint vPosition;
-GLuint vColor;
-
-// locations of uniform variables in shader program
-GLuint locxsize;
-GLuint locysize;
-
-// VAO and VBO
-GLuint vaoIDs[3]; 
-// One VAO for each object: 0. the grid 1. the board 2. the current piece
-
-GLuint vboIDs[6]; 
-// Two Vertex Buffer Objects for each VAO (specifying vertex positions and colours, respectively)
-
 GLfloat velocity 	= -1.0;
 GLfloat step 		=  1.0;
-
 
 // Game control signal
 bool ifPause 		= false;
@@ -219,7 +229,7 @@ vec2 allRotationsIshape[4][4] =
 	};
 
 // Get Tile Bound 
-//-------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
 struct TileBound{
 	GLfloat left, right, up, down;
 	TileBound(int _left, int _right, int _up, int _down):

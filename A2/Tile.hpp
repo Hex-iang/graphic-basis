@@ -375,6 +375,13 @@ void printTiles()
 
 //-------------------------------------------------------------------------------------------------------------------
 // Move donw a column of tiles that have fruit matching tiles beneath
+bool searchConnectedToEliminatedTiles()
+{
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// Move donw a column of tiles that have fruit matching tiles beneath
 // void addUnsupportedTilesToDropList(bool eliminatedFruitTiles[][BOARD_HEIGHT])
 void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
 {
@@ -386,7 +393,7 @@ void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
             if (eliminatedFruitTiles[col][row]){
                 flag = true;
             }
-            else if ( flag == true && board[col][row]) // && !searchConnectToBottom(vec2(col, row)) )
+            else if ( flag == true && board[col][row] )
             {
                 // if eliminate fruit match make the tile not connected to bottom
                 Tile item(vec2(col, row), boardColors[col][row]);
@@ -411,12 +418,16 @@ void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
 #endif 
                     addTileToDropTiles(item);
                 }
-
+            }
+            else if ( flag == true )
+            {
+                // if the current row is not directly above eliminated row
+                flag = false;
             }
         }
     }
 
-    updateDropTiles();
+//     updateDropTiles();
 
 }
 
@@ -828,9 +839,6 @@ void unsetTiles()
     updateBoard();
 }
 
-// 3D DISPLAY FUNCTION 
-
-
 void updateTiles()
 {
 
@@ -846,16 +854,15 @@ void updateTiles()
         // Contraints that make the tile outside the UP_BOUND of board invisible
         // ==============================================================================
 
-        point4 p1 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33.1, 1);
-        point4 p2 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33.1, 1);
-        point4 p3 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33.1, 1);
-        point4 p4 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33.1, 1);
+        point4 p1 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
+        point4 p2 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
+        point4 p3 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
+        point4 p4 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
 
-#ifdef _3DGAME 
-        point4 p5 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z - .1, 1);
-        point4 p6 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z - .1, 1);
-        point4 p7 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z - .1, 1);
-        point4 p8 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z - .1, 1);
+        point4 p5 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
+        point4 p6 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
+        point4 p7 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
+        point4 p8 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
 
         quad( &newPoints[ 0*QUAD_VERTEX_NUM], p1, p2, p3, p4);
         quad( &newPoints[ 1*QUAD_VERTEX_NUM], p1, p5, p6, p2);
@@ -863,10 +870,6 @@ void updateTiles()
         quad( &newPoints[ 3*QUAD_VERTEX_NUM], p2, p6, p7, p3);
         quad( &newPoints[ 4*QUAD_VERTEX_NUM], p3, p4, p8, p7);
         quad( &newPoints[ 5*QUAD_VERTEX_NUM], p5, p6, p7, p8);
-#else
-        // point4 newPoints[TILE_VERTEX_NUM] = {p1, p2, p3, p2, p3, p4};
-        quad( newPoints, p1, p2, p3, p4);
-#endif
 
         // Put new data in the VBO
         color4 pointsColors[TILE_VERTEX_NUM];
@@ -901,16 +904,15 @@ void updateDropTiles()
             point4 newPoints[TILE_VERTEX_NUM];
             // Contraints that make the tile outside the UP_BOUND of board invisible
             // ==============================================================================
-            point4 p1 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33.1, 1);
-            point4 p2 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33.1, 1);
-            point4 p3 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33.1, 1);
-            point4 p4 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33.1, 1);
+            point4 p1 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
+            point4 p2 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
+            point4 p3 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
+            point4 p4 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
 
-#ifdef _3DGAME 
-            point4 p5 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z - .1, 1);
-            point4 p6 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z - .1, 1);
-            point4 p7 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z - .1, 1);
-            point4 p8 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z - .1, 1);
+            point4 p5 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
+            point4 p6 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
+            point4 p7 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
+            point4 p8 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
 
             // Two points are used by two triangles each
 
@@ -920,11 +922,6 @@ void updateDropTiles()
             quad( &newPoints[ 3*QUAD_VERTEX_NUM], p2, p6, p7, p3);
             quad( &newPoints[ 4*QUAD_VERTEX_NUM], p3, p4, p8, p7);
             quad( &newPoints[ 5*QUAD_VERTEX_NUM], p5, p6, p7, p8);
-#else
-            // point4 newPoints[TILE_VERTEX_NUM] = {p1, p2, p3, p2, p3, p4};
-            quad( newPoints, p1, p2, p3, p4);
-
-#endif
 
             // Put new data in the VBO
             color4 pointsColors[TILE_VERTEX_NUM];

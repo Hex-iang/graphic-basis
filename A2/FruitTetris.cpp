@@ -1,7 +1,7 @@
 #include "FruitTetris.hpp"
 #include "Utility.hpp"
 #include "Tile.hpp"
-
+#include "Camera.hpp"
 // =================================================================================================================
 // Tile Controller Function  
 
@@ -18,16 +18,15 @@ void updateBoard()
             {
                 point4 newPoints[TILE_VERTEX_NUM];
                 // If the current board have tiles, then draw it
-                point4 p1 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33, 1);
-                point4 p2 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33, 1);
-                point4 p3 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z + 33, 1);
-                point4 p4 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z + 33, 1);
+                point4 p1 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN, 1);
+                point4 p2 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN, 1);
+                point4 p3 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN, 1);
+                point4 p4 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN, 1);
 
-#ifdef _3DGAME 
-                point4 p5 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z - .0, 1);
-                point4 p6 = point4(START_POINT_X + 33.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z - .0, 1);
-                point4 p7 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 66.0  + (y * 33.0), START_POINT_Z - .0, 1);
-                point4 p8 = point4(START_POINT_X + 66.0 + (x * 33.0), START_POINT_Y + 33.0  + (y * 33.0), START_POINT_Z - .0, 1);
+                point4 p5 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_0, 1);
+                point4 p6 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_0, 1);
+                point4 p7 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_0, 1);
+                point4 p8 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_0, 1);
 
                 quad( &newPoints[ 0*QUAD_VERTEX_NUM], p1, p2, p3, p4);
                 quad( &newPoints[ 1*QUAD_VERTEX_NUM], p1, p5, p6, p2);
@@ -35,10 +34,7 @@ void updateBoard()
                 quad( &newPoints[ 3*QUAD_VERTEX_NUM], p2, p6, p7, p3);
                 quad( &newPoints[ 4*QUAD_VERTEX_NUM], p3, p4, p8, p7);
                 quad( &newPoints[ 5*QUAD_VERTEX_NUM], p5, p6, p7, p8);         
-#else
-                // point4 newPoints[TILE_VERTEX_NUM] = {p1, p2, p3, p2, p3, p4};
-                quad( newPoints, p1, p2, p3, p4);
-#endif                       
+                   
                 color4 pointsColors[TILE_VERTEX_NUM];
 
                 genColorVertexFromTileColor(pointsColors, boardColors[x][y]);
@@ -84,7 +80,6 @@ bool checkEndOfGame()
 
 //-------------------------------------------------------------------------------------------------------------------
 // Init back grid of the board
-#ifdef _3DGAME 
 
 void initGrid()
 {
@@ -98,14 +93,14 @@ void initGrid()
     for (int i = 0; i < BOARD_HEIGHT; i++){
         for (int j = 0; j < BOARD_WIDTH; j++)
         {       
-            point4 p1 = point4(START_POINT_X + 33.0 + (j * 33.0), START_POINT_Y + 33.0  + (i * 33.0), START_POINT_Z + 33.3, 1);
-            point4 p2 = point4(START_POINT_X + 33.0 + (j * 33.0), START_POINT_Y + 66.0  + (i * 33.0), START_POINT_Z + 33.3, 1);
-            point4 p3 = point4(START_POINT_X + 66.0 + (j * 33.0), START_POINT_Y + 66.0  + (i * 33.0), START_POINT_Z + 33.3, 1);
-            point4 p4 = point4(START_POINT_X + 66.0 + (j * 33.0), START_POINT_Y + 33.0  + (i * 33.0), START_POINT_Z + 33.3, 1);
-            point4 p5 = point4(START_POINT_X + 33.0 + (j * 33.0), START_POINT_Y + 33.0  + (i * 33.0), START_POINT_Z - .3, 1);
-            point4 p6 = point4(START_POINT_X + 33.0 + (j * 33.0), START_POINT_Y + 66.0  + (i * 33.0), START_POINT_Z - .3, 1);
-            point4 p7 = point4(START_POINT_X + 66.0 + (j * 33.0), START_POINT_Y + 66.0  + (i * 33.0), START_POINT_Z - .3, 1);
-            point4 p8 = point4(START_POINT_X + 66.0 + (j * 33.0), START_POINT_Y + 33.0  + (i * 33.0), START_POINT_Z - .3, 1);
+            point4 p1 = point4(START_POINT_X + EDGE_LEN     + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (i * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_3, 1);
+            point4 p2 = point4(START_POINT_X + EDGE_LEN     + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (i * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_3, 1);
+            point4 p3 = point4(START_POINT_X + EDGE_LEN * 2 + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (i * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_3, 1);
+            point4 p4 = point4(START_POINT_X + EDGE_LEN * 2 + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (i * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_3, 1);
+            point4 p5 = point4(START_POINT_X + EDGE_LEN     + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (i * EDGE_LEN), START_POINT_Z - DEPTH_3, 1);
+            point4 p6 = point4(START_POINT_X + EDGE_LEN     + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (i * EDGE_LEN), START_POINT_Z - DEPTH_3, 1);
+            point4 p7 = point4(START_POINT_X + EDGE_LEN * 2 + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (i * EDGE_LEN), START_POINT_Z - DEPTH_3, 1);
+            point4 p8 = point4(START_POINT_X + EDGE_LEN * 2 + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (i * EDGE_LEN), START_POINT_Z - DEPTH_3, 1);
 
             // Two points are used by two triangles each
             quadLine( &gridpoints[ TILE_LINE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 0*QUAD_LINE_VERTEX_NUM], p1, p2, p3, p4);
@@ -147,55 +142,6 @@ void initGrid()
     glEnableVertexAttribArray(vColor); 
     // Enable the attribute
 }
-#else
-void initGrid()
-{
-    // ***Generate geometry data
-    point4 gridpoints[GRID_LINE_VERTEX_NUM]; 
-    // Array containing the 64 points of the 32 total lines ( 21 horizontal line + 11 vertical line ) to be later put in the VBO
-    point4 gridcolours[GRID_LINE_VERTEX_NUM]; 
-    // One colour per vertex
-  
-    // Vertical lines 
-    for (int i = 0; i < 11; i++){
-        gridpoints[2*i]     = point4((START_POINT_X + 33.0 + (33.0 * i)), START_POINT_Y + 33.0,    START_POINT_Z + .4, 1);
-        gridpoints[2*i + 1] = point4((START_POINT_X + 33.0 + (33.0 * i)), START_POINT_Y + 693.0,   START_POINT_Z + .4, 1);
-    }
-    // Horizontal lines
-    for (int i = 0; i < 21; i++){
-        gridpoints[22 + 2*i]     = point4(START_POINT_X + 33.0,     (START_POINT_Y + 33.0 + (33.0 * i)), START_POINT_Z - .4, 1);
-        gridpoints[22 + 2*i + 1] = point4(START_POINT_X + 363.0,    (START_POINT_Y + 33.0 + (33.0 * i)), START_POINT_Z - .4, 1);
-    }
-    // Make all grid lines white
-    for (int i = 0; i < GRID_LINE_VERTEX_NUM; i++)
-        gridcolours[i] = white;
-
-    // *** set up buffer objects
-    // Set up first VAO (representing grid lines)
-    glBindVertexArray(vaoIDs[VAO_GRID]);
-    // Bind the first VAO
-    glGenBuffers(2, vboIDs); 
-    // Create two Vertex Buffer Objects for this VAO (positions, colours)
-
-    // Grid vertex positions
-    glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_GRID_POSITION]); 
-    // Bind the first grid VBO (vertex positions)
-    glBufferData(GL_ARRAY_BUFFER, sizeof(gridpoints), gridpoints, GL_STATIC_DRAW); 
-    // Put the grid points in the VBO
-    glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0)); 
-    glEnableVertexAttribArray(vPosition); 
-    // Enable the attribute
-    
-    // Grid vertex colours
-    glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_GRID_COLOR]); 
-    // Bind the second grid VBO (vertex colours)
-    glBufferData(GL_ARRAY_BUFFER, sizeof(gridcolours), gridcolours, GL_STATIC_DRAW); 
-    // Put the grid colours in the VBO
-    glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-    glEnableVertexAttribArray(vColor); 
-    // Enable the attribute
-}
-#endif
 
 //-------------------------------------------------------------------------------------------------------------------
 // Init playing board
@@ -263,12 +209,13 @@ void init()
     srand(time(NULL));
 
     // Load shaders and use the shader program
-    // GLuint program = InitShader("vshader3d.glsl", "fshader3d.glsl");
-    GLuint program = InitShader("vshader.glsl", "fshader.glsl");
+    UniversalShader = InitShader("vshader.glsl", "fshader.glsl");
 
-    model_view = glGetUniformLocation( program, "model_view" );
+    loc_model       = glGetUniformLocation( program, "model" );
+    loc_view        = glGetUniformLocation( program, "view" ); 
+    loc_projection  = glGetUniformLocation( program, "projection" );
 
-    glUseProgram(program);
+    glUseProgram(UniversalShader);
 
     // Get the location of the attributes (for glVertexAttribPointer() calls)
     vPosition = glGetAttribLocation(program, "vPosition");
@@ -276,10 +223,6 @@ void init()
 
     // Create 3 Vertex Array Objects, each representing one 'object'. Store the names in array vaoIDs
     glGenVertexArrays(3, &vaoIDs[0]);
-
-    // The location of the uniform variables in the shader program
-    locxsize = glGetUniformLocation(program, "xsize"); 
-    locysize = glGetUniformLocation(program, "ysize");
 
     // Game initialization
     newGame();
@@ -336,11 +279,8 @@ void processDisplay()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glUniform1i(locxsize, xsize); 
-    // x and y sizes are passed to the shader program to maintain shape of the vertices on screen
-    glUniform1i(locysize, ysize);
 
-    GLfloat currentFrame = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0;
+    GLfloat currentFrame = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
     deltaTime += (currentFrame - lastFrame);
     lastFrame = currentFrame;
 
@@ -376,7 +316,7 @@ void processDisplay()
         deltaTime = 0;
         if( !ifPause && !ifGameStop)
         {
-            if( fallTiles( vec2(0.0, velocity) ))
+            if( fallTiles( vec2(0.0f, velocity) ))
             {
 
                 checkFullRowsAndEliminate();
@@ -395,23 +335,16 @@ void processDisplay()
         }
     }
 
-#ifdef _3DGAME
+    glm::mat4 projection = glm::perspective(45.0f, float(xsize) / float(ysize), 0.1f, 1000.0f);
+    glm::mat4 view = myCamera.GetViewMatrix();
 
-    point4  eye( eyex, eyey, eyez, 1.0 );
-    point4  at( atx, aty, atz, 1.0 );
-    vec4    up( 0.0, 1.0, 0.0, 0.0 );
+    // Place holder
+    glUniformMatrix4fv( loc_view, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv( loc_projection, 1, GL_FALSE, glm::value_ptr(projection)); 
 
-    mat4  mv = LookAt( eye, at, up );
-    glUniformMatrix4fv( model_view, 1, GL_TRUE, mv );
 
-#else
-    mat4  mv = LookAt( point4(1.0, 1.0, eyez, 1.0),
-        point4(1.0, 1.0, 0, 1.0), 
-        vec4(0.0, 1.0, 0.0, 0.0 ));
-
-    glUniformMatrix4fv( model_view, 1, GL_TRUE, mv );
-
-#endif
+    glm::mat4 model = glm::mat4();
+    glUniformMatrix4fv( loc_model, 1, GL_FALSE, glm::value_ptr(model));
 
     int boardSize = 0;
     for (int y = 0; y < BOARD_HEIGHT; ++y)
@@ -454,21 +387,45 @@ void processReshape(GLsizei width, GLsizei height)
 // Handle arrow key keypresses
 void processSpecialKey(int key, int x, int y)
 {
+    int mod;
+    mod = glutGetModifiers();
     // Initial attempt for special key event
     vec2 displacement = vec2(0,0);
 
     switch(key) {
     case GLUT_KEY_UP :
-        rotateTile();
+        if ( mod == GLUT_ACTIVE_CTRL )
+        {
+            cout << "CTRL + UP";
+        }
+        else
+            rotateTile();
         break;
     case GLUT_KEY_DOWN :
-        displacement -= vec2(0, step);
+        if ( mod == GLUT_ACTIVE_CTRL )
+        {
+            cout << "CTRL + DOWN";
+        }
+        else
+            displacement -= vec2(0, step);
         break;
     case GLUT_KEY_LEFT :
-        displacement -= vec2(step, 0);
+        if ( mod == GLUT_ACTIVE_CTRL )
+        {
+            cout << "CTRL + LEFT";
+        }
+        else
+            displacement -= vec2(step, 0);
+
         break;
     case GLUT_KEY_RIGHT:
-        displacement += vec2(step, 0);
+        if ( mod == GLUT_ACTIVE_CTRL )
+        {
+            cout << "CTRL + RIGHT";
+        }
+        else
+            displacement += vec2(step, 0);
+        
         break;
     }
 
@@ -514,54 +471,6 @@ void processKeyboard(unsigned char key, int x, int y)
         // 'r' key restarts the game
             restartGame();
             break;
-#ifdef _3DGAME
-        case 'w': 
-            eyex    += 0.01;
-            cout << "================================================" << endl;
-            cout << "eyex: " << eyex <<", eyey: " << eyey << ", eyez: " << eyez << endl;
-            cout << "Window - sizex: " << xsize <<", sizey: " << ysize << endl;
-            break;
-        case 's': 
-            eyex    -= 0.01;
-            cout << "================================================" << endl;
-            cout << "eyex: " << eyex <<", eyey: " << eyey << ", eyez: " << eyez << endl;
-            cout << "Window - sizex: " << xsize <<", sizey: " << ysize << endl;
-            break;
-        case 'a': 
-            eyey    += 0.01;
-            cout << "================================================" << endl;
-            cout << "eyex: " << eyex <<", eyey: " << eyey << ", eyez: " << eyez << endl;
-            cout << "Window - sizex: " << xsize <<", sizey: " << ysize << endl;
-            break;
-        case 'd': 
-            eyey    -= 0.01;
-            cout << "================================================" << endl;
-            cout << "eyex: " << eyex <<", eyey: " << eyey << ", eyez: " << eyez << endl;
-            cout << "Window - sizex: " << xsize <<", sizey: " << ysize << endl;
-            break;
-        case 'z': 
-            eyez    += 0.01;
-            cout << "================================================" << endl;
-            cout << "eyex: " << eyex <<", eyey: " << eyey << ", eyez: " << eyez << endl;
-            cout << "Window - sizex: " << xsize <<", sizey: " << ysize << endl;
-            break;
-        case 'x': 
-            eyez    -= 0.01;
-            cout << "================================================" << endl;
-            cout << "eyex: " << eyex <<", eyey: " << eyey << ", eyez: " << eyez << endl;
-            cout << "Window - sizex: " << xsize <<", sizey: " << ysize << endl;
-            break;
-         case '2':
-            eyex    = 1.0;
-            eyey    = 1.0;
-            eyez    = .7;
-            break;
-        case '3':
-            eyex = 0.95;
-            eyey   = 0.95;
-            eyez = 0.25;
-            break;  
-#endif
         case ' ':
             shiftTileColor();
             break;
