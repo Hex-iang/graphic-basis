@@ -13,11 +13,9 @@ enum Camera_Movement {
 };
 
 // Default camera values
-const GLfloat YAW        = -90.0f;
-const GLfloat PITCH      =  0.0f;
 const GLfloat SPEED      =  3.0f;
 const GLfloat SENSITIVTY =  0.25f;
-const GLfloat ZOOM       =  45.0f;
+const GLfloat FOV        =  45.0f; // field of view
 
 
 // An abstract camera class that processes input and calculates the corresponding Eular Angles, Vectors and Matrices for use in OpenGL
@@ -30,30 +28,30 @@ public:
     glm::vec3 Up;
     glm::vec3 Right;
     glm::vec3 WorldUp;
-    // Eular Angles
-    GLfloat Yaw;
-    GLfloat Pitch;
+    glm::vec3 Center;
+
     // Camera options
     GLfloat MovementSpeed;
     GLfloat MouseSensitivity;
-    GLfloat Zoom;
+    GLfloat Fov;
+    GLfloat Radius;
+    GLfloat Alpha;
 
     // Constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW, GLfloat pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVTY), Zoom(ZOOM)
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3 center = glm::vec3(0.0f, 0.0f, -1.0f)) 
+    : MovementSpeed(SPEED), MouseSensitivity(SENSITIVTY), Fov(FOV), Alpha(0.0f)
     {
         this->Position = position;
+        this->Center = center;
+        
+        this->Front = glm::normalize(center - position); 
+
+        this->Radius = glm::distance(position, center);
+#ifdef DEBUG
+        cout << "Normalized Front: " << this->Front.x << ", " << this->Front.y << ", " << this->Front.z << endl;
+#endif
         this->WorldUp = up;
-        this->Yaw = yaw;
-        this->Pitch = pitch;
-        this->updateCameraVectors();
-    }
-    // Constructor with scalar values
-    Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY, GLfloat upZ, GLfloat yaw, GLfloat pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVTY), Zoom(ZOOM)
-    {
-        this->Position = glm::vec3(posX, posY, posZ);
-        this->WorldUp = glm::vec3(upX, upY, upZ);
-        this->Yaw = yaw;
-        this->Pitch = pitch;
+
         this->updateCameraVectors();
     }
 
@@ -63,10 +61,33 @@ public:
         return glm::lookAt(this->Position, this->Position + this->Front, this->Up);
     }
 
-    // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-    void ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime)
+    void RotateCamera(GLfloat increment = 5.0f)
     {
-        GLfloat velocity = this->MovementSpeed * deltaTime;
+        this->Alpha += increment; 
+
+        if (this->Alpha >= 360)
+            this->Alpha = 0;
+        else if(this->Alpha <= 0)
+            this->Alpha = 360;
+
+
+        GLfloat camX = this->Radius * sin(glm::radians(this->Alpha));
+        GLfloat camZ = this->Radius * cos(glm::radians(this->Alpha));
+
+        this->Position = glm::vec3(camX, this->Position.y, camZ);
+
+#ifdef DEBUG
+        cout << "Camera Alpha: " << this->Alpha << endl;
+        cout << "Camera Position: x=" << this->Position.x << ", y=" << this->Position.y << ", z=" << this->Position.z << endl;
+#endif
+        this->updateCameraVectors();
+    }
+
+    // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
+    void MoveCamera(Camera_Movement direction, GLfloat dt)
+    {
+        GLfloat velocity = this->MovementSpeed * dt;
+
         if (direction == FORWARD)
             this->Position += this->Front * velocity;
         if (direction == BACKWARD)
@@ -75,17 +96,28 @@ public:
             this->Position -= this->Right * velocity;
         if (direction == RIGHT)
             this->Position += this->Right * velocity;
+
+        this->Radius = glm::distance(this->Position, this->Center);
+
+
+#ifdef DEBUG
+        cout << "Camera Radius: " << this->Radius << endl;
+#endif
     }
 
     // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-    void ProcessMouseScroll(GLfloat yoffset)
+    void ChangeFOV(GLfloat yoffset)
     {
-        if (this->Zoom >= 1.0f && this->Zoom <= 45.0f)
-            this->Zoom -= yoffset;
-        if (this->Zoom <= 1.0f)
-            this->Zoom = 1.0f;
-        if (this->Zoom >= 45.0f)
-            this->Zoom = 45.0f;
+
+        if (this->Fov >= 1.0f && this->Fov <= 60.0f)
+            this->Fov -= yoffset;
+
+        // cout << "Field of View in Degree: " << this->Fov << endl;
+
+        if (this->Fov <= 1.0f)
+            this->Fov = 1.0f;
+        if (this->Fov >= 60.0f)
+            this->Fov = 60.0f;
     }
 
 private:
@@ -94,10 +126,8 @@ private:
     {
         // Calculate the new Front vector
         glm::vec3 front;
-        front.x = cos(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
-        front.y = sin(glm::radians(this->Pitch));
-        front.z = sin(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
-        this->Front = glm::normalize(front);
+
+        this->Front = glm::normalize(this->Center - this->Position);
         
         // Also re-calculate the Right and Up vector
         this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));  

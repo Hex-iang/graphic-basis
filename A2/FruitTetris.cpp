@@ -1,7 +1,7 @@
 #include "FruitTetris.hpp"
 #include "Utility.hpp"
 #include "Tile.hpp"
-#include "Camera.hpp"
+#include "RobotArm.hpp"
 // =================================================================================================================
 // Tile Controller Function  
 
@@ -77,6 +77,28 @@ bool checkEndOfGame()
 
 // ================================================================================================================= 
 // Initialization controller
+
+//-------------------------------------------------------------------------------------------------------------------
+// Init robot arm
+void initRobotArm()
+{
+    // Bind the Current vao to Tils's array
+    glBindVertexArray(vaoIDs[VAO_ROBOTARM]);
+    glGenBuffers(2, &vboIDs[6]);
+
+    // Current tile vertex positions
+    glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_ROBOTARM_POSITION]);
+    glBufferData(GL_ARRAY_BUFFER, ARMVERTICES, NULL, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+    glEnableVertexAttribArray(vPosition);
+
+    // Current tile vertex colours
+    glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_ROBOTARM_COLOR]);
+    glBufferData(GL_ARRAY_BUFFER, ARMVERTICES, NULL, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+    glEnableVertexAttribArray(vColor);    
+}
+
 
 //-------------------------------------------------------------------------------------------------------------------
 // Init back grid of the board
@@ -167,14 +189,14 @@ void initBoard()
 
     // Grid cell vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_POSITION]);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), boardpoints, GL_STATIC_DRAW);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), boardpoints, GL_STATIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(vPosition);
 
     // Grid cell vertex colours
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_COLOR]);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), boardVertexColors, GL_DYNAMIC_DRAW);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), boardVertexColors, GL_DYNAMIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(vColor);
@@ -209,20 +231,15 @@ void init()
     srand(time(NULL));
 
     // Load shaders and use the shader program
-    UniversalShader = InitShader("vshader.glsl", "fshader.glsl");
-
-    loc_model       = glGetUniformLocation( program, "model" );
-    loc_view        = glGetUniformLocation( program, "view" ); 
-    loc_projection  = glGetUniformLocation( program, "projection" );
-
-    glUseProgram(UniversalShader);
+    RobotArmShader = InitShader("shaders/robotvshader.glsl", "shaders/robotfshader.glsl");
+    UniversalShader = InitShader("shaders/vshader.glsl", "shaders/fshader.glsl");
 
     // Get the location of the attributes (for glVertexAttribPointer() calls)
-    vPosition = glGetAttribLocation(program, "vPosition");
-    vColor    = glGetAttribLocation(program, "vColor");
+    vPosition = glGetAttribLocation(UniversalShader, "vPosition");
+    vColor    = glGetAttribLocation(UniversalShader, "vColor");
 
     // Create 3 Vertex Array Objects, each representing one 'object'. Store the names in array vaoIDs
-    glGenVertexArrays(3, &vaoIDs[0]);
+    glGenVertexArrays(4, &vaoIDs[0]);
 
     // Game initialization
     newGame();
@@ -249,6 +266,7 @@ void newGame()
     initGrid();
     initBoard();
     initCurrentTile();
+    initRobotArm();
     newTile();  
 }
 
@@ -283,6 +301,9 @@ void processDisplay()
     GLfloat currentFrame = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
     deltaTime += (currentFrame - lastFrame);
     lastFrame = currentFrame;
+
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+    // Control game frame length
 
     if (deltaTime > 0.4 && !ifGameStop && dropTiles.empty())
     {
@@ -335,13 +356,29 @@ void processDisplay()
         }
     }
 
-    glm::mat4 projection = glm::perspective(45.0f, float(xsize) / float(ysize), 0.1f, 1000.0f);
+
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+    // According to the current setting, generate the basic view matrix and projection matrix
+
+    glm::mat4 projection = glm::perspective(glm::radians(myCamera.Fov)                      // convert the Field of View to radians
+                                            , float(xsize) / float(ysize), 0.1f, 100.0f);
+
     glm::mat4 view = myCamera.GetViewMatrix();
 
-    // Place holder
-    glUniformMatrix4fv( loc_view, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv( loc_projection, 1, GL_FALSE, glm::value_ptr(projection)); 
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+    // Display basic FruitTetris
 
+    loc_model       = glGetUniformLocation( UniversalShader, "model" );
+    loc_view        = glGetUniformLocation( UniversalShader, "view" ); 
+    loc_projection  = glGetUniformLocation( UniversalShader, "projection" );
+    
+    glUseProgram(UniversalShader);
+
+    // *Important* - Use the universal shader program
+
+    // Place holder
+    glUniformMatrix4fv( loc_view,       1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv( loc_projection, 1, GL_FALSE, glm::value_ptr(projection));
 
     glm::mat4 model = glm::mat4();
     glUniformMatrix4fv( loc_model, 1, GL_FALSE, glm::value_ptr(model));
@@ -360,11 +397,21 @@ void processDisplay()
         tileSize += it->size();
     }
 
-    glBindVertexArray(vaoIDs[2]); // Bind the VAO representing the current tile (to be drawn on top of the board)
-    glDrawArrays(GL_TRIANGLES, 0, tileSize*TILE_VERTEX_NUM); // Draw the current tile (8 triangles)
+    glBindVertexArray(vaoIDs[2]); 
+    // Bind the VAO representing the current tile (to be drawn on top of the board)
+    glDrawArrays(GL_TRIANGLES, 0, tileSize*TILE_VERTEX_NUM); 
+    // Draw the current tile (8 triangles)
 
-    glBindVertexArray(vaoIDs[0]); // Bind the VAO representing the grid lines (to be drawn on top of everything else)
-    glDrawArrays(GL_LINES, 0, GRID_LINE_VERTEX_NUM); // Draw the grid lines (21+11 = 32 lines)
+    glBindVertexArray(vaoIDs[0]); 
+    // Bind the VAO representing the grid lines (to be drawn on top of everything else)
+    glDrawArrays(GL_LINES, 0, GRID_LINE_VERTEX_NUM); 
+    // Draw the grid lines (21+11 = 32 lines)
+
+
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+    // Display Robot Arm
+
+
 
     glutPostRedisplay();
     glutSwapBuffers();
@@ -412,7 +459,7 @@ void processSpecialKey(int key, int x, int y)
     case GLUT_KEY_LEFT :
         if ( mod == GLUT_ACTIVE_CTRL )
         {
-            cout << "CTRL + LEFT";
+            myCamera.RotateCamera(1.0f);
         }
         else
             displacement -= vec2(step, 0);
@@ -421,7 +468,7 @@ void processSpecialKey(int key, int x, int y)
     case GLUT_KEY_RIGHT:
         if ( mod == GLUT_ACTIVE_CTRL )
         {
-            cout << "CTRL + RIGHT";
+            myCamera.RotateCamera(-1.0f);
         }
         else
             displacement += vec2(step, 0);
@@ -449,7 +496,6 @@ void processSpecialKey(int key, int x, int y)
         }
     }
 }
-
 //-------------------------------------------------------------------------------------------------------------------
 
 // Handles standard keypresses
@@ -468,8 +514,30 @@ void processKeyboard(unsigned char key, int x, int y)
             pauseResumeGame();
             break;
         case 'r': 
-        // 'r' key restarts the game
+            // 'r' key restarts the game
             restartGame();
+            break;
+
+        // Key for change camera's field of view
+        case 'z':
+            myCamera.ChangeFOV(1.0f);
+            break;
+        case 'x':
+            myCamera.ChangeFOV(-1.0f);
+            break;
+
+        // Key for change camera's position
+        case 'i':
+            myCamera.MoveCamera(FORWARD, deltaTime);
+            break;
+        case 'k':
+            myCamera.MoveCamera(BACKWARD, deltaTime);
+            break;
+        case 'j':
+            myCamera.MoveCamera(LEFT, deltaTime);
+            break;
+        case 'l':
+            myCamera.MoveCamera(RIGHT, deltaTime);
             break;
         case ' ':
             shiftTileColor();

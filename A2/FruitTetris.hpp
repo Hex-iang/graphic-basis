@@ -10,7 +10,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include <vector>
 #include <iomanip>
-#include "Camera.hpp"
+
 using namespace std;
 
 // ============================================================================================
@@ -21,7 +21,10 @@ using namespace std;
 // Option for compiling 2D version game or 3D version game
 #define DEBUG
 // ----------------------------------------------------------------------------------------------
+// To include camera class
+#include "Camera.hpp"
 
+// ----------------------------------------------------------------------------------------------
 
 #define TILE_TYPE_NUM 		3
 #define TILE_COLOR_NUM		5
@@ -32,16 +35,15 @@ using namespace std;
 #define VBO_BOARD_COLOR			3
 #define VBO_TILE_POSITION		4
 #define VBO_TILE_COLOR 			5
-
-// #define VBO_DROPTILE_COLOR 		6
-// #define VBO_DROPTILE_POSITION 	7
+#define VBO_ROBOTARM_COLOR 		6
+#define VBO_ROBOTARM_POSITION 	7
 
 
 
 #define VAO_GRID			0
 #define VAO_BOARD			1
 #define VAO_TILE			2
-// #define VAO_DROPTILE		3
+#define VAO_ROBOTARM		3
 
 // #define _IN_BOUND(x, y)	 (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 #define _IN_BOUND(x, y)	 (y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
@@ -100,8 +102,8 @@ const color4 tileColorsSet[5] = {
 // OpenGL drawing related structure
 
 // xsize and ysize represent the window size - updated if window is reshaped to prevent stretching of the game
-int xsize = 600; 
-int ysize = 800;
+int xsize = 800; 
+int ysize = 1000;
 
 // Local ID for Shader Matrix
 
@@ -120,18 +122,24 @@ const int GRID_LINE_VERTEX_NUM	= (BOARD_WIDTH + 1)*(BOARD_HEIGHT + 1)*TILE_LINE_
 const GLfloat START_POINT_X = 0;
 const GLfloat START_POINT_Y = 0;
 const GLfloat START_POINT_Z = 0;
+
+const GLfloat EDGE_LEN = 1.0;
+
 const GLfloat DEPTH_1 = EDGE_LEN * .01f;
 const GLfloat DEPTH_0 = EDGE_LEN * .0f;
 const GLfloat DEPTH_3 = EDGE_LEN * .03f;
 
 
-const GLfloat EDGE_LEN = 10.0;
-
 
 // Global Camera Class
-Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 20),	// camera position
-				glm::vec3( 0.0f, 1.0f, 0.0f)						// camera up direction
+Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 30),		// camera position
+				glm::vec3( 0.0f, 1.0f, 0.0f),											// camera up direction
+				glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2, EDGE_LEN * .5f)			// camera looked center		
 				);
+
+// Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 30),	// camera position
+// 				glm::vec3( 0.0f, 1.0f, 0.0f)										// camera up direction
+// 				);
 
 // Global structure for different shader program
 GLuint UniversalShader;
@@ -147,10 +155,10 @@ GLuint vPosition;
 GLuint vColor;
 
 // VAO and VBO
-GLuint vaoIDs[3]; 
-// One VAO for each object: 0. the grid 1. the board 2. the current piece
+GLuint vaoIDs[4]; 
+// One VAO for each object: 0. the grid 1. the board 2. the current tiles 3. robot arm
 
-GLuint vboIDs[6]; 
+GLuint vboIDs[8]; 
 // Two Vertex Buffer Objects for each VAO (specifying vertex positions and colours, respectively)
 
 

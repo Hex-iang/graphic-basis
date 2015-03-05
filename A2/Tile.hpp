@@ -760,7 +760,7 @@ bool fallTiles(vec2 direction)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-// Places the current tile - update the board vertex colour VBO and the array maintaining occupied cells
+// Places the current tile - update the board vertex colour VBO and the array maintainiong occupied cells
 void setDropTiles(vector<Tile> &_tile)
 {
     // First check if the collision between tile and grid is detected
