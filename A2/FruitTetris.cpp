@@ -352,7 +352,7 @@ void processDisplay()
 
         if( !ifPause && !ifGameStop)
         {
-            if( dropTiles.empty()){
+            if( tilesReleased == true ){
                 if ( false == moveTile(vec2(0.0, velocity )) )
                 {
 
@@ -370,6 +370,10 @@ void processDisplay()
                     }
 
                 }
+            }
+            else
+            {
+                // Start counting down
             }
         }
     }
@@ -504,20 +508,10 @@ void processSpecialKey(int key, int x, int y)
 
     switch(key) {
     case GLUT_KEY_UP :
-        if ( mod == GLUT_ACTIVE_CTRL )
-        {
-            cout << "CTRL + UP";
-        }
-        else
-            rotateTile();
+        rotateTile();
         break;
     case GLUT_KEY_DOWN :
-        if ( mod == GLUT_ACTIVE_CTRL )
-        {
-            cout << "CTRL + DOWN";
-        }
-        else
-            displacement -= vec2(0, step);
+        displacement -= vec2(0, step);
         break;
     case GLUT_KEY_LEFT :
         if ( mod == GLUT_ACTIVE_CTRL )
@@ -539,7 +533,7 @@ void processSpecialKey(int key, int x, int y)
         break;
     }
 
-    if( dropTiles.empty() && !ifPause && !ifGameStop ){
+    if( dropTiles.empty() && !ifPause && !ifGameStop && ( tilesReleased == true ) ){
         if( displacement != vec2(0, 0) && false == moveTile(displacement) )
         {
             if (displacement.y < 0)
@@ -564,6 +558,8 @@ void processSpecialKey(int key, int x, int y)
 // Handles standard keypresses
 void processKeyboard(unsigned char key, int x, int y)
 {
+    int mod;
+    mod = glutGetModifiers();
     switch(key) 
     {
         case 033: 
@@ -616,9 +612,17 @@ void processKeyboard(unsigned char key, int x, int y)
         case 'l':
             myCamera.MoveCamera(RIGHT, deltaTime);
             break;
+        case 13:
+            releaseTiles();
+            break;
+        // Shift tile color
         case ' ':
             shiftTileColor();
             break;
+
+        // Test case
+        case 'u':
+            if( mod == GLUT_ACTIVE_CTRL ) cout << "CTRL + u" << endl;
     }
     glutPostRedisplay();
 }

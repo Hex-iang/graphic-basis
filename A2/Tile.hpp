@@ -2,11 +2,21 @@
 #pragma once
 #include "FruitTetris.hpp"
 
+
+//-------------------------------------------------------------------------------------------------------------------
+// Called at the start of play and every time a tile is placed
+
+void releaseTiles()
+{
+    tilesReleased = true;
+}
+
 //-------------------------------------------------------------------------------------------------------------------
 // Called at the start of play and every time a tile is placed
 void newTile()
 {
     tiles.clear();
+    tilesReleased = false;
     // First generate a random tile
     if( tryStopGame() ) return ;
 
@@ -42,7 +52,7 @@ void newTile()
 // Rotate the current tile 
 bool rotateTile()
 {
-    if(!dropTiles.empty() || ifPause || ifGameStop || tiles.empty()) return false;
+    if (!dropTiles.empty() || !ifGameStop || !ifPause || tiles.empty() || (tilesReleased == false) ) return false;
 
     vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
             ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
@@ -109,7 +119,7 @@ bool rotateTile()
 // shift Teris color 
 void shiftTileColor()
 {
-    if (!dropTiles.empty() && !ifGameStop && !ifPause && tiles.empty() ) return;
+    if (!dropTiles.empty() || !ifGameStop || !ifPause || tiles.empty() || (tilesReleased == false) ) return;
 
     color4 oldColor = tiles[3].Color;
 

@@ -107,8 +107,8 @@ const color4 tileColorsSet[5] = {
 // OpenGL drawing related structure
 
 // xsize and ysize represent the window size - updated if window is reshaped to prevent stretching of the game
-int xsize = 800; 
-int ysize = 1000;
+int xsize = 1000; 
+int ysize = 1200;
 
 // Local ID for Shader Matrix
 
@@ -128,7 +128,7 @@ const GLfloat EDGE_LEN = 1.0;
 
 const GLfloat DEPTH_1 = EDGE_LEN * .01f;
 const GLfloat DEPTH_0 = EDGE_LEN * .0f;
-const GLfloat DEPTH_3 = EDGE_LEN * .03f;
+const GLfloat DEPTH_3 = EDGE_LEN * .04f;
 
 
 
@@ -187,6 +187,8 @@ public:
 	color4 Color;
 };
 
+
+bool tilesReleased = false;
 // Global structure for storing current tiles
 vector<Tile> tiles;
 // Global structure for storing dropping tiles
@@ -270,6 +272,7 @@ void newTile();
 bool rotateTile();
 void shiftTileColor();
 void unsetTiles();
+void releaseTiles();
 
 void moveDownRow(int startRow);
 void moveDownRows(bool eliminatedRows[]);
