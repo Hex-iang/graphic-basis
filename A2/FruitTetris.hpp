@@ -23,7 +23,7 @@ using namespace std;
 // ----------------------------------------------------------------------------------------------
 // To include camera class
 #include "Camera.hpp"
-
+#include "RobotArm.hpp"
 // ----------------------------------------------------------------------------------------------
 
 #define TILE_TYPE_NUM 		3
@@ -35,8 +35,8 @@ using namespace std;
 #define VBO_BOARD_COLOR			3
 #define VBO_TILE_POSITION		4
 #define VBO_TILE_COLOR 			5
-#define VBO_ROBOTARM_COLOR 		6
-#define VBO_ROBOTARM_POSITION 	7
+#define VBO_ROBOTARM_POSITION 	6
+#define VBO_ROBOTARM_COLOR 		7
 
 
 
@@ -91,11 +91,16 @@ const color4 black  		= color4(0.0, 0.0, 0.0, 1.0);
 const color4 orange 		= color4(1.0, 	0.549,	0.0,  	1.0); 
 const color4 red 			= color4(1.0, 	0.0, 	0.0, 	1.0);
 const color4 green 			= color4(0.486, 0.988, 	0.0, 	1.0);
-const color4 purple			= color4(1.0, 	0.0, 	1.0, 	1.0);
+const color4 purple			= color4(0.502, 0.0, 	0.502, 	1.0);
 const color4 yellow 		= color4(1.0, 	0.843, 	0.0, 	1.0);
 
+// Extra colors constants
+const color4 blue 			= color4(0.0,	0.0,	1.0,	1.0);
+const color4 cyan			= color4(0.0,	1.0,	1.0,	1.0);
+const color4 magenta		= color4(1.0,	0.0,	1.0,	1.0);
+
 const color4 tileColorsSet[5] = {
-	orange, red, green, purple, yellow
+	orange, red, green, magenta, yellow
 };
 
 //---------------------------------------------------------------------------------------------------------
@@ -119,10 +124,6 @@ const int QUAD_LINE_VERTEX_NUM  = 8;
 const int TILE_LINE_VERTEX_NUM  = 48;
 const int GRID_LINE_VERTEX_NUM	= (BOARD_WIDTH + 1)*(BOARD_HEIGHT + 1)*TILE_LINE_VERTEX_NUM;
 
-const GLfloat START_POINT_X = 0;
-const GLfloat START_POINT_Y = 0;
-const GLfloat START_POINT_Z = 0;
-
 const GLfloat EDGE_LEN = 1.0;
 
 const GLfloat DEPTH_1 = EDGE_LEN * .01f;
@@ -132,10 +133,12 @@ const GLfloat DEPTH_3 = EDGE_LEN * .03f;
 
 
 // Global Camera Class
-Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 30),		// camera position
+Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 40),		// camera position
 				glm::vec3( 0.0f, 1.0f, 0.0f),											// camera up direction
 				glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2, EDGE_LEN * .5f)			// camera looked center		
 				);
+
+RobotArm myRobotArm;
 
 // Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 30),	// camera position
 // 				glm::vec3( 0.0f, 1.0f, 0.0f)										// camera up direction
@@ -277,6 +280,7 @@ bool moveTile(vec2 direction);
 void moveDownTileToEnd();
 
 void quad( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4);
+void colorquad( color4 * pColors, color4 c1, color4 c2, color4 c3, color4 c4);
 void initGrid();
 void initBoard();
 void initCurrentTile();
@@ -310,3 +314,9 @@ void setDropTiles(vector<Tile> &_tile);
 bool searchConnectToBottom(vec2 vertex);
 void addTileToDropTiles(Tile _newDropTile);
 void addTilesToDropTiles(vector<Tile> _newDropTiles);
+
+// Robot Arm Related Functions
+void initRobotArm();
+void drawBase(glm::mat4 model);
+void drawUpperArm(glm::mat4 model);
+void drawLowerArm(glm::mat4 model);

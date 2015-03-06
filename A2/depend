@@ -162,7 +162,7 @@ FruitTetris.o: FruitTetris.cpp /usr/include/stdc-predef.h FruitTetris.hpp \
  /usr/include/c++/4.8/bits/stl_vector.h \
  /usr/include/c++/4.8/bits/stl_bvector.h \
  /usr/include/c++/4.8/bits/vector.tcc /usr/include/c++/4.8/iomanip \
- Camera.hpp Utility.hpp Tile.hpp
+ Camera.hpp Utility.hpp Tile.hpp RobotArm.hpp
 InitShader.o: include/InitShader.cpp /usr/include/stdc-predef.h \
  include/Angel.h /usr/include/c++/4.8/cmath \
  /usr/include/x86_64-linux-gnu/c++/4.8/bits/c++config.h \

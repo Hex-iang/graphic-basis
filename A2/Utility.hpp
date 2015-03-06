@@ -115,3 +115,13 @@ void quadLine( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4)
     pPoints[6] = p4;
     pPoints[7] = p1;
 }
+
+void colorquad( color4 * pColors, color4 c1, color4 c2, color4 c3, color4 c4)
+{
+    pColors[0] = c1;
+    pColors[1] = c2;
+    pColors[2] = c3;
+    pColors[3] = c1;
+    pColors[4] = c3;
+    pColors[5] = c4;	
+}

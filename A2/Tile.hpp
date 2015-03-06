@@ -854,15 +854,15 @@ void updateTiles()
         // Contraints that make the tile outside the UP_BOUND of board invisible
         // ==============================================================================
 
-        point4 p1 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
-        point4 p2 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
-        point4 p3 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
-        point4 p4 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
+        point4 p1 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
+        point4 p2 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
+        point4 p3 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
+        point4 p4 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
 
-        point4 p5 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
-        point4 p6 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
-        point4 p7 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
-        point4 p8 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
+        point4 p5 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
+        point4 p6 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
+        point4 p7 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
+        point4 p8 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
 
         quad( &newPoints[ 0*QUAD_VERTEX_NUM], p1, p2, p3, p4);
         quad( &newPoints[ 1*QUAD_VERTEX_NUM], p1, p5, p6, p2);
@@ -904,15 +904,15 @@ void updateDropTiles()
             point4 newPoints[TILE_VERTEX_NUM];
             // Contraints that make the tile outside the UP_BOUND of board invisible
             // ==============================================================================
-            point4 p1 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
-            point4 p2 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
-            point4 p3 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
-            point4 p4 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_1, 1);
+            point4 p1 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
+            point4 p2 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
+            point4 p3 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
+            point4 p4 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
 
-            point4 p5 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
-            point4 p6 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
-            point4 p7 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
-            point4 p8 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_1, 1);
+            point4 p5 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
+            point4 p6 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
+            point4 p7 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
+            point4 p8 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
 
             // Two points are used by two triangles each
 

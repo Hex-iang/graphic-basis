@@ -1,7 +1,6 @@
 #include "FruitTetris.hpp"
 #include "Utility.hpp"
 #include "Tile.hpp"
-#include "RobotArm.hpp"
 // =================================================================================================================
 // Tile Controller Function  
 
@@ -18,22 +17,22 @@ void updateBoard()
             {
                 point4 newPoints[TILE_VERTEX_NUM];
                 // If the current board have tiles, then draw it
-                point4 p1 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN, 1);
-                point4 p2 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN, 1);
-                point4 p3 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN, 1);
-                point4 p4 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z + EDGE_LEN, 1);
+                point4 p1 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2, 1);
+                point4 p2 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2, 1);
+                point4 p3 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2, 1);
+                point4 p4 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2, 1);
 
-                point4 p5 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_0, 1);
-                point4 p6 = point4(START_POINT_X + EDGE_LEN     + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_0, 1);
-                point4 p7 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (y * EDGE_LEN), START_POINT_Z - DEPTH_0, 1);
-                point4 p8 = point4(START_POINT_X + EDGE_LEN * 2 + (x * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (y * EDGE_LEN), START_POINT_Z - DEPTH_0, 1);
+                point4 p5 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2, 1);
+                point4 p6 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2, 1);
+                point4 p7 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2, 1);
+                point4 p8 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2, 1);
 
-                quad( &newPoints[ 0*QUAD_VERTEX_NUM], p1, p2, p3, p4);
-                quad( &newPoints[ 1*QUAD_VERTEX_NUM], p1, p5, p6, p2);
-                quad( &newPoints[ 2*QUAD_VERTEX_NUM], p1, p5, p8, p4);
-                quad( &newPoints[ 3*QUAD_VERTEX_NUM], p2, p6, p7, p3);
-                quad( &newPoints[ 4*QUAD_VERTEX_NUM], p3, p4, p8, p7);
-                quad( &newPoints[ 5*QUAD_VERTEX_NUM], p5, p6, p7, p8);         
+                quad( &newPoints[ 0*QUAD_VERTEX_NUM ], p1, p2, p3, p4);
+                quad( &newPoints[ 1*QUAD_VERTEX_NUM ], p1, p5, p6, p2);
+                quad( &newPoints[ 2*QUAD_VERTEX_NUM ], p1, p5, p8, p4);
+                quad( &newPoints[ 3*QUAD_VERTEX_NUM ], p2, p6, p7, p3);
+                quad( &newPoints[ 4*QUAD_VERTEX_NUM ], p3, p4, p8, p7);
+                quad( &newPoints[ 5*QUAD_VERTEX_NUM ], p5, p6, p7, p8);         
                    
                 color4 pointsColors[TILE_VERTEX_NUM];
 
@@ -82,19 +81,53 @@ bool checkEndOfGame()
 // Init robot arm
 void initRobotArm()
 {
+    point4 robotArmPoints[ARMVERTICES];
+    color4 robotArmColors[ARMVERTICES];
+
+    point4 vertices[8] = {
+        point4( -EDGE_LEN / 2, -EDGE_LEN / 2,  EDGE_LEN / 2, 1.0 ),
+        point4( -EDGE_LEN / 2,  EDGE_LEN / 2,  EDGE_LEN / 2, 1.0 ),
+        point4(  EDGE_LEN / 2,  EDGE_LEN / 2,  EDGE_LEN / 2, 1.0 ),
+        point4(  EDGE_LEN / 2, -EDGE_LEN / 2,  EDGE_LEN / 2, 1.0 ),
+        point4( -EDGE_LEN / 2, -EDGE_LEN / 2, -EDGE_LEN / 2, 1.0 ),
+        point4( -EDGE_LEN / 2,  EDGE_LEN / 2, -EDGE_LEN / 2, 1.0 ),
+        point4(  EDGE_LEN / 2,  EDGE_LEN / 2, -EDGE_LEN / 2, 1.0 ),
+        point4(  EDGE_LEN / 2, -EDGE_LEN / 2, -EDGE_LEN / 2, 1.0 )
+    };
+
+    quad( &robotArmPoints[ 0*QUAD_VERTEX_NUM ], vertices[0], vertices[1], vertices[2], vertices[3]);
+    quad( &robotArmPoints[ 1*QUAD_VERTEX_NUM ], vertices[0], vertices[4], vertices[5], vertices[1]);
+    quad( &robotArmPoints[ 2*QUAD_VERTEX_NUM ], vertices[0], vertices[4], vertices[7], vertices[3]);
+    quad( &robotArmPoints[ 3*QUAD_VERTEX_NUM ], vertices[1], vertices[5], vertices[6], vertices[2]);
+    quad( &robotArmPoints[ 4*QUAD_VERTEX_NUM ], vertices[2], vertices[3], vertices[7], vertices[6]);
+    quad( &robotArmPoints[ 5*QUAD_VERTEX_NUM ], vertices[4], vertices[5], vertices[6], vertices[7]);
+
+
+    colorquad( &robotArmColors[ 0*QUAD_VERTEX_NUM ], cyan,      cyan,       cyan,       cyan);
+    colorquad( &robotArmColors[ 1*QUAD_VERTEX_NUM ], purple,    purple,     purple,     purple);
+    colorquad( &robotArmColors[ 2*QUAD_VERTEX_NUM ], orange,    orange,     orange,     orange);
+    colorquad( &robotArmColors[ 3*QUAD_VERTEX_NUM ], yellow,    yellow,     yellow,     yellow);
+    colorquad( &robotArmColors[ 4*QUAD_VERTEX_NUM ], purple,    purple,     purple,     purple);
+    colorquad( &robotArmColors[ 5*QUAD_VERTEX_NUM ], cyan,      cyan,      cyan,     cyan);
+
     // Bind the Current vao to Tils's array
     glBindVertexArray(vaoIDs[VAO_ROBOTARM]);
     glGenBuffers(2, &vboIDs[6]);
 
+    vColor    = glGetAttribLocation(RobotArmShader, "vColor");
+    vPosition = glGetAttribLocation(RobotArmShader, "vPosition");
+    // vColor    = glGetAttribLocation(UniversalShader, "vColor");
+    // vPosition = glGetAttribLocation(UniversalShader, "vPosition");
+
     // Current tile vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_ROBOTARM_POSITION]);
-    glBufferData(GL_ARRAY_BUFFER, ARMVERTICES, NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(robotArmPoints), robotArmPoints, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(vPosition);
 
     // Current tile vertex colours
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_ROBOTARM_COLOR]);
-    glBufferData(GL_ARRAY_BUFFER, ARMVERTICES, NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(robotArmColors), robotArmColors, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(vColor);    
 }
@@ -115,14 +148,14 @@ void initGrid()
     for (int i = 0; i < BOARD_HEIGHT; i++){
         for (int j = 0; j < BOARD_WIDTH; j++)
         {       
-            point4 p1 = point4(START_POINT_X + EDGE_LEN     + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (i * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_3, 1);
-            point4 p2 = point4(START_POINT_X + EDGE_LEN     + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (i * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_3, 1);
-            point4 p3 = point4(START_POINT_X + EDGE_LEN * 2 + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (i * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_3, 1);
-            point4 p4 = point4(START_POINT_X + EDGE_LEN * 2 + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (i * EDGE_LEN), START_POINT_Z + EDGE_LEN + DEPTH_3, 1);
-            point4 p5 = point4(START_POINT_X + EDGE_LEN     + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (i * EDGE_LEN), START_POINT_Z - DEPTH_3, 1);
-            point4 p6 = point4(START_POINT_X + EDGE_LEN     + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (i * EDGE_LEN), START_POINT_Z - DEPTH_3, 1);
-            point4 p7 = point4(START_POINT_X + EDGE_LEN * 2 + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN * 2  + (i * EDGE_LEN), START_POINT_Z - DEPTH_3, 1);
-            point4 p8 = point4(START_POINT_X + EDGE_LEN * 2 + (j * EDGE_LEN), START_POINT_Y + EDGE_LEN      + (i * EDGE_LEN), START_POINT_Z - DEPTH_3, 1);
+            point4 p1 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN),   EDGE_LEN / 2 + DEPTH_3, 1);
+            point4 p2 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN),   EDGE_LEN / 2 + DEPTH_3, 1);
+            point4 p3 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN),   EDGE_LEN / 2 + DEPTH_3, 1);
+            point4 p4 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN),   EDGE_LEN / 2 + DEPTH_3, 1);
+            point4 p5 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_3, 1);
+            point4 p6 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_3, 1);
+            point4 p7 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_3, 1);
+            point4 p8 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_3, 1);
 
             // Two points are used by two triangles each
             quadLine( &gridpoints[ TILE_LINE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 0*QUAD_LINE_VERTEX_NUM], p1, p2, p3, p4);
@@ -145,6 +178,9 @@ void initGrid()
     // Bind the first VAO
     glGenBuffers(2, vboIDs); 
     // Create two Vertex Buffer Objects for this VAO (positions, colours)
+
+    vColor    = glGetAttribLocation(UniversalShader, "vColor");
+    vPosition = glGetAttribLocation(UniversalShader, "vPosition");
 
     // Grid vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_GRID_POSITION]); 
@@ -187,6 +223,9 @@ void initBoard()
     glBindVertexArray(vaoIDs[VAO_BOARD]);
     glGenBuffers(2, &vboIDs[2]);
 
+    vColor    = glGetAttribLocation(UniversalShader, "vColor");
+    vPosition = glGetAttribLocation(UniversalShader, "vPosition");
+
     // Grid cell vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_POSITION]);
     // glBufferData(GL_ARRAY_BUFFER, sizeof(boardpoints), boardpoints, GL_STATIC_DRAW);
@@ -210,6 +249,9 @@ void initCurrentTile()
     glBindVertexArray(vaoIDs[VAO_TILE]);
     glGenBuffers(2, &vboIDs[4]);
 
+    vColor    = glGetAttribLocation(UniversalShader, "vColor");
+    vPosition = glGetAttribLocation(UniversalShader, "vPosition");
+
     // Current tile vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]);
     glBufferData(GL_ARRAY_BUFFER, BOARD_WIDTH*BOARD_HEIGHT*TILE_VERTEX_NUM*sizeof(point4), NULL, GL_DYNAMIC_DRAW);
@@ -232,11 +274,10 @@ void init()
 
     // Load shaders and use the shader program
     RobotArmShader = InitShader("shaders/robotvshader.glsl", "shaders/robotfshader.glsl");
+
     UniversalShader = InitShader("shaders/vshader.glsl", "shaders/fshader.glsl");
 
     // Get the location of the attributes (for glVertexAttribPointer() calls)
-    vPosition = glGetAttribLocation(UniversalShader, "vPosition");
-    vColor    = glGetAttribLocation(UniversalShader, "vColor");
 
     // Create 3 Vertex Array Objects, each representing one 'object'. Store the names in array vaoIDs
     glGenVertexArrays(4, &vaoIDs[0]);
@@ -372,6 +413,7 @@ void processDisplay()
     loc_view        = glGetUniformLocation( UniversalShader, "view" ); 
     loc_projection  = glGetUniformLocation( UniversalShader, "projection" );
     
+
     glUseProgram(UniversalShader);
 
     // *Important* - Use the universal shader program
@@ -388,7 +430,7 @@ void processDisplay()
         for (int x = 0; x < BOARD_WIDTH; ++x)
             boardSize += int(board[x][y]);
 
-    glBindVertexArray(vaoIDs[1]); // Bind the VAO representing the grid cells (to be drawn first)
+    glBindVertexArray(vaoIDs[VAO_BOARD]); // Bind the VAO representing the grid cells (to be drawn first)
     glDrawArrays(GL_TRIANGLES, 0, boardSize*TILE_VERTEX_NUM); // Draw the board (10*20*2 = 400 triangles)
 
     // Calculating the tiles/dropTiles number 
@@ -397,12 +439,12 @@ void processDisplay()
         tileSize += it->size();
     }
 
-    glBindVertexArray(vaoIDs[2]); 
+    glBindVertexArray(vaoIDs[VAO_TILE]); 
     // Bind the VAO representing the current tile (to be drawn on top of the board)
     glDrawArrays(GL_TRIANGLES, 0, tileSize*TILE_VERTEX_NUM); 
     // Draw the current tile (8 triangles)
 
-    glBindVertexArray(vaoIDs[0]); 
+    glBindVertexArray(vaoIDs[VAO_GRID]); 
     // Bind the VAO representing the grid lines (to be drawn on top of everything else)
     glDrawArrays(GL_LINES, 0, GRID_LINE_VERTEX_NUM); 
     // Draw the grid lines (21+11 = 32 lines)
@@ -411,6 +453,27 @@ void processDisplay()
     // -----------------------------------------------------------------------------------------------------------------------------------------------
     // Display Robot Arm
 
+    // Switch to another shader 
+    glUseProgram(RobotArmShader);
+
+    loc_model       = glGetUniformLocation( RobotArmShader, "model" );
+    loc_view        = glGetUniformLocation( RobotArmShader, "view" ); 
+    loc_projection  = glGetUniformLocation( RobotArmShader, "projection" );
+
+
+    glBindVertexArray(vaoIDs[VAO_ROBOTARM]);
+
+    glUniformMatrix4fv( loc_view,       1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv( loc_projection, 1, GL_FALSE, glm::value_ptr(projection));
+
+    model = glm::mat4();
+
+    myRobotArm.drawBase(model, loc_model);
+    
+    myRobotArm.drawUpperArm(model, loc_model);
+
+    myRobotArm.drawLowerArm(model, loc_model);
+    // draw
 
 
     glutPostRedisplay();
@@ -516,6 +579,20 @@ void processKeyboard(unsigned char key, int x, int y)
         case 'r': 
             // 'r' key restarts the game
             restartGame();
+            break;
+
+        // Key for controlling Robot Arm
+        case 'a':
+            myRobotArm.Rotate(INC_THETA, 1.0f);
+            break;
+        case 'd':
+            myRobotArm.Rotate(DEC_THETA, 1.0f);
+            break;
+        case 'w':
+            myRobotArm.Rotate(INC_PHI, 1.0f);
+            break;
+        case 's':
+            myRobotArm.Rotate(DEC_PHI, 1.0f);
             break;
 
         // Key for change camera's field of view
