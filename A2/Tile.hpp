@@ -16,7 +16,8 @@ void releaseTiles()
 void newTile()
 {
     tiles.clear();
-    tilesReleased = false;
+    tilesReleased = true;
+
     // First generate a random tile
     if( tryStopGame() ) return ;
 
@@ -42,17 +43,13 @@ void newTile()
         tiles.push_back(tmpTile);
     }
 
-    // Call update function to draw the tile with its position as well as its color
-    updateTiles(); 
-
-    glBindVertexArray(0);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 // Rotate the current tile 
 bool rotateTile()
 {
-    if (!dropTiles.empty() || !ifGameStop || !ifPause || tiles.empty() || (tilesReleased == false) ) return false;
+    if (!dropTiles.empty() || ifGameStop || ifPause || tiles.empty() || (tilesReleased == false) ) return false;
 
     vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
             ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
@@ -90,7 +87,6 @@ bool rotateTile()
 #ifdef DEBUG
             cout << "rotateTile() [Failure Rotation]"<< endl;
 #endif
-            updateTiles();
             return false;
         }
     }
@@ -98,20 +94,7 @@ bool rotateTile()
     // Testing succeed, do actual rotation
 
     rotateType = (rotateType + 1) % allRotationShapeSize[tileType];
-    // Update the geometry VBO of current tile
-    for ( int i = 0; i < 4; i++){
-// #ifdef DEBUG
-//         cout << "rotateTile() [Rotating tiles] position before: " << tiles[i].Position.x << ", "<< tiles[i].Position.y << endl;
-// #endif
-        tiles[i].Position = ( tilePos + pAllRotationShape[rotateType][i]);
 
-// #ifdef DEBUG
-//         cout << "rotateTile() [Rotating tiles] position after: " << tiles[i].Position.x << ", "<< tiles[i].Position.y << endl;
-// #endif
-
-    }
-
-    updateTiles();
     return true;
 }
 
@@ -119,7 +102,7 @@ bool rotateTile()
 // shift Teris color 
 void shiftTileColor()
 {
-    if (!dropTiles.empty() || !ifGameStop || !ifPause || tiles.empty() || (tilesReleased == false) ) return;
+    if (!dropTiles.empty() || ifGameStop || ifPause || tiles.empty() || (tilesReleased == false) ) return;
 
     color4 oldColor = tiles[3].Color;
 
@@ -127,7 +110,6 @@ void shiftTileColor()
     tiles[2].Color = tiles[1].Color;
     tiles[1].Color = tiles[0].Color;
     tiles[0].Color = oldColor;
-    updateTiles();
 }
 
 
@@ -136,13 +118,17 @@ void shiftTileColor()
 // Returns true if the tile was successfully moved, or false if there was some issue
 bool moveTile(vec2 direction)
 {
+    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+            ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
     bool flag = true;
     bool inFlag = true;
 
     for ( vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end() ; ++iter)
     {
-        int x = int(iter->Position.x + direction.x);
-        int y = int(iter->Position.y + direction.y);
+        int i = iter - tiles.begin();
+
+        int x = int(tilePos.x + pAllRotationShape[rotateType][i].x + direction.x);
+        int y = int(tilePos.y + pAllRotationShape[rotateType][i].y + direction.y);
 
 // #ifdef DEBUG
 //         cout << "moveTile() - Position: " << x << ", " << y << endl;
@@ -167,10 +153,6 @@ bool moveTile(vec2 direction)
     {
         // Add velocity to all iteratorable item in the out vector
         tilePos += direction;
-        for ( vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end() ; ++iter){
-            iter->Position += direction;
-        }
-        updateTiles();
     }
 
     return flag;
@@ -267,8 +249,6 @@ void checkFullRowsAndEliminate()
 
     moveDownRows(eliminatedRows);
     addUnsupportedTilesToDropTiles();
-    genBoardVertexColorsFromBoardColors();
-    updateBoard();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -288,7 +268,7 @@ bool matchFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
                 !_COLOR4_EQUAL(boardColors[i][y], black)                    )
             {
 
-#ifdef DEBUG 
+#ifdef DEBUG
                 cout << "matchFruitTiles() - [row fruit tiles detected]" << endl;
                 cout << "matchFruitTiles() - tile["<< i + 0 << "][" << y <<"] = " << _MATCH_COLOR(boardColors[i + 0][y]) << endl;
                 cout << "matchFruitTiles() - tile["<< i + 1 << "][" << y <<"] = " << _MATCH_COLOR(boardColors[i + 1][y]) << endl;
@@ -312,7 +292,7 @@ bool matchFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
                 !_COLOR4_EQUAL(boardColors[x][i], black)                )
             {
 
-#ifdef DEBUG 
+#ifdef DEBUG
                 cout << "matchFruitTiles() - [column fruit tiles detected]" << endl;
                 cout << "matchFruitTiles() - tile["<< x << "][" << i + 0 <<"] = " << _MATCH_COLOR(boardColors[x][i + 0]) << endl;
                 cout << "matchFruitTiles() - tile["<< x << "][" << i + 1 <<"] = " << _MATCH_COLOR(boardColors[x][i + 1]) << endl;
@@ -385,13 +365,6 @@ void printTiles()
 
 //-------------------------------------------------------------------------------------------------------------------
 // Move donw a column of tiles that have fruit matching tiles beneath
-bool searchConnectedToEliminatedTiles()
-{
-
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-// Move donw a column of tiles that have fruit matching tiles beneath
 // void addUnsupportedTilesToDropList(bool eliminatedFruitTiles[][BOARD_HEIGHT])
 void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
 {
@@ -416,7 +389,11 @@ void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
                     {
                         if ( item == (*iter) )
                         {
+
+#ifdef DEBUG
                             cout << "moveDownFruitTilesCols() - DropTile matching Got" << endl;
+#endif 
+
                             NotExisted = false;
                         }                    
                     }
@@ -436,8 +413,6 @@ void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
             }
         }
     }
-
-//     updateDropTiles();
 
 }
 
@@ -696,7 +671,7 @@ void addUnsupportedTilesToDropTiles()
 #ifdef DEBUG
     printDropTiles();
 #endif
-    updateDropTiles();
+    // updateDropTiles();
 
 }
 
@@ -719,9 +694,6 @@ bool checkFruitMatchAndEliminate()
         moveDownFruitTilesCols(eliminatedFruitTiles);
 
         addUnsupportedTilesToDropTiles();
-
-        genBoardVertexColorsFromBoardColors();
-        updateBoard();
 
         // Update the tiles to status after elimination
         cleanUpEliminationTiles(eliminatedFruitTiles);
@@ -749,9 +721,6 @@ bool fallTiles(vec2 direction)
         {
             setDropTiles(*it);
             it = dropTiles.erase(it);
-
-            genBoardVertexColorsFromBoardColors();
-            updateBoard();
         }
         else
         {
@@ -759,12 +728,9 @@ bool fallTiles(vec2 direction)
             for ( vector<Tile>::iterator iter = it->begin(); iter != it->end() ; ++iter)
                 iter->Position += direction;
             ++it;
-            updateDropTiles();
 
         }
     }
-
-    // updateDropTiles();
 
     return dropTiles.empty();
 }
@@ -795,12 +761,16 @@ void setDropTiles(vector<Tile> &_tile)
 
 void setTiles()
 {
+    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+        ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
+
     // First check if the collision between tile and grid is detected
     // If a collision is detected
     for (vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end(); ++iter) 
     {
-        int x = int(iter->Position.x);
-        int y = int(iter->Position.y);
+        int i = iter - tiles.begin();
+        int x = int(tilePos.x + pAllRotationShape[rotateType][i].x);
+        int y = int(tilePos.y + pAllRotationShape[rotateType][i].y);
 
         if ( !_COLOR4_EQUAL(iter->Color, black) ){
 
@@ -819,8 +789,6 @@ void setTiles()
 #ifdef DEBUG
     printBoolBoardSizeArray(board);
 #endif
-    genBoardVertexColorsFromBoardColors();
-    updateBoard();
 }
 
 void unsetTiles()
@@ -845,12 +813,17 @@ void unsetTiles()
     printBoolBoardSizeArray(board);
 #endif
 
-    genBoardVertexColorsFromBoardColors();
-    updateBoard();
 }
 
-void updateTiles()
+void drawTiles()
 {
+    // First update the tile position
+    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+            ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
+    
+    for ( int i = 0; i < 4; i++){
+        tiles[i].Position = ( tilePos + pAllRotationShape[rotateType][i]);
+    }
 
     int idx = 0;
     for (vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end(); ++iter) 
@@ -899,7 +872,7 @@ void updateTiles()
     glBindVertexArray(0);
 }
 
-void updateDropTiles()
+void drawDropTiles()
 {
     // Clear the buffer object before update it 
     // cleanVBOTileBuffer();

@@ -208,7 +208,7 @@ bool ifGameStop 	= false;
 // Glut time control float
 GLfloat deltaTime 	= 0.0f;		// Time between current frame and last frame
 GLfloat lastFrame 	= 0.0f;  	// Time of last frame
-
+GLfloat dt 			= 0.0f;
 // Velocity for each timer movement and step for keyboard movement
 
 // The 'tile' array will always be some element [i][j] of this array (an array of vec2)
@@ -266,8 +266,8 @@ bool testRotation(vec2 currentTilePos);
 
 // ===========================================================================================
 // Function Declaration
-void updateBoard();
-void updateTiles();
+void drawBoard();
+void drawTiles();
 void newTile();
 bool rotateTile();
 void shiftTileColor();
@@ -312,7 +312,7 @@ void addUnsupportedTilesToDropTiles();
 bool checkFruitMatchAndEliminate();
 void checkFullRowsAndEliminate();
 bool fallTiles();
-void updateDropTiles();
+void drawDropTiles();
 void setDropTiles(vector<Tile> &_tile);
 bool searchConnectToBottom(vec2 vertex);
 void addTileToDropTiles(Tile _newDropTile);

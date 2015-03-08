@@ -23,27 +23,31 @@ class RobotArm{
 public:
 	GLfloat  Phi;
 	GLfloat  Theta;
+	GLfloat  ArmSensitivity;
 
-	RobotArm( GLfloat theta = 0.0f, GLfloat phi = -45.0f):Phi(phi), Theta(theta){
+	RobotArm( GLfloat theta = 0.0f, GLfloat phi = -45.0f, GLfloat sense = 50.0f)
+	:Phi(phi), Theta(theta), ArmSensitivity(sense){
 	}; 
 
-	void Rotate(RobotArm_Movement direction, GLfloat increment = 1.0f)
+	void Rotate(RobotArm_Movement direction, GLfloat dTime)
 	{
+		GLfloat velocity = dTime * this->ArmSensitivity;
+		cout << "Robot Arm Rotation Velocity: " << velocity << endl;
 		if (direction == INC_PHI)
 		{
-			this->Phi += increment;
+			this->Phi += velocity;
 		}
 		else if (direction == DEC_PHI)
 		{
-			this->Phi -= increment;
+			this->Phi -= velocity;
 		}
 		else if (direction == INC_THETA)
 		{
-			this->Theta += increment;
+			this->Theta += velocity;
 		}
 		else if (direction == DEC_THETA)
 		{
-			this->Theta -= increment;
+			this->Theta -= velocity;
 		}
 
 		if ( this->Phi 		>=  90.0  ) 	{ this->Phi 	=  90.0; }

@@ -13,7 +13,7 @@ enum Camera_Movement {
 };
 
 // Default camera values
-const GLfloat SPEED      =  3.0f;
+const GLfloat SPEED      =  20.0f;
 const GLfloat SENSITIVTY =  0.25f;
 const GLfloat FOV        =  45.0f; // field of view
 
@@ -61,9 +61,9 @@ public:
         return glm::lookAt(this->Position, this->Position + this->Front, this->Up);
     }
 
-    void RotateCamera(GLfloat increment = 5.0f)
+    void RotateCamera(GLfloat increment, GLfloat dt, GLfloat camera_speed = 100.0f)
     {
-        this->Alpha += increment; 
+        this->Alpha += increment * dt * camera_speed; 
 
         if (this->Alpha >= 360)
             this->Alpha = 0;

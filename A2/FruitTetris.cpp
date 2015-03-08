@@ -6,8 +6,10 @@
 
 //-------------------------------------------------------------------------------------------------------------------
 // When the current tile is moved or rotated (or created), update the VBO containing its vertex position data
-void updateBoard()
-{
+void drawBoard()
+{    
+    genBoardVertexColorsFromBoardColors();
+    
     int idx = 0;
     for (int y = 0; y < BOARD_HEIGHT; ++y)
     {
@@ -340,7 +342,8 @@ void processDisplay()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     GLfloat currentFrame = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
-    deltaTime += (currentFrame - lastFrame);
+    dt = (currentFrame - lastFrame);
+    deltaTime += dt;
     lastFrame = currentFrame;
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------
@@ -362,11 +365,9 @@ void processDisplay()
 
                     if( dropTiles.empty()){
                         newTile();
-                        updateTiles();
                     }
                     else{
                         unsetTiles();
-                        updateDropTiles();
                     }
 
                 }
@@ -390,11 +391,9 @@ void processDisplay()
 
                 if( dropTiles.empty()){
                     newTile();
-                    updateTiles();
                 }
                 else{
                     unsetTiles();
-                    updateDropTiles();
                 }
             }
             
@@ -429,19 +428,33 @@ void processDisplay()
     glm::mat4 model = glm::mat4();
     glUniformMatrix4fv( loc_model, 1, GL_FALSE, glm::value_ptr(model));
 
+
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+    // Display Board
+
     int boardSize = 0;
     for (int y = 0; y < BOARD_HEIGHT; ++y)
         for (int x = 0; x < BOARD_WIDTH; ++x)
             boardSize += int(board[x][y]);
 
+    drawBoard();
+
     glBindVertexArray(vaoIDs[VAO_BOARD]); // Bind the VAO representing the grid cells (to be drawn first)
     glDrawArrays(GL_TRIANGLES, 0, boardSize*TILE_VERTEX_NUM); // Draw the board (10*20*2 = 400 triangles)
+    
+
+
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+    // Display Tiles
 
     // Calculating the tiles/dropTiles number 
     int tileSize = tiles.size();
     for( vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end(); it++ ){
         tileSize += it->size();
     }
+
+    drawTiles();
+    drawDropTiles();
 
     glBindVertexArray(vaoIDs[VAO_TILE]); 
     // Bind the VAO representing the current tile (to be drawn on top of the board)
@@ -516,7 +529,7 @@ void processSpecialKey(int key, int x, int y)
     case GLUT_KEY_LEFT :
         if ( mod == GLUT_ACTIVE_CTRL )
         {
-            myCamera.RotateCamera(1.0f);
+            myCamera.RotateCamera(1.0f, dt);
         }
         else
             displacement -= vec2(step, 0);
@@ -525,7 +538,7 @@ void processSpecialKey(int key, int x, int y)
     case GLUT_KEY_RIGHT:
         if ( mod == GLUT_ACTIVE_CTRL )
         {
-            myCamera.RotateCamera(-1.0f);
+            myCamera.RotateCamera(-1.0f, dt);
         }
         else
             displacement += vec2(step, 0);
@@ -546,8 +559,6 @@ void processSpecialKey(int key, int x, int y)
                     newTile();
                 else
                     unsetTiles();
-
-                updateTiles();
 
             }
         }
@@ -579,16 +590,16 @@ void processKeyboard(unsigned char key, int x, int y)
 
         // Key for controlling Robot Arm
         case 'a':
-            myRobotArm.Rotate(INC_THETA, 1.0f);
+            myRobotArm.Rotate(INC_THETA, dt);
             break;
         case 'd':
-            myRobotArm.Rotate(DEC_THETA, 1.0f);
+            myRobotArm.Rotate(DEC_THETA, dt);
             break;
         case 'w':
-            myRobotArm.Rotate(INC_PHI, 1.0f);
+            myRobotArm.Rotate(INC_PHI, dt);
             break;
         case 's':
-            myRobotArm.Rotate(DEC_PHI, 1.0f);
+            myRobotArm.Rotate(DEC_PHI, dt);
             break;
 
         // Key for change camera's field of view
@@ -601,16 +612,16 @@ void processKeyboard(unsigned char key, int x, int y)
 
         // Key for change camera's position
         case 'i':
-            myCamera.MoveCamera(FORWARD, deltaTime);
+            myCamera.MoveCamera(FORWARD, dt);
             break;
         case 'k':
-            myCamera.MoveCamera(BACKWARD, deltaTime);
+            myCamera.MoveCamera(BACKWARD, dt);
             break;
         case 'j':
-            myCamera.MoveCamera(LEFT, deltaTime);
+            myCamera.MoveCamera(LEFT, dt);
             break;
         case 'l':
-            myCamera.MoveCamera(RIGHT, deltaTime);
+            myCamera.MoveCamera(RIGHT, dt);
             break;
         case 13:
             releaseTiles();
