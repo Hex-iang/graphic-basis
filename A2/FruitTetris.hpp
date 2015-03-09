@@ -14,20 +14,22 @@
 #include <sstream>
 using namespace std;
 
-// ============================================================================================
+//----------------------------------------------------------------------------------------------------------
 // macros for tile types
 
 
-// ----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
 // Option for compiling 2D version game or 3D version game
-#define DEBUG
+// #define DEBUG
 
-// ----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
+// Macro for Tile Attribute
 
 #define TILE_TYPE_NUM 			3
 #define TILE_COLOR_NUM			5
 
-// ----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
+// Macro for Vertex Buffer Object
 
 #define VBO_GRID_POSITION		0
 #define VBO_GRID_COLOR			1
@@ -39,11 +41,16 @@ using namespace std;
 #define VBO_ROBOTARM_COLOR 		7
 
 // ----------------------------------------------------------------------------------------------
-// 
+// Macro for Vertex Array Object
+
 #define VAO_GRID				0
 #define VAO_BOARD				1
 #define VAO_TILE				2
 #define VAO_ROBOTARM			3
+
+
+// ----------------------------------------------------------------------------------------------
+// 
 
 #define _IN_BOUND(x, y)	 (y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 #define _ON_BOARD(x, y)  (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
@@ -66,25 +73,26 @@ using namespace std;
 typedef glm::vec4  color4;
 typedef glm::vec4  point4;
 
-//  constant variable
-// ============================================================================================
+//----------------------------------------------------------------------------------------------------------
+// global constant variable
 
-const int TILE_TYPE_L 	= 0;
-const int TILE_TYPE_S 	= 1;
-const int TILE_TYPE_I 	= 2;
+// const for tile type
+const int TILE_TYPE_L 		= 0;
+const int TILE_TYPE_S 		= 1;
+const int TILE_TYPE_I 		= 2;
 
 // const for board boundaries 
-const int LEFT_BOUND 	= 0;
-const int RIGHT_BOUND 	= 9;
-const int DOWN_BOUND 	= 0;
-const int UP_BOUND  	= 19;
+const int LEFT_BOUND 		= 0;
+const int RIGHT_BOUND 		= 9;
+const int DOWN_BOUND 		= 0;
+const int UP_BOUND  		= 19;
 
 
 // const for board size
-const int BOARD_WIDTH 	= 10;
-const int BOARD_HEIGHT	= 20;
+const int BOARD_WIDTH 		= 10;
+const int BOARD_HEIGHT		= 20;
 
-// colors
+// basic colors
 const color4 white  		= color4(1.0, 	  1.0, 	 1.0, 	1.0);
 const color4 black  		= color4(0.0, 	  0.0, 	 0.0, 	1.0);
 const color4 grey			= color4(0.827, 0.827, 0.827, 	1.0);
@@ -102,15 +110,15 @@ const color4 cyan			= color4(0.0,	1.0,	1.0,	1.0);
 const color4 magenta		= color4(1.0,	0.0,	1.0,	1.0);
 const color4 paleTurquoise	= color4(0.686,	0.933,	0.933,	1.0); 
 
-
+// Tile color constants array 
 const color4 tileColorsSet[5] = {
 	orange, red, green, magenta, yellow
 };
 
-//---------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
 // OpenGL drawing related structure
 
-// xsize and ysize represent the window size - updated if window is reshaped to prevent stretching of the game
+// xsize and ysize represent the window size
 int xsize = 720; 
 int ysize = 800;
 
@@ -118,26 +126,20 @@ int ysize = 800;
 
 
 // in 3D game, there will be 12 triangles per cube
-const int TRIANGLE_VERTEX_NUM 	= 12;
-const int TILE_VERTEX_NUM 		= 36;
-const int QUAD_VERTEX_NUM 		= 6;
-const int QUAD_LINE_VERTEX_NUM  = 8;
-const int TILE_LINE_VERTEX_NUM  = 48;
-const int GRID_LINE_VERTEX_NUM	= (BOARD_WIDTH + 1)*(BOARD_HEIGHT + 1)*TILE_LINE_VERTEX_NUM;
+const int TRIANGLE_VERTEX_NUM 		= 12;
+const int TILE_VERTEX_NUM 			= 36;
+const int QUAD_VERTEX_NUM 			= 6;
+const int QUAD_LINE_VERTEX_NUM  	= 8;
+const int TILE_LINE_VERTEX_NUM  	= 48;
+const int GRID_LINE_VERTEX_NUM		= (BOARD_WIDTH + 1)*(BOARD_HEIGHT + 1)*TILE_LINE_VERTEX_NUM;
 
-const GLfloat EDGE_LEN = 1.0;
+// Edge length of each tile
+const GLfloat EDGE_LEN 				= 1.0;
 
-const GLfloat DEPTH_1 = EDGE_LEN * .0f;
-const GLfloat DEPTH_0 = EDGE_LEN * .0f;
-const GLfloat DEPTH_3 = EDGE_LEN * .0f;
+// Time bound constant defining the maximum time bound for robot arm to hold tile
+const GLfloat RELEASED_TIMEBOUND 	= 5.0f;
 
-const GLfloat RELEASED_TIMEBOUND = 5.0f;
-
-// Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 30),	// camera position
-// 				glm::vec3( 0.0f, 1.0f, 0.0f)										// camera up direction
-// 				);
-
-// Global structure for different shader program
+// Global structure for different shader program [Originally decided for adding texture feature to robot arm]
 GLuint UniversalShader;
 GLuint RobotArmShader;
 
@@ -146,7 +148,8 @@ bool board[BOARD_WIDTH][BOARD_HEIGHT];
 color4 boardColors[BOARD_WIDTH][BOARD_HEIGHT];
 color4 boardVertexColors[BOARD_WIDTH * BOARD_HEIGHT * TILE_VERTEX_NUM];
 
-// VAO and VBO
+// Vertex Array Object and Vertex Buffer Object
+
 GLuint vaoIDs[4]; 
 // One VAO for each object: 0. the grid 1. the board 2. the current tiles 3. robot arm
 
@@ -155,17 +158,19 @@ GLuint vboIDs[8];
 
 //---------------------------------------------------------------------------------------------------------
 // Game control global variable
-GLfloat velocity 	= -1.0;
-GLfloat step 		=  1.0;
+
+// Controlling tile dropping velocity
+GLfloat dropVelocity 		= -1.0;
+GLfloat moveStep 			=  1.0;
 
 // Game control signal
-bool ifPause 		= false;
-bool ifGameStop 	= false;
+bool ifPause 				= false;
+bool ifGameStop 			= false;
 
 // Glut time control float
-GLfloat deltaTime 	= 0.0f;		// Time between current frame and last frame
-GLfloat lastFrame 	= 0.0f;  	// Time of last frame
-GLfloat dt 			= 0.0f;
+GLfloat deltaTime 			= 0.0f;		// Time between current frame and last frame
+GLfloat lastFrame 			= 0.0f;  	// Time of last frame
+GLfloat dt 					= 0.0f;
 
 //---------------------------------------------------------------------------------------------------------
 // Tile Structure
@@ -202,10 +207,14 @@ int tileType 		= TILE_TYPE_L;
 int rotateType 		= 0;
 
 // Velocity for each timer movement and step for keyboard movement
-
+//----------------------------------------------------------------------------------------------------------
 // The 'tile' array will always be some element [i][j] of this array (an array of glm::vec2)
+
 int allRotationShapeSize[TILE_TYPE_NUM] = {4, 4, 4};
 
+// Each vec2 array keeps the relative tile positions to the tile center for different tiles shapes
+
+// All rotations for L shapes
 glm::vec2 allRotationsLshape[4][4] = 
 	{
 		{glm::vec2(-1,-1), glm::vec2(-1, 0), glm::vec2( 0, 0), glm::vec2( 1,  0)},
@@ -214,8 +223,7 @@ glm::vec2 allRotationsLshape[4][4] =
 		{glm::vec2(-1, 1), glm::vec2( 0, 1), glm::vec2( 0, 0), glm::vec2( 0, -1)}
 	};
 
-// All rotations for S and L shapes
-// ============================================================================================
+// All rotations for S shapes
 glm::vec2 allRotationsSshape[4][4] = 
 	{
 		{glm::vec2(-1, -1), glm::vec2( 0,-1), glm::vec2(0, 0), glm::vec2( 1, 0)},
@@ -224,6 +232,7 @@ glm::vec2 allRotationsSshape[4][4] =
 		{glm::vec2(-1,  1), glm::vec2(-1, 0), glm::vec2(0, 0), glm::vec2( 0,-1)}
 	};
 
+// All rotations for I shapes
 glm::vec2 allRotationsIshape[4][4] = 
 	{
 		{glm::vec2(-2, 0), glm::vec2(-1, 0), glm::vec2(0, 0), glm::vec2( 1, 0)},
@@ -242,7 +251,7 @@ struct TileBound{
 };
 
 
-// ----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
 // To include camera class and robotArm class
 #include "Camera.hpp"
 #include "RobotArm.hpp"
@@ -255,26 +264,29 @@ Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 40)
 
 RobotArm myRobotArm;
 
-// ----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
 // To include text rendering class
 #include "TextRender.hpp"
 
-// ===========================================================================================
-// Utility function 
+//----------------------------------------------------------------------------------------------------------
+// Utility function for updating GLbuffer object
 void genBoardVertexColorFromBoardColor(int x ,int y, color4 _color);
 void genBoardVertexColorsFromBoardColors();
-
 void genColorVertexFromTileColor(color4 * pPointColor, color4 _color);
 
+//----------------------------------------------------------------------------------------------------------
+// Utility function for misc sub-functionality
 color4 genRandomColor();
 const TileBound getTileBound( glm::vec2 * pTile);
 
+//----------------------------------------------------------------------------------------------------------
+// Utility function for detecting Collision 
 bool checkInBound(glm::vec2 newPos);
 bool checkTileGridCollision( int x, int y);
 bool checkTilesGridsCollision();
 bool testRotation(glm::vec2 currentTilePos);
 
-// ===========================================================================================
+//----------------------------------------------------------------------------------------------------------
 // Function Declaration
 void drawBoard();
 void drawTiles();
@@ -299,36 +311,50 @@ void initBoard();
 void initCurrentTile();
 void init();
 
+
+//----------------------------------------------------------------------------------------------------------
+// Glut callback function
 void processDisplay();
 void processReshape(GLsizei width, GLsizei height);
 void processSpecialKey(int key, int x, int y);
 void processKeyboard(unsigned char key, int x, int y);
 void processTimer(int val);
-void processIdle();
 
+//----------------------------------------------------------------------------------------------------------
+// Game control function
 void newGame();
 void pauseResumeGame();
 bool tryStopGame();
 void restartGame();
 bool checkEndOfGame();
 
+//----------------------------------------------------------------------------------------------------------
+// Fruit match functions
 bool matchFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 void printBoolBoardSizeArray(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 void cleanUpEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT]);
 
+
+//----------------------------------------------------------------------------------------------------------
+// Game logic control function for support dropping tiles
 void addUnsupportedTilesToDropTiles();
 bool checkFruitMatchAndEliminate();
 void checkFullRowsAndEliminate();
 bool fallTiles();
+
+//----------------------------------------------------------------------------------------------------------
+// Function for dropping tiles
+
 void drawDropTiles();
 void setDropTiles(vector<Tile> &_tile);
 bool searchConnectToBottom(glm::vec2 vertex);
 void addTileToDropTiles(Tile _newDropTile);
 void addTilesToDropTiles(vector<Tile> _newDropTiles);
 
-// Robot Arm Related Functions
+//----------------------------------------------------------------------------------------------------------
+// Functions for controlling Robot Arm 
 void initRobotArm();
 void drawBase(glm::mat4 model);
 void drawUpperArm(glm::mat4 model);

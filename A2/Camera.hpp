@@ -1,6 +1,6 @@
 #pragma once
 
-// =============================================================================================
+//-------------------------------------------------------------------------------------------------------------------
 // Camera class
 // Some part of this class is retrieved from the online toturial on http://learnopengl.org
 
@@ -12,12 +12,13 @@ enum Camera_Movement {
     RIGHT
 };
 
+//-------------------------------------------------------------------------------------------------------------------
 // Default camera values
 const GLfloat SPEED      =  20.0f;
 const GLfloat SENSITIVTY =  0.25f;
 const GLfloat FOV        =  45.0f; // field of view
 
-
+//-------------------------------------------------------------------------------------------------------------------
 // An abstract camera class that processes input and calculates the corresponding Eular Angles, Vectors and Matrices for use in OpenGL
 class Camera
 {
@@ -33,10 +34,11 @@ public:
     // Camera options
     GLfloat MovementSpeed;
     GLfloat MouseSensitivity;
-    GLfloat Fov;
-    GLfloat Radius;
-    GLfloat Alpha;
+    GLfloat Fov;                // field of view
+    GLfloat Radius;             // camera radius to its center
+    GLfloat Alpha;              // Camera rotation angle
 
+    //-------------------------------------------------------------------------------------------------------------------
     // Constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3 center = glm::vec3(0.0f, 0.0f, -1.0f)) 
     : MovementSpeed(SPEED), MouseSensitivity(SENSITIVTY), Fov(FOV), Alpha(0.0f)
@@ -53,12 +55,15 @@ public:
         this->updateCameraVectors();
     }
 
+    //-------------------------------------------------------------------------------------------------------------------
     // Returns the view matrix calculated using Eular Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix()
     {
         return glm::lookAt(this->Position, this->Position + this->Front, this->Up);
     }
 
+    //-------------------------------------------------------------------------------------------------------------------
+    // Rotate the camera a certain angle regard to the center axis 
     void RotateCamera(GLfloat increment, GLfloat dt, GLfloat camera_speed = 100.0f)
     {
         this->Alpha += increment * dt * camera_speed; 
@@ -74,43 +79,20 @@ public:
 
         this->Position = glm::vec3(camX, this->Position.y, camZ);
 
-// #ifdef DEBUG
-//         cout << "Camera Alpha: " << this->Alpha << endl;
-//         cout << "Camera Position: x=" << this->Position.x << ", y=" << this->Position.y << ", z=" << this->Position.z << endl;
-// #endif
         this->updateCameraVectors();
     }
 
-    // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-    void MoveCamera(Camera_Movement direction, GLfloat dt)
-    {
-        GLfloat velocity = this->MovementSpeed * dt;
-
-        if (direction == FORWARD)
-            this->Position += this->Front * velocity;
-        if (direction == BACKWARD)
-            this->Position -= this->Front * velocity;
-        if (direction == LEFT)
-            this->Position -= this->Right * velocity;
-        if (direction == RIGHT)
-            this->Position += this->Right * velocity;
-
-        this->Radius = glm::distance(this->Position, this->Center);
-
-
-#ifdef DEBUG
-        cout << "Camera Radius: " << this->Radius << endl;
-#endif
-    }
-
-    // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
+    //-------------------------------------------------------------------------------------------------------------------
+    // Change camera field of view
     void ChangeFOV(GLfloat yoffset)
     {
 
         if (this->Fov >= 1.0f && this->Fov <= 60.0f)
             this->Fov -= yoffset;
 
-        // cout << "Field of View in Degree: " << this->Fov << endl;
+#ifdef DEBUG
+        cout << "Field of View in Degree: " << this->Fov << endl;
+#endif
 
         if (this->Fov <= 1.0f)
             this->Fov = 1.0f;
@@ -119,7 +101,9 @@ public:
     }
 
 private:
-    // Calculates the front vector from the Camera's (updated) Eular Angles
+
+    //-------------------------------------------------------------------------------------------------------------------
+    // Calculates the front vector from the Camera's Coordinates
     void updateCameraVectors()
     {
         // Calculate the new Front vector

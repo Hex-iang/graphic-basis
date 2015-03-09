@@ -11,7 +11,6 @@ void drawBoard()
     glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
             ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
 
-    genBoardVertexColorsFromBoardColors();
     int boardSize = 0;
     int idx = 0;
     for (int y = 0; y < BOARD_HEIGHT; ++y)
@@ -106,10 +105,6 @@ bool checkEndOfGame()
     return flag;
 }
 
-
-// ================================================================================================================= 
-// Initialization controller
-
 //-------------------------------------------------------------------------------------------------------------------
 // Init robot arm
 void initRobotArm()
@@ -141,7 +136,7 @@ void initRobotArm()
     colorquad( &robotArmColors[ 2*QUAD_VERTEX_NUM ], orange,    orange,     orange,     orange);
     colorquad( &robotArmColors[ 3*QUAD_VERTEX_NUM ], yellow,    yellow,     yellow,     yellow);
     colorquad( &robotArmColors[ 4*QUAD_VERTEX_NUM ], purple,    purple,     purple,     purple);
-    colorquad( &robotArmColors[ 5*QUAD_VERTEX_NUM ], cyan,      cyan,      cyan,     cyan);
+    colorquad( &robotArmColors[ 5*QUAD_VERTEX_NUM ], cyan,      cyan,       cyan,       cyan);
 
     // Bind the Current vao to Tils's array
     glBindVertexArray(vaoIDs[VAO_ROBOTARM]);
@@ -246,9 +241,6 @@ void initBoard()
             board[i][j]         = false;
             boardColors[i][j]   = black; 
         }
-
-    // Generate vertex color structure from board
-    genBoardVertexColorsFromBoardColors();
 
     // *** set up buffer objects
     glBindVertexArray(vaoIDs[VAO_BOARD]);
@@ -359,7 +351,7 @@ void restartGame()
 }
 
 
-// ================================================================================================================= 
+//-------------------------------------------------------------------------------------------------------------------
 // CallBack Functions
 
 // Draws the game
@@ -375,9 +367,8 @@ void processDisplay()
     deltaTime += dt;
     lastFrame = currentFrame;
 
-    // -----------------------------------------------------------------------------------------------------------------------------------------------
-    // Released time 
 
+    // Released time accumulating 
     if( tilesReleased ) 
     {
         releaseTimer = 0;
@@ -393,9 +384,7 @@ void processDisplay()
     }
 
 
-    // -----------------------------------------------------------------------------------------------------------------------------------------------
     // Control game frame length
-
     if (deltaTime > 0.4 && !ifGameStop && dropTiles.empty())
     {
         deltaTime = 0;
@@ -403,7 +392,7 @@ void processDisplay()
         if( !ifPause && !ifGameStop)
         {
             if( tilesReleased == true ){
-                if ( false == moveTile(glm::vec2(0.0, velocity )) )
+                if ( false == moveTile(glm::vec2(0.0, dropVelocity )) )
                 {
 
                     setTiles();
@@ -426,7 +415,7 @@ void processDisplay()
         deltaTime = 0;
         if( !ifPause && !ifGameStop)
         {
-            if( fallTiles( glm::vec2(0.0f, velocity) ))
+            if( fallTiles( glm::vec2(0.0f, dropVelocity) ))
             {
 
                 checkFullRowsAndEliminate();
@@ -542,7 +531,7 @@ void processDisplay()
     {
         stringstream ssTimeRemaining;
         ssTimeRemaining << "Until Next Release: " << std::fixed << std::setprecision(1)
-                        << float(RELEASED_TIMEBOUND - releaseTimer);
+                        << float(RELEASED_TIMEBOUND - releaseTimer) << " sec.";
         RenderString(-.80f, .80f, GLUT_BITMAP_HELVETICA_18, ssTimeRemaining.str().c_str(), white);
     }
     else
@@ -563,7 +552,6 @@ void processDisplay()
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-
 // Reshape callback will simply change xsize and ysize variables, which are passed to the vertex shader
 // to keep the game the same from stretching if the window is stretched
 void processReshape(GLsizei width, GLsizei height)
@@ -589,7 +577,7 @@ void processSpecialKey(int key, int x, int y)
         rotateTile();
         break;
     case GLUT_KEY_DOWN :
-        displacement -= glm::vec2(0, step);
+        displacement -= glm::vec2(0, moveStep);
         break;
     case GLUT_KEY_LEFT :
         if ( mod == GLUT_ACTIVE_CTRL )
@@ -597,7 +585,7 @@ void processSpecialKey(int key, int x, int y)
             myCamera.RotateCamera(1.0f, dt);
         }
         else
-            displacement -= glm::vec2(step, 0);
+            displacement -= glm::vec2(moveStep, 0);
 
         break;
     case GLUT_KEY_RIGHT:
@@ -606,7 +594,7 @@ void processSpecialKey(int key, int x, int y)
             myCamera.RotateCamera(-1.0f, dt);
         }
         else
-            displacement += glm::vec2(step, 0);
+            displacement += glm::vec2(moveStep, 0);
         
         break;
     }
@@ -675,19 +663,6 @@ void processKeyboard(unsigned char key, int x, int y)
             myCamera.ChangeFOV(-1.0f);
             break;
 
-        // Key for change camera's position
-        case 'i':
-            myCamera.MoveCamera(FORWARD, dt);
-            break;
-        case 'k':
-            myCamera.MoveCamera(BACKWARD, dt);
-            break;
-        case 'j':
-            myCamera.MoveCamera(LEFT, dt);
-            break;
-        case 'l':
-            myCamera.MoveCamera(RIGHT, dt);
-            break;
         case ' ':
             releaseTiles();
             break;
@@ -704,7 +679,7 @@ void processKeyboard(unsigned char key, int x, int y)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-
+// A function that tries to stop the game 
 bool tryStopGame()
 {
     if(checkEndOfGame())
@@ -716,11 +691,6 @@ bool tryStopGame()
     }
 
     return false;
-}
-
-void processIdle()
-{
-    glutPostRedisplay();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -736,7 +706,7 @@ int main(int argc, char **argv)
     // initizlize grew
     glewInit();
 
-    // init grid, broad, tile
+    // init grid, broad, tile, robot arm
     init();
 
     // Callback functions
@@ -744,8 +714,6 @@ int main(int argc, char **argv)
     glutReshapeFunc(processReshape);
     glutSpecialFunc(processSpecialKey);
     glutKeyboardFunc(processKeyboard);
-    glutIdleFunc(processIdle);
-    // Callback function for timer 
 
     glutMainLoop(); // Start main loop
     return 0;

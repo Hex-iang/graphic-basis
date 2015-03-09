@@ -28,6 +28,8 @@ public:
 	// Robot Arm's Tip Position in the Grid System
 	glm::vec2 TipPos;
 
+	//-------------------------------------------------------------------------------------------------------------------
+	// construction function, which initialize the robot arm
 	RobotArm( GLfloat theta = 0.0f, GLfloat phi = -45.0f, GLfloat sense = 50.0f)
 	:Phi(phi), Theta(theta), ArmSensitivity(sense){
 		GLfloat x =  glm::round( - 0.5 * BASE_WIDTH - EDGE_LEN 
@@ -39,6 +41,8 @@ public:
 		this->TipPos = glm::vec2( x, y);
 	}; 
 
+	//-------------------------------------------------------------------------------------------------------------------
+	// Function for rotating robot arm
 	void Rotate(RobotArm_Movement direction, GLfloat dTime)
 	{
 		GLfloat velocity = dTime * this->ArmSensitivity;
@@ -85,6 +89,8 @@ public:
 
 	}
 
+	//-------------------------------------------------------------------------------------------------------------------
+	// function for drawing robot arm base
 	void drawBase(glm::mat4 model, const GLuint& _loc_model)
 	{
 	    glm::mat4 instance =	glm::translate( glm::mat4(1.f) , glm::vec3( - 0.5 * BASE_WIDTH, 0.5 * BASE_HEIGHT, 0.0 ) ) * 
@@ -94,7 +100,8 @@ public:
 
 	    glDrawArrays( GL_TRIANGLES, 0, ARMVERTICES );
 	}
-
+	//-------------------------------------------------------------------------------------------------------------------
+	// function for drawing upper arm
 	void drawUpperArm(glm::mat4 model, const GLuint& _loc_model)
 	{
 	    glm::mat4 instance = 	glm::translate( glm::mat4(1.f), glm::vec3( - 0.5 * BASE_WIDTH, 0.5 * BASE_HEIGHT, 0.0) ) *
@@ -107,7 +114,8 @@ public:
 	    glUniformMatrix4fv( _loc_model, 1, GL_FALSE, glm::value_ptr( model * instance) );
 	    glDrawArrays( GL_TRIANGLES, 0, ARMVERTICES );
 	}
-
+	//-------------------------------------------------------------------------------------------------------------------
+	// function for drawing lower arm
 	void drawLowerArm(glm::mat4 model, const GLuint& _loc_model)
 	{
 	    glm::mat4 instance = 	glm::translate( glm::mat4(1.f), glm::vec3( - 0.5 * BASE_WIDTH, 0.5 * BASE_HEIGHT, 0.0) ) *

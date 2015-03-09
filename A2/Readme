@@ -1,4 +1,4 @@
-# Programming Assignment 1 Instruction
+# Programming Assignment 2 Instruction
 * Arthur: Hexiang Hu
 * Copyright reserved, please don't share the code
 * Statement:
@@ -6,94 +6,90 @@
     and lab assignments
 
 ## Functionality Specification
+a. Upgrading Assignment 1 to 3D
+    * Achieved
 
-a. Tile and Grid and Tile Downward Movement
-    * Functionality completely implemented
+b. Viewpoint Changes
+    * Achieved
 
-b. Stack-up
-    * Functionality completely implemented
-
-c. Key stroke interaction and tile movement
-    * Functionality completely implemented
+c. Control of the Robot Arm
+    * Achieved
 
 d. Game Logic
-    * Teris Game Logic: When a row is completely filled, the entire row will be
-     eliminated in no time, all tile above will be moved down for one row 
-     immediately.
+    * Achieved
 
-    * Fruit Match Logic: When three(or more) same fruits are in a row or
-     column, the matched fruits will be eliminated in no time and tile above
-      will be added to a dropTile list. 
-        ** In the dropTile list, connected tiles will be regarded as a whole
-        object and drop together (when any part get collision with the
-        exisiting tiles, it get stuck); however, non-connected tiles will be
-        drop separately
+e. Collision Detection
+    * Achieved
 
-    * Additional non-support check:
-        ** When tiles are eliminated(through Teris or Fruit Match), it will
-        start detected non-supported tiles (those not connected to the bottom) 
-        and add them to the drop list and drop as the rule of dropping fruit
-        ** When tiles are dropped and set to the board, this game will first 
-        detect full row and then detect fruit match 
+f. Bonus Points
+    * Achieved
 
 ## Additional Feature
-    * This Teris game is implemented as a 2D/3D bi-compiling version, which
-    means that you can compile a complete 2D version or 3D version through
-    defining a macro called _3DGAME in FruitTeris.hpp (line#18).
 
-    * With 3D version of the game, you can make the game look like a 2D game by
-     converting the viewpoint. A shortcut to do this is to press key '2' and '3'.
-        ** '2' - convert to 2D viewpoint, '3' - convert to 3D viewpoint
+a. Rentering text to indicate the game pause and game over
 
-    * The logic for searching non-supportted tiles after elimination uses a simple
-    depth first search
-
-    * The logic for maintaining the dropTile list with connected tile clusters also
-    used a simple depth first algorithm
-
-    * There is a limited viewpoint change option in 3D mode, which allow user to change
-    the camera position (not the camera target point). The control specification is shown 
-    in the Game control specification part 
-
-    * To get detailed debug informations, user can compile the code through defining a macro
-    called DEBUG.( You can just uncomment the line#19)
-
-    * Game can be paused by pressing 'p'
+b. Add function to control camera field of view
 
 
 ## Game Control Specification 
 
 * Special Keys:
 
-Key_Up      =>  rotate tile orientation
-Key_Down    =>  move tile down 1 step
-Key_Left    =>  move tile left 1 step
-Key_Right   =>  move tile right 1 step
-ESC         => quit the game
+Key_Up              =>  rotate tile orientation
+Key_Down            =>  move tile down 1 step
+Key_Left            =>  move tile left 1 step
+Key_Right           =>  move tile right 1 step
+ESC                 =>  quit the game
+CTRL + Key_Left     =>  Rotate camera in counter clockwise direction
+CTRL + Key_Right    =>  Rotate camera in clockwise direction
 
-* Other Keys:
+* NORMAL Keys:
+
 'p'         => pause the game
 'r'         => restart the game
 'q'         => quit the game
 
-'w'         => move camera position along x axis a bit
-'s'         => move back camera position along x axis a bit
+'w'         => rotate upper arm a bit in counter-clockwise direction
+'s'         => rotate upper arm a bit in clockwise direction
 
-'a'         => move camera position along y axis a bit
-'d'         => move back camera position along y axis a bit
+'a'         => rotate lower arm a bit in counter-clockwise direction
+'d'         => rotate lower arm a bit in clockwise direction
 
-'z'         => move camera position along z axis a bit
-'x'         => move back camera position along z axis a bit
+'z'         => increase the camera's field of view
+'x'         => decrease the camera's field of view 
+
+SPACE       => to release the current tile in the robot arm
+ENTER       => to shift the fruit tile colors 
 
 ## Source code structure
+
 * Header
-    ** Tile.hpp
-        *** All function implementations related to tiles
-    ** FruitTeris.hpp
-        *** Definition of global data structure
-        *** Declaration of functions
-    ** Utility.hpp
-        *** Helper functions for simplifies the openGL buffer content generation
+    * Tile.hpp
+        * All function implementations related to tiles
+    * FruitTeris.hpp
+        * Definition of global data structure
+        * Declaration of functions
+    * Utility.hpp
+        * Helper functions for simplifying the buffer object update process
+    * Camera.hpp
+        * Camera class for easier controlling of view transformation
+    * RobotArm.hpp
+        * Robot Arm class for maintaining robot arm's variable as well as drawing functions
+
 * Code
-    ** FruitTeris.hpp
-        *** Main Game logic function and call back function
+    * FruitTeris.cpp
+        * Main Game logic function and call back function
+
+* Shader
+    * /shaders/fshader.glsl
+        * Universal Fragment shader for drawing board, tiles and grid   
+    * /shaders/vshader.glsl
+        * Universal Vertex shader for drawing board, tiles and grid
+    * /shaders/robotvshader.glsl
+        * Robot Arm Vertex shader for drawing Robot Arm Parts
+    * /shaders/robotfshader.glsl
+        * Robot Arm fragement shader for drawing Robot Arm Parts
+
+* Extra Third Party Library
+    * /glm
+        * This is a library for simplifying mathematic calculation

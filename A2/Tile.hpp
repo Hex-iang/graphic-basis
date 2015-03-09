@@ -141,15 +141,15 @@ bool moveTile(glm::vec2 direction)
         int x = int(tilePos.x + pAllRotationShape[rotateType][i].x + direction.x);
         int y = int(tilePos.y + pAllRotationShape[rotateType][i].y + direction.y);
 
-// #ifdef DEBUG
-//         cout << "moveTile() - Position: " << x << ", " << y << endl;
-// #endif
+#ifdef DEBUG
+        cout << "moveTile() - Position: " << x << ", " << y << endl;
+#endif
 
         if( true == checkTileGridCollision( x, y ) )
         {
-// #ifdef DEBUG
-//         cout << "moveTile() - [Collision detected]" << endl;
-// #endif
+#ifdef DEBUG
+        cout << "moveTile() - [Collision detected]" << endl;
+#endif
             flag = false;
         }
 
@@ -348,6 +348,8 @@ bool eliminateFruitTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
     return flag;
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// Print Dropping tiles for debugging
 void printDropTiles()
 {
     cout << endl;
@@ -364,12 +366,18 @@ void printDropTiles()
     cout << endl;
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// Print current tiles for debugging
 void printTiles()
 {
+    glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+            ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
+
     cout << "printTiles() - [Print Current Tile]" << endl;
     for ( vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end() ; ++iter)
     {
-        cout << "Tile#"<< distance(tiles.begin(), iter) << "Position[" << iter->Position.x << "][" << iter->Position.y << "] ";
+        int i = iter - tiles.begin();
+        cout << "Tile#"<< i << "Position[" << tilePos.x + pAllRotationShape[rotateType][i].x << "][" << tilePos.y + pAllRotationShape[rotateType][i].y << "] ";
         cout << "Color = " << _MATCH_COLOR(iter->Color) << endl;
     }    
 }
@@ -440,6 +448,8 @@ void cleanUpEliminationTiles(bool eliminatedFruitTiles[][BOARD_HEIGHT])
     }
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// Print the boolean array for debugging
 void printBoolBoardSizeArray(bool _array[][BOARD_HEIGHT])
 {
     cout << "printBoolBoardSizeArray()" << endl;
@@ -461,6 +471,7 @@ void printBoolBoardSizeArray(bool _array[][BOARD_HEIGHT])
     cout << endl;
 }
 
+//-------------------------------------------------------------------------------------------------------------------
 // Check if the current tile is connected to the bottom
 bool searchConnectToBottom(glm::vec2 vertex)
 {
@@ -481,16 +492,11 @@ bool searchConnectToBottom(glm::vec2 vertex)
         int current_y = int(current.y);
         if( !discovered[current_x][current_y] )
         {
-// #ifdef DEBUG
-//             cout << "searchConnectToBottom() - exploring node[" << current_x << "][" << current_y << "]" << endl;
-// #endif
+
             discovered[current_x][current_y] = true;
             if( board[current_x][current_y]){
                 if( current_y == 0)
                 {
-// #ifdef DEBUG
-//                     cout << "searchConnectToBottom() - Current component connected to bottom"<<endl;
-// #endif
                     // if we searched to the bottom
                     return true;
                 }
@@ -507,6 +513,7 @@ bool searchConnectToBottom(glm::vec2 vertex)
     return false;
 }
 
+//-------------------------------------------------------------------------------------------------------------------
 // Search the connected component in the graph and drop down it if not connected
 vector<Tile> searchConnectedComponent(bool (&graph)[BOARD_WIDTH][BOARD_HEIGHT], color4 (&cgraph)[BOARD_WIDTH][BOARD_HEIGHT], glm::vec2 vertex )
 {
@@ -543,6 +550,7 @@ vector<Tile> searchConnectedComponent(bool (&graph)[BOARD_WIDTH][BOARD_HEIGHT], 
     return connectedTile;
 }
 
+//-------------------------------------------------------------------------------------------------------------------
 // Add one tile to the drop tiles and update the dropping tile set
 void addTileToDropTiles(Tile _newDropTile)
 {
@@ -583,6 +591,8 @@ void addTileToDropTiles(Tile _newDropTile)
     }
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// Add one tile to the drop tiles and update the dropping tile set
 void addTilesToDropTiles(vector<Tile> _newDropTiles)
 {
     bool graph[BOARD_WIDTH][BOARD_HEIGHT] = {false};
@@ -627,6 +637,7 @@ void addTilesToDropTiles(vector<Tile> _newDropTiles)
     }
 }
 
+//-------------------------------------------------------------------------------------------------------------------
 // Make all non-supportted tiles falling
 void addUnsupportedTilesToDropTiles()
 {
@@ -682,9 +693,9 @@ void addUnsupportedTilesToDropTiles()
 #ifdef DEBUG
     printDropTiles();
 #endif
-    // updateDropTiles();
 
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------
 // Wrapper for Fruit Matching and elimination
@@ -713,6 +724,8 @@ bool checkFruitMatchAndEliminate()
     return flag;
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// Make the dropping tiles to fall
 bool fallTiles(glm::vec2 direction)
 {
     for (vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end();)
@@ -769,7 +782,8 @@ void setDropTiles(vector<Tile> &_tile)
 
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------
+// set the tiles to the board
 void setTiles()
 {
     glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
@@ -802,6 +816,8 @@ void setTiles()
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// unset the tiles when it is detected with no-support or are required to fall (fruit matching case)
 void unsetTiles()
 {
     for (vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end(); ++it)
@@ -826,6 +842,8 @@ void unsetTiles()
 
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// Draw current tiles
 void drawTiles()
 {
     if(tiles.empty()) return;
@@ -890,6 +908,8 @@ void drawTiles()
     glBindVertexArray(0);
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// Draw dropping tiles
 void drawDropTiles()
 {
     if(dropTiles.empty()) return;

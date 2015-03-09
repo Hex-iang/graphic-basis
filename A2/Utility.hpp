@@ -12,7 +12,8 @@ bool checkTileGridCollision( int x, int y)
 	return ( (_IN_BOUND(x,y) && board[x][y] ) || (y < 0) );
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------
+// Check colllision between tile and board, used for highlighting tiles when collisioned on the robot arm   
 bool checkTilesGridCollision()
 {
 	glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
@@ -57,7 +58,7 @@ bool testRotation(glm::vec2 currentTilePos)
 
 
 //-------------------------------------------------------------------------------------------------------------------
-// Generate color vertexs of 4 tile structure from global variable tileColors
+// Generate color vertexs of tiles structure from global variable tileColors
 void genColorVertexFromTileColor(color4 * pPointColor, color4 _color)
 {
 	for (int j = 0; j < TILE_VERTEX_NUM; j++){
@@ -67,6 +68,7 @@ void genColorVertexFromTileColor(color4 * pPointColor, color4 _color)
 
 
 //-------------------------------------------------------------------------------------------------------------------
+// Generate color vertexs for exisiting board from global variable tileColors
 void genBoardVertexColorFromBoardColor(int x ,int y, color4 _color)
 {
 	for (int i = 0; i < TILE_VERTEX_NUM; ++i)
@@ -76,19 +78,7 @@ void genBoardVertexColorFromBoardColor(int x ,int y, color4 _color)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-void genBoardVertexColorsFromBoardColors()
-{
-	for (int i = 0; i < BOARD_WIDTH; i++){
-		for (int j = 0; j < BOARD_HEIGHT; ++j)
-		{
-			genBoardVertexColorFromBoardColor(i, j, boardColors[i][j]);
-		}
-	}
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------
-// The the tile boundary 
+// Get the tile boundary 
 const TileBound getTileBound( glm::vec2 * pTile)
 {
 	TileBound tileBound(0, 0, 0, 0);
@@ -120,6 +110,7 @@ void quad( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4)
     pPoints[4] = p3;
     pPoints[5] = p4;
 }
+
 //-------------------------------------------------------------------------------------------------------------------
 // Generate line grid for a quad
 void quadLine( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4)
@@ -137,6 +128,8 @@ void quadLine( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4)
     pPoints[7] = p1;
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// File quad with specific colors in each vertex 
 void colorquad( color4 * pColors, color4 c1, color4 c2, color4 c3, color4 c4)
 {
     pColors[0] = c1;
