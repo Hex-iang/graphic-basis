@@ -12,11 +12,32 @@ bool checkTileGridCollision( int x, int y)
 	return ( (_IN_BOUND(x,y) && board[x][y] ) || (y < 0) );
 }
 
+
+bool checkTilesGridCollision()
+{
+	glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+		( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
+	
+	bool flag = false;
+
+	for (vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end(); iter++ )
+	{
+		int i = iter - tiles.begin();
+		int x = int(tilePos.x + pAllRotationShape[rotateType][i].x);
+		int y = int(tilePos.y + pAllRotationShape[rotateType][i].y);
+
+		flag = flag || ( board[x][y] || !_ON_BOARD(x, y) );
+	}
+
+	return flag;
+}
+
+    
 //-------------------------------------------------------------------------------------------------------------------
 // Test if the rotation condition is met
-bool testRotation(vec2 currentTilePos)
+bool testRotation(glm::vec2 currentTilePos)
 {
-	vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+	glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
 			( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
 
 	// First test if the rotated version are in the boundary
@@ -68,7 +89,7 @@ void genBoardVertexColorsFromBoardColors()
 
 //-------------------------------------------------------------------------------------------------------------------
 // The the tile boundary 
-const TileBound getTileBound( vec2 * pTile)
+const TileBound getTileBound( glm::vec2 * pTile)
 {
 	TileBound tileBound(0, 0, 0, 0);
 	for (int i = 0; i < 4; i++){

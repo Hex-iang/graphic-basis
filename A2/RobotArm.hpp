@@ -25,14 +25,23 @@ public:
 	GLfloat  Theta;
 	GLfloat  ArmSensitivity;
 
+	// Robot Arm's Tip Position in the Grid System
+	glm::vec2 TipPos;
+
 	RobotArm( GLfloat theta = 0.0f, GLfloat phi = -45.0f, GLfloat sense = 50.0f)
 	:Phi(phi), Theta(theta), ArmSensitivity(sense){
+		GLfloat x =  glm::round( - 0.5 * BASE_WIDTH - EDGE_LEN 
+								 - sin(glm::radians(this->Theta)) * LOWER_ARM_HEIGHT 
+								 - sin(glm::radians(this->Phi)) * UPPER_ARM_HEIGHT );
+		GLfloat y =  glm::round(  0.5 * BASE_HEIGHT  - EDGE_LEN 
+								 + cos(glm::radians(this->Theta)) * LOWER_ARM_HEIGHT 
+								 + cos(glm::radians(this->Phi)) * UPPER_ARM_HEIGHT );
+		this->TipPos = glm::vec2( x, y);
 	}; 
 
 	void Rotate(RobotArm_Movement direction, GLfloat dTime)
 	{
 		GLfloat velocity = dTime * this->ArmSensitivity;
-		cout << "Robot Arm Rotation Velocity: " << velocity << endl;
 		if (direction == INC_PHI)
 		{
 			this->Phi += velocity;
@@ -55,6 +64,25 @@ public:
 		if ( this->Theta 	>=  45.0  ) 	{ this->Theta 	=  45.0; }
 		if ( this->Theta 	<= -90.0  )  	{ this->Theta 	= -90.0; }
 
+		GLfloat x =  glm::round( - 0.5 * BASE_WIDTH - EDGE_LEN 
+								 - sin( ( glm::radians(this->Theta)) ) * LOWER_ARM_HEIGHT 
+								 - sin( ( glm::radians(this->Phi + this->Theta))   ) * UPPER_ARM_HEIGHT );
+
+		GLfloat y =  glm::round( 0.5 * BASE_HEIGHT  - EDGE_LEN 
+								 + cos( ( glm::radians(this->Theta)) ) * LOWER_ARM_HEIGHT 
+								 + cos( ( glm::radians(this->Phi + this->Theta))   ) * UPPER_ARM_HEIGHT );
+		
+		this->TipPos = glm::vec2( x, y);
+
+#ifdef DEBUG			
+			cout << "Current RobotArm Tip: x = "<< this->TipPos.x << ", y = " << this->TipPos.y << endl;
+#endif
+
+		if( tilesReleased == false )
+		{
+			tilePos = this->TipPos;
+		}
+
 	}
 
 	void drawBase(glm::mat4 model, const GLuint& _loc_model)
@@ -71,7 +99,7 @@ public:
 	{
 	    glm::mat4 instance = 	glm::translate( glm::mat4(1.f), glm::vec3( - 0.5 * BASE_WIDTH, 0.5 * BASE_HEIGHT, 0.0) ) *
 	    						glm::rotate( glm::mat4(1.f), glm::radians(this->Theta) , glm::vec3(0.0f, 0.0f, 1.0f)) *
-	    						glm::translate( glm::mat4(1.f), glm::vec3( 0.0f, LOWER_ARM_HEIGHT - 0.25 * LOWER_ARM_WIDTH, 0.0) ) *
+	    						glm::translate( glm::mat4(1.f), glm::vec3( 0.0f, LOWER_ARM_HEIGHT, 0.0) ) *
 	    						glm::rotate( glm::mat4(1.f), glm::radians(this->Phi) , glm::vec3(0.0f, 0.0f, 1.0f)) * 
 	    						glm::translate( glm::mat4(1.f), glm::vec3( 0.0f, 0.5 * UPPER_ARM_HEIGHT, 0.0 ) ) * 
 	    						glm::scale( glm::mat4(1.f), glm::vec3( UPPER_ARM_WIDTH, UPPER_ARM_HEIGHT, UPPER_ARM_WIDTH ) );

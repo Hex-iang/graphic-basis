@@ -10,7 +10,8 @@
 #include "glm/gtc/type_ptr.hpp"
 #include <vector>
 #include <iomanip>
-
+#include <string>
+#include <sstream>
 using namespace std;
 
 // ============================================================================================
@@ -20,14 +21,13 @@ using namespace std;
 // ----------------------------------------------------------------------------------------------
 // Option for compiling 2D version game or 3D version game
 #define DEBUG
-// ----------------------------------------------------------------------------------------------
-// To include camera class
-#include "Camera.hpp"
-#include "RobotArm.hpp"
+
 // ----------------------------------------------------------------------------------------------
 
-#define TILE_TYPE_NUM 		3
-#define TILE_COLOR_NUM		5
+#define TILE_TYPE_NUM 			3
+#define TILE_COLOR_NUM			5
+
+// ----------------------------------------------------------------------------------------------
 
 #define VBO_GRID_POSITION		0
 #define VBO_GRID_COLOR			1
@@ -38,16 +38,14 @@ using namespace std;
 #define VBO_ROBOTARM_POSITION 	6
 #define VBO_ROBOTARM_COLOR 		7
 
+// ----------------------------------------------------------------------------------------------
+// 
+#define VAO_GRID				0
+#define VAO_BOARD				1
+#define VAO_TILE				2
+#define VAO_ROBOTARM			3
 
-
-#define VAO_GRID			0
-#define VAO_BOARD			1
-#define VAO_TILE			2
-#define VAO_ROBOTARM		3
-
-// #define _IN_BOUND(x, y)	 (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 #define _IN_BOUND(x, y)	 (y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
-
 #define _ON_BOARD(x, y)  (y <= UP_BOUND && y >= DOWN_BOUND && x >= LEFT_BOUND && x <= RIGHT_BOUND)
 
 #define _COLOR4_EQUAL(a,b) (a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w) 
@@ -58,8 +56,11 @@ using namespace std;
 							( _COLOR4_EQUAL(color, green)	? "green" 	: \
 							( _COLOR4_EQUAL(color, purple)	? "purple"	: \
 							( _COLOR4_EQUAL(color, yellow)	? "yellow"	: \
-							( _COLOR4_EQUAL(color, white)	? "white"	: "Unknown color" \
-								)))))))
+							( _COLOR4_EQUAL(color, white)	? "white"	: \
+							( _COLOR4_EQUAL(color, grey)   	? "grey"    : \
+							( _COLOR4_EQUAL(color, magenta) ? "magenta" : \
+							( _COLOR4_EQUAL(color, cyan) 	? "cyan" 	: "Unknown color" \
+								))))))))))
 
 
 typedef glm::vec4  color4;
@@ -84,13 +85,14 @@ const int BOARD_WIDTH 	= 10;
 const int BOARD_HEIGHT	= 20;
 
 // colors
-const color4 white  		= color4(1.0, 1.0, 1.0, 1.0);
-const color4 black  		= color4(0.0, 0.0, 0.0, 1.0);
+const color4 white  		= color4(1.0, 	  1.0, 	 1.0, 	1.0);
+const color4 black  		= color4(0.0, 	  0.0, 	 0.0, 	1.0);
+const color4 grey			= color4(0.827, 0.827, 0.827, 	1.0);
 
 // extra colors for fruits 
 const color4 orange 		= color4(1.0, 	0.549,	0.0,  	1.0); 
 const color4 red 			= color4(1.0, 	0.0, 	0.0, 	1.0);
-const color4 green 			= color4(0.486, 0.988, 	0.0, 	1.0);
+const color4 green 			= color4(0.180, 0.545, 	0.341, 	1.0);
 const color4 purple			= color4(0.502, 0.0, 	0.502, 	1.0);
 const color4 yellow 		= color4(1.0, 	0.843, 	0.0, 	1.0);
 
@@ -98,6 +100,8 @@ const color4 yellow 		= color4(1.0, 	0.843, 	0.0, 	1.0);
 const color4 blue 			= color4(0.0,	0.0,	1.0,	1.0);
 const color4 cyan			= color4(0.0,	1.0,	1.0,	1.0);
 const color4 magenta		= color4(1.0,	0.0,	1.0,	1.0);
+const color4 paleTurquoise	= color4(0.686,	0.933,	0.933,	1.0); 
+
 
 const color4 tileColorsSet[5] = {
 	orange, red, green, magenta, yellow
@@ -107,14 +111,11 @@ const color4 tileColorsSet[5] = {
 // OpenGL drawing related structure
 
 // xsize and ysize represent the window size - updated if window is reshaped to prevent stretching of the game
-int xsize = 1000; 
-int ysize = 1200;
+int xsize = 720; 
+int ysize = 800;
 
 // Local ID for Shader Matrix
 
-GLuint  loc_model;  		// model matrix
-GLuint  loc_view;			// view matrix 
-GLuint  loc_projection;		// projection matrix
 
 // in 3D game, there will be 12 triangles per cube
 const int TRIANGLE_VERTEX_NUM 	= 12;
@@ -126,19 +127,11 @@ const int GRID_LINE_VERTEX_NUM	= (BOARD_WIDTH + 1)*(BOARD_HEIGHT + 1)*TILE_LINE_
 
 const GLfloat EDGE_LEN = 1.0;
 
-const GLfloat DEPTH_1 = EDGE_LEN * .01f;
+const GLfloat DEPTH_1 = EDGE_LEN * .0f;
 const GLfloat DEPTH_0 = EDGE_LEN * .0f;
-const GLfloat DEPTH_3 = EDGE_LEN * .04f;
+const GLfloat DEPTH_3 = EDGE_LEN * .0f;
 
-
-
-// Global Camera Class
-Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 40),		// camera position
-				glm::vec3( 0.0f, 1.0f, 0.0f),											// camera up direction
-				glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2, EDGE_LEN * .5f)			// camera looked center		
-				);
-
-RobotArm myRobotArm;
+const GLfloat RELEASED_TIMEBOUND = 5.0f;
 
 // Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 30),	// camera position
 // 				glm::vec3( 0.0f, 1.0f, 0.0f)										// camera up direction
@@ -153,10 +146,6 @@ bool board[BOARD_WIDTH][BOARD_HEIGHT];
 color4 boardColors[BOARD_WIDTH][BOARD_HEIGHT];
 color4 boardVertexColors[BOARD_WIDTH * BOARD_HEIGHT * TILE_VERTEX_NUM];
 
-// location of vertex attributes in the shader program
-GLuint vPosition;
-GLuint vColor;
-
 // VAO and VBO
 GLuint vaoIDs[4]; 
 // One VAO for each object: 0. the grid 1. the board 2. the current tiles 3. robot arm
@@ -164,40 +153,8 @@ GLuint vaoIDs[4];
 GLuint vboIDs[8]; 
 // Two Vertex Buffer Objects for each VAO (specifying vertex positions and colours, respectively)
 
-
 //---------------------------------------------------------------------------------------------------------
-// Game Related Global Structure
-
-// Structure for handling each individual tile
-class Tile{
-public:
-	Tile(vec2 _pos, color4 _color) : Position(_pos), Color(_color){ }
-	Tile(const Tile & _tile ) { this->Position = _tile.Position; this->Color = _tile.Color; }
-
-	bool operator== (const Tile &other) const {
-		return _COLOR4_EQUAL(this->Color, other.Color) && 
-				( this->Position.x == other.Position.x && this->Position.y == other.Position.y );
-  	}
-
-	bool operator!=(const Tile &other) const {
-		return !(*this == other);
-	}
-
-	vec2 Position;
-	color4 Color;
-};
-
-
-bool tilesReleased = false;
-// Global structure for storing current tiles
-vector<Tile> tiles;
-// Global structure for storing dropping tiles
-vector< vector<Tile> > dropTiles;
-
-vec2 tilePos = vec2(5, 19);
-int tileType 		= TILE_TYPE_L;
-int rotateType 		= 0;
-
+// Game control global variable
 GLfloat velocity 	= -1.0;
 GLfloat step 		=  1.0;
 
@@ -209,35 +166,70 @@ bool ifGameStop 	= false;
 GLfloat deltaTime 	= 0.0f;		// Time between current frame and last frame
 GLfloat lastFrame 	= 0.0f;  	// Time of last frame
 GLfloat dt 			= 0.0f;
+
+//---------------------------------------------------------------------------------------------------------
+// Tile Structure
+
+// Structure for handling each individual tile
+class Tile{
+public:
+	Tile(glm::vec2 _pos, color4 _color) : Position(_pos), Color(_color){ }
+	Tile(const Tile & _tile ) { this->Position = _tile.Position; this->Color = _tile.Color; }
+
+	bool operator== (const Tile &other) const {
+		return _COLOR4_EQUAL(this->Color, other.Color) && 
+				( this->Position.x == other.Position.x && this->Position.y == other.Position.y );
+  	}
+
+	bool operator!=(const Tile &other) const {
+		return !(*this == other);
+	}
+
+	glm::vec2 Position;
+	color4 Color;
+};
+
+
+bool tilesReleased = false;
+GLfloat releaseTimer = 0;
+// Global structure for storing current tiles
+vector<Tile> tiles;
+// Global structure for storing dropping tiles
+vector< vector<Tile> > dropTiles;
+
+glm::vec2 tilePos = glm::vec2(5, 19);
+int tileType 		= TILE_TYPE_L;
+int rotateType 		= 0;
+
 // Velocity for each timer movement and step for keyboard movement
 
-// The 'tile' array will always be some element [i][j] of this array (an array of vec2)
+// The 'tile' array will always be some element [i][j] of this array (an array of glm::vec2)
 int allRotationShapeSize[TILE_TYPE_NUM] = {4, 4, 4};
 
-vec2 allRotationsLshape[4][4] = 
+glm::vec2 allRotationsLshape[4][4] = 
 	{
-		{vec2(-1,-1), vec2(-1, 0), vec2( 0, 0), vec2( 1,  0)},
-		{vec2( 1,-1), vec2( 0,-1), vec2( 0, 0), vec2( 0,  1)},
-		{vec2( 1, 1), vec2( 1, 0), vec2( 0, 0), vec2(-1,  0)},
-		{vec2(-1, 1), vec2( 0, 1), vec2( 0, 0), vec2( 0, -1)}
+		{glm::vec2(-1,-1), glm::vec2(-1, 0), glm::vec2( 0, 0), glm::vec2( 1,  0)},
+		{glm::vec2( 1,-1), glm::vec2( 0,-1), glm::vec2( 0, 0), glm::vec2( 0,  1)},
+		{glm::vec2( 1, 1), glm::vec2( 1, 0), glm::vec2( 0, 0), glm::vec2(-1,  0)},
+		{glm::vec2(-1, 1), glm::vec2( 0, 1), glm::vec2( 0, 0), glm::vec2( 0, -1)}
 	};
 
 // All rotations for S and L shapes
 // ============================================================================================
-vec2 allRotationsSshape[4][4] = 
+glm::vec2 allRotationsSshape[4][4] = 
 	{
-		{vec2(-1, -1), vec2( 0,-1), vec2(0, 0), vec2( 1, 0)},
-		{vec2( 1, -1), vec2( 1, 0), vec2(0, 0), vec2( 0, 1)},
-		{vec2( 1,  1), vec2( 0, 1), vec2(0, 0), vec2(-1, 0)},
-		{vec2(-1,  1), vec2(-1, 0), vec2(0, 0), vec2( 0,-1)}
+		{glm::vec2(-1, -1), glm::vec2( 0,-1), glm::vec2(0, 0), glm::vec2( 1, 0)},
+		{glm::vec2( 1, -1), glm::vec2( 1, 0), glm::vec2(0, 0), glm::vec2( 0, 1)},
+		{glm::vec2( 1,  1), glm::vec2( 0, 1), glm::vec2(0, 0), glm::vec2(-1, 0)},
+		{glm::vec2(-1,  1), glm::vec2(-1, 0), glm::vec2(0, 0), glm::vec2( 0,-1)}
 	};
 
-vec2 allRotationsIshape[4][4] = 
+glm::vec2 allRotationsIshape[4][4] = 
 	{
-		{vec2(-2, 0), vec2(-1, 0), vec2(0, 0), vec2( 1, 0)},
-		{vec2( 0,-2), vec2( 0,-1), vec2(0, 0), vec2( 0, 1)},
-		{vec2( 2, 0), vec2( 1, 0), vec2(0, 0), vec2(-1, 0)},
-		{vec2( 0, 2), vec2( 0, 1), vec2(0, 0), vec2( 0,-1)}
+		{glm::vec2(-2, 0), glm::vec2(-1, 0), glm::vec2(0, 0), glm::vec2( 1, 0)},
+		{glm::vec2( 0,-2), glm::vec2( 0,-1), glm::vec2(0, 0), glm::vec2( 0, 1)},
+		{glm::vec2( 2, 0), glm::vec2( 1, 0), glm::vec2(0, 0), glm::vec2(-1, 0)},
+		{glm::vec2( 0, 2), glm::vec2( 0, 1), glm::vec2(0, 0), glm::vec2( 0,-1)}
 
 	};
 
@@ -249,6 +241,24 @@ struct TileBound{
 		left(_left), right(_right), up(_up), down(_down){}
 };
 
+
+// ----------------------------------------------------------------------------------------------
+// To include camera class and robotArm class
+#include "Camera.hpp"
+#include "RobotArm.hpp"
+
+// Global Camera Class
+Camera myCamera(glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2 , EDGE_LEN * 40),		// camera position
+				glm::vec3( 0.0f, 1.0f, 0.0f),											// camera up direction
+				glm::vec3( EDGE_LEN * 12 / 2, EDGE_LEN * 22 / 2, EDGE_LEN * .5f)			// camera looked center		
+				);
+
+RobotArm myRobotArm;
+
+// ----------------------------------------------------------------------------------------------
+// To include text rendering class
+#include "TextRender.hpp"
+
 // ===========================================================================================
 // Utility function 
 void genBoardVertexColorFromBoardColor(int x ,int y, color4 _color);
@@ -257,12 +267,12 @@ void genBoardVertexColorsFromBoardColors();
 void genColorVertexFromTileColor(color4 * pPointColor, color4 _color);
 
 color4 genRandomColor();
-const TileBound getTileBound( vec2 * pTile);
+const TileBound getTileBound( glm::vec2 * pTile);
 
-bool checkInBound(vec2 newPos);
+bool checkInBound(glm::vec2 newPos);
 bool checkTileGridCollision( int x, int y);
-bool checkTilesGridsCollision(vec2 newPos);
-bool testRotation(vec2 currentTilePos);
+bool checkTilesGridsCollision();
+bool testRotation(glm::vec2 currentTilePos);
 
 // ===========================================================================================
 // Function Declaration
@@ -279,7 +289,7 @@ void moveDownRows(bool eliminatedRows[]);
 void eliminateFullRow(int row);
 bool checkFullRow(int row);
 void setTile();
-bool moveTile(vec2 direction);
+bool moveTile(glm::vec2 direction);
 void moveDownTileToEnd();
 
 void quad( point4 * pPoints, point4 p1, point4 p2, point4 p3, point4 p4);
@@ -314,7 +324,7 @@ void checkFullRowsAndEliminate();
 bool fallTiles();
 void drawDropTiles();
 void setDropTiles(vector<Tile> &_tile);
-bool searchConnectToBottom(vec2 vertex);
+bool searchConnectToBottom(glm::vec2 vertex);
 void addTileToDropTiles(Tile _newDropTile);
 void addTilesToDropTiles(vector<Tile> _newDropTiles);
 

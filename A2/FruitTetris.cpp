@@ -7,9 +7,12 @@
 //-------------------------------------------------------------------------------------------------------------------
 // When the current tile is moved or rotated (or created), update the VBO containing its vertex position data
 void drawBoard()
-{    
+{
+    glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+            ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
+
     genBoardVertexColorsFromBoardColors();
-    
+    int boardSize = 0;
     int idx = 0;
     for (int y = 0; y < BOARD_HEIGHT; ++y)
     {
@@ -17,6 +20,7 @@ void drawBoard()
         {
             if(board[x][y] == true)
             {
+                bool detectCollision = false;
                 point4 newPoints[TILE_VERTEX_NUM];
                 // If the current board have tiles, then draw it
                 point4 p1 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2, 1);
@@ -35,10 +39,30 @@ void drawBoard()
                 quad( &newPoints[ 3*QUAD_VERTEX_NUM ], p2, p6, p7, p3);
                 quad( &newPoints[ 4*QUAD_VERTEX_NUM ], p3, p4, p8, p7);
                 quad( &newPoints[ 5*QUAD_VERTEX_NUM ], p5, p6, p7, p8);         
-                   
-                color4 pointsColors[TILE_VERTEX_NUM];
+                
 
-                genColorVertexFromTileColor(pointsColors, boardColors[x][y]);
+                for (vector<Tile>::iterator iter = tiles.begin(); iter != tiles.end(); ++iter) 
+                {
+                    // Calculate the grid coordinates of the cell
+                    int tx = int( iter->Position.x);
+                    int ty = int( iter->Position.y);
+                    
+                    if( tx == x && ty == y ){
+                        detectCollision = true;
+                        break;
+                    }
+
+                }
+
+                color4 pointsColors[TILE_VERTEX_NUM];
+                if( detectCollision )
+                {
+                    genColorVertexFromTileColor(pointsColors, grey);
+                }
+                else
+                {
+                    genColorVertexFromTileColor(pointsColors, boardColors[x][y]);
+                }
 
                 glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_COLOR]);
                 glBufferSubData(GL_ARRAY_BUFFER, idx*TILE_VERTEX_NUM*sizeof(color4), TILE_VERTEX_NUM*sizeof(color4), pointsColors);
@@ -48,11 +72,18 @@ void drawBoard()
                 glBufferSubData(GL_ARRAY_BUFFER, idx*TILE_VERTEX_NUM*sizeof(point4), TILE_VERTEX_NUM*sizeof(point4), newPoints);
                 idx++ ;
             }
+            boardSize += int(board[x][y]);
         }
     }
 
+    glBindVertexArray(vaoIDs[VAO_BOARD]); 
+    // Bind the VAO representing the grid cells (to be drawn first)
+
+    glDrawArrays(GL_TRIANGLES, 0, boardSize*TILE_VERTEX_NUM); 
+    // Draw the board (10*20*2 = 400 triangles)
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);       
+    glBindVertexArray(0);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -116,10 +147,8 @@ void initRobotArm()
     glBindVertexArray(vaoIDs[VAO_ROBOTARM]);
     glGenBuffers(2, &vboIDs[6]);
 
-    vColor    = glGetAttribLocation(RobotArmShader, "vColor");
-    vPosition = glGetAttribLocation(RobotArmShader, "vPosition");
-    // vColor    = glGetAttribLocation(UniversalShader, "vColor");
-    // vPosition = glGetAttribLocation(UniversalShader, "vPosition");
+    GLuint vColor    = glGetAttribLocation(RobotArmShader, "vColor");
+    GLuint vPosition = glGetAttribLocation(RobotArmShader, "vPosition");
 
     // Current tile vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_ROBOTARM_POSITION]);
@@ -150,14 +179,14 @@ void initGrid()
     for (int i = 0; i < BOARD_HEIGHT; i++){
         for (int j = 0; j < BOARD_WIDTH; j++)
         {       
-            point4 p1 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN),   EDGE_LEN / 2 + DEPTH_3, 1);
-            point4 p2 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN),   EDGE_LEN / 2 + DEPTH_3, 1);
-            point4 p3 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN),   EDGE_LEN / 2 + DEPTH_3, 1);
-            point4 p4 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN),   EDGE_LEN / 2 + DEPTH_3, 1);
-            point4 p5 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_3, 1);
-            point4 p6 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_3, 1);
-            point4 p7 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_3, 1);
-            point4 p8 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_3, 1);
+            point4 p1 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN),   EDGE_LEN / 2, 1);
+            point4 p2 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN),   EDGE_LEN / 2, 1);
+            point4 p3 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN),   EDGE_LEN / 2, 1);
+            point4 p4 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN),   EDGE_LEN / 2, 1);
+            point4 p5 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN), - EDGE_LEN / 2, 1);
+            point4 p6 = point4(EDGE_LEN     + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN), - EDGE_LEN / 2, 1);
+            point4 p7 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN * 2  + (i * EDGE_LEN), - EDGE_LEN / 2, 1);
+            point4 p8 = point4(EDGE_LEN * 2 + (j * EDGE_LEN), EDGE_LEN      + (i * EDGE_LEN), - EDGE_LEN / 2, 1);
 
             // Two points are used by two triangles each
             quadLine( &gridpoints[ TILE_LINE_VERTEX_NUM*(BOARD_WIDTH*i + j) + 0*QUAD_LINE_VERTEX_NUM], p1, p2, p3, p4);
@@ -172,7 +201,7 @@ void initGrid()
 
     // Make all grid lines white
     for (int i = 0; i < GRID_LINE_VERTEX_NUM; i++)
-        gridcolours[i] = white;
+        gridcolours[i] = paleTurquoise;
 
     // *** set up buffer objects
     // Set up first VAO (representing grid lines)
@@ -181,8 +210,8 @@ void initGrid()
     glGenBuffers(2, vboIDs); 
     // Create two Vertex Buffer Objects for this VAO (positions, colours)
 
-    vColor    = glGetAttribLocation(UniversalShader, "vColor");
-    vPosition = glGetAttribLocation(UniversalShader, "vPosition");
+    GLuint vColor    = glGetAttribLocation(UniversalShader, "vColor");
+    GLuint vPosition = glGetAttribLocation(UniversalShader, "vPosition");
 
     // Grid vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_GRID_POSITION]); 
@@ -225,8 +254,8 @@ void initBoard()
     glBindVertexArray(vaoIDs[VAO_BOARD]);
     glGenBuffers(2, &vboIDs[2]);
 
-    vColor    = glGetAttribLocation(UniversalShader, "vColor");
-    vPosition = glGetAttribLocation(UniversalShader, "vPosition");
+    GLuint vColor    = glGetAttribLocation(UniversalShader, "vColor");
+    GLuint vPosition = glGetAttribLocation(UniversalShader, "vPosition");
 
     // Grid cell vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_BOARD_POSITION]);
@@ -251,8 +280,8 @@ void initCurrentTile()
     glBindVertexArray(vaoIDs[VAO_TILE]);
     glGenBuffers(2, &vboIDs[4]);
 
-    vColor    = glGetAttribLocation(UniversalShader, "vColor");
-    vPosition = glGetAttribLocation(UniversalShader, "vPosition");
+    GLuint vColor    = glGetAttribLocation(UniversalShader, "vColor");
+    GLuint vPosition = glGetAttribLocation(UniversalShader, "vPosition");
 
     // Current tile vertex positions
     glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_POSITION]);
@@ -278,7 +307,6 @@ void init()
     RobotArmShader = InitShader("shaders/robotvshader.glsl", "shaders/robotfshader.glsl");
 
     UniversalShader = InitShader("shaders/vshader.glsl", "shaders/fshader.glsl");
-
     // Get the location of the attributes (for glVertexAttribPointer() calls)
 
     // Create 3 Vertex Array Objects, each representing one 'object'. Store the names in array vaoIDs
@@ -343,8 +371,27 @@ void processDisplay()
 
     GLfloat currentFrame = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
     dt = (currentFrame - lastFrame);
+
     deltaTime += dt;
     lastFrame = currentFrame;
+
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+    // Released time 
+
+    if( tilesReleased ) 
+    {
+        releaseTimer = 0;
+    }
+    else if( !ifPause && !ifGameStop )
+    {
+        releaseTimer +=dt;
+        if( releaseTimer > RELEASED_TIMEBOUND )
+        {
+            releaseTimer = 0;
+            releaseTiles();
+        }
+    }
+
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------
     // Control game frame length
@@ -356,7 +403,7 @@ void processDisplay()
         if( !ifPause && !ifGameStop)
         {
             if( tilesReleased == true ){
-                if ( false == moveTile(vec2(0.0, velocity )) )
+                if ( false == moveTile(glm::vec2(0.0, velocity )) )
                 {
 
                     setTiles();
@@ -372,10 +419,6 @@ void processDisplay()
 
                 }
             }
-            else
-            {
-                // Start counting down
-            }
         }
     }
     else if(deltaTime > 0.1 && !ifGameStop && !dropTiles.empty())
@@ -383,7 +426,7 @@ void processDisplay()
         deltaTime = 0;
         if( !ifPause && !ifGameStop)
         {
-            if( fallTiles( vec2(0.0f, velocity) ))
+            if( fallTiles( glm::vec2(0.0f, velocity) ))
             {
 
                 checkFullRowsAndEliminate();
@@ -412,9 +455,9 @@ void processDisplay()
     // -----------------------------------------------------------------------------------------------------------------------------------------------
     // Display basic FruitTetris
 
-    loc_model       = glGetUniformLocation( UniversalShader, "model" );
-    loc_view        = glGetUniformLocation( UniversalShader, "view" ); 
-    loc_projection  = glGetUniformLocation( UniversalShader, "projection" );
+    GLuint loc_model       = glGetUniformLocation( UniversalShader, "model" );
+    GLuint loc_view        = glGetUniformLocation( UniversalShader, "view" ); 
+    GLuint loc_projection  = glGetUniformLocation( UniversalShader, "projection" );
     
 
     glUseProgram(UniversalShader);
@@ -425,27 +468,21 @@ void processDisplay()
     glUniformMatrix4fv( loc_view,       1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv( loc_projection, 1, GL_FALSE, glm::value_ptr(projection));
 
-    glm::mat4 model = glm::mat4();
-    glUniformMatrix4fv( loc_model, 1, GL_FALSE, glm::value_ptr(model));
-
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------
     // Display Board
 
-    int boardSize = 0;
-    for (int y = 0; y < BOARD_HEIGHT; ++y)
-        for (int x = 0; x < BOARD_WIDTH; ++x)
-            boardSize += int(board[x][y]);
+    glm::mat4 model = glm::mat4();
+    glUniformMatrix4fv( loc_model, 1, GL_FALSE, glm::value_ptr(model));
 
     drawBoard();
-
-    glBindVertexArray(vaoIDs[VAO_BOARD]); // Bind the VAO representing the grid cells (to be drawn first)
-    glDrawArrays(GL_TRIANGLES, 0, boardSize*TILE_VERTEX_NUM); // Draw the board (10*20*2 = 400 triangles)
-    
 
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------
     // Display Tiles
+
+    model = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.00f, 1.01f));
+    glUniformMatrix4fv( loc_model, 1, GL_FALSE, glm::value_ptr(model));
 
     // Calculating the tiles/dropTiles number 
     int tileSize = tiles.size();
@@ -460,6 +497,12 @@ void processDisplay()
     // Bind the VAO representing the current tile (to be drawn on top of the board)
     glDrawArrays(GL_TRIANGLES, 0, tileSize*TILE_VERTEX_NUM); 
     // Draw the current tile (8 triangles)
+
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+    // Display White Grid
+
+    model = glm::scale(glm::mat4(1.0f), glm::vec3(1.00f, 1.00f, 1.02f));
+    glUniformMatrix4fv( loc_model, 1, GL_FALSE, glm::value_ptr(model));
 
     glBindVertexArray(vaoIDs[VAO_GRID]); 
     // Bind the VAO representing the grid lines (to be drawn on top of everything else)
@@ -492,6 +535,28 @@ void processDisplay()
     myRobotArm.drawLowerArm(model, loc_model);
     // draw
 
+    // -----------------------------------------------------------------------------------------------------------------------------------------------
+    // Display Text
+    
+    if( !tilesReleased )
+    {
+        stringstream ssTimeRemaining;
+        ssTimeRemaining << "Until Next Release: " << std::fixed << std::setprecision(1)
+                        << float(RELEASED_TIMEBOUND - releaseTimer);
+        RenderString(-.80f, .80f, GLUT_BITMAP_HELVETICA_18, ssTimeRemaining.str().c_str(), white);
+    }
+    else
+    {
+        RenderString(-.80f, .80f, GLUT_BITMAP_HELVETICA_18, "Tile Dropping", white);
+    }
+
+    if( ifGameStop ){
+        RenderString(-.9f, -.85f, GLUT_BITMAP_TIMES_ROMAN_24, "GAME OVER", red);
+    }
+    else if( ifPause )
+    {
+        RenderString(-.9f, -.85f, GLUT_BITMAP_TIMES_ROMAN_24, "GAME PAUSED ", yellow);
+    }
 
     glutPostRedisplay();
     glutSwapBuffers();
@@ -517,14 +582,14 @@ void processSpecialKey(int key, int x, int y)
     int mod;
     mod = glutGetModifiers();
     // Initial attempt for special key event
-    vec2 displacement = vec2(0,0);
+    glm::vec2 displacement = glm::vec2(0,0);
 
     switch(key) {
     case GLUT_KEY_UP :
         rotateTile();
         break;
     case GLUT_KEY_DOWN :
-        displacement -= vec2(0, step);
+        displacement -= glm::vec2(0, step);
         break;
     case GLUT_KEY_LEFT :
         if ( mod == GLUT_ACTIVE_CTRL )
@@ -532,7 +597,7 @@ void processSpecialKey(int key, int x, int y)
             myCamera.RotateCamera(1.0f, dt);
         }
         else
-            displacement -= vec2(step, 0);
+            displacement -= glm::vec2(step, 0);
 
         break;
     case GLUT_KEY_RIGHT:
@@ -541,13 +606,13 @@ void processSpecialKey(int key, int x, int y)
             myCamera.RotateCamera(-1.0f, dt);
         }
         else
-            displacement += vec2(step, 0);
+            displacement += glm::vec2(step, 0);
         
         break;
     }
 
     if( dropTiles.empty() && !ifPause && !ifGameStop && ( tilesReleased == true ) ){
-        if( displacement != vec2(0, 0) && false == moveTile(displacement) )
+        if( displacement != glm::vec2(0, 0) && false == moveTile(displacement) )
         {
             if (displacement.y < 0)
             {
@@ -623,11 +688,11 @@ void processKeyboard(unsigned char key, int x, int y)
         case 'l':
             myCamera.MoveCamera(RIGHT, dt);
             break;
-        case 13:
+        case ' ':
             releaseTiles();
             break;
         // Shift tile color
-        case ' ':
+        case 13:
             shiftTileColor();
             break;
 

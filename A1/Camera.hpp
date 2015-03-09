@@ -23,12 +23,12 @@ class Camera
 {
 public:
     // Camera Attributes
-    glm::vec3 Position;
-    glm::vec3 Front;
-    glm::vec3 Up;
-    glm::vec3 Right;
-    glm::vec3 WorldUp;
-    glm::vec3 Center;
+    vec4 Position;
+    vec4 Front;
+    vec4 Up;
+    vec4 Right;
+    vec4 WorldUp;
+    vec4 Center;
 
     // Camera options
     GLfloat MovementSpeed;
@@ -38,15 +38,15 @@ public:
     GLfloat Alpha;
 
     // Constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3 center = glm::vec3(0.0f, 0.0f, -1.0f)) 
+    Camera(vec4 position = vec4(0.0f, 0.0f, 0.0f), vec4 up = vec4(0.0f, 1.0f, 0.0f), vec4 center = vec4(0.0f, 0.0f, -1.0f)) 
     : MovementSpeed(SPEED), MouseSensitivity(SENSITIVTY), Fov(FOV), Alpha(0.0f)
     {
         this->Position = position;
         this->Center = center;
         
-        this->Front = glm::normalize(center - position); 
+        this->Front = normalize(center - position); 
 
-        this->Radius = glm::distance(position, center);
+        this->Radius = distance(position, center);
 
         this->WorldUp = up;
 
@@ -54,9 +54,9 @@ public:
     }
 
     // Returns the view matrix calculated using Eular Angles and the LookAt Matrix
-    glm::mat4 GetViewMatrix()
+    mat4 GetViewMatrix()
     {
-        return glm::lookAt(this->Position, this->Position + this->Front, this->Up);
+        return lookAt(this->Position, this->Position + this->Front, this->Up);
     }
 
     void RotateCamera(GLfloat increment, GLfloat dt, GLfloat camera_speed = 100.0f)
@@ -69,10 +69,10 @@ public:
             this->Alpha = 360;
 
 
-        GLfloat camX = this->Radius * sin(glm::radians(this->Alpha));
-        GLfloat camZ = this->Radius * cos(glm::radians(this->Alpha));
+        GLfloat camX = this->Radius * sin(radians(this->Alpha));
+        GLfloat camZ = this->Radius * cos(radians(this->Alpha));
 
-        this->Position = glm::vec3(camX, this->Position.y, camZ);
+        this->Position = vec4(camX, this->Position.y, camZ, 1.0f);
 
 // #ifdef DEBUG
 //         cout << "Camera Alpha: " << this->Alpha << endl;
@@ -95,7 +95,7 @@ public:
         if (direction == RIGHT)
             this->Position += this->Right * velocity;
 
-        this->Radius = glm::distance(this->Position, this->Center);
+        this->Radius = distance(this->Position, this->Center);
 
 
 #ifdef DEBUG
@@ -123,15 +123,15 @@ private:
     void updateCameraVectors()
     {
         // Calculate the new Front vector
-        glm::vec3 front;
+        vec4 front;
 
-        this->Front = glm::normalize(this->Center - this->Position);
+        this->Front = normalize(this->Center - this->Position);
         
 #ifdef DEBUG
         cout << "Normalized Front: " << this->Front.x << ", " << this->Front.y << ", " << this->Front.z << endl;
 #endif
         // Also re-calculate the Right and Up vector
-        this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));  
-        this->Up    = glm::normalize(glm::cross(this->Right, this->Front));
+        this->Right = normalize(cross(this->Front, this->WorldUp));  
+        this->Up    = normalize(cross(this->Right, this->Front));
     }
 };

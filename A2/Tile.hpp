@@ -8,7 +8,25 @@
 
 void releaseTiles()
 {
+    if( tilesReleased ) return;
+
+    int x = int( myRobotArm.TipPos.x );
+    int y = int( myRobotArm.TipPos.y );
+
+    if ( !_ON_BOARD(x, y) || checkTilesGridCollision())
+    {
+        glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+            ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
+        // Randomly drop the new tile in the grid
+        TileBound tileBound = getTileBound(pAllRotationShape[rotateType]);
+        int coverage = ( RIGHT_BOUND - int(tileBound.right) + int(tileBound.left) + 1);
+        int hpos = rand() % coverage - int(tileBound.left);
+        int vpos = UP_BOUND - tileBound.up;
+        tilePos = glm::vec2(hpos , vpos);
+    }
+
     tilesReleased = true;
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -16,25 +34,18 @@ void releaseTiles()
 void newTile()
 {
     tiles.clear();
-    tilesReleased = true;
+    tilesReleased   = false;
 
     // First generate a random tile
     if( tryStopGame() ) return ;
 
     tileType = rand() % TILE_TYPE_NUM;
-    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+    glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
             ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
 
     rotateType = rand() % ( allRotationShapeSize[tileType] );
 
-    // Update the geometry VBO of current tile
-
-    TileBound tileBound = getTileBound(pAllRotationShape[rotateType]);
-    int coverage = ( RIGHT_BOUND - int(tileBound.right) + int(tileBound.left) + 1);
-
-    int hpos = rand() % coverage - int(tileBound.left);
-    int vpos = UP_BOUND - tileBound.up;
-    tilePos = vec2(hpos , vpos);
+    tilePos = myRobotArm.TipPos;
     // Put the tile at the top of the board
     
     for ( int i = 0; i < 4; i++)
@@ -51,36 +62,36 @@ bool rotateTile()
 {
     if (!dropTiles.empty() || ifGameStop || ifPause || tiles.empty() || (tilesReleased == false) ) return false;
 
-    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+    glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
             ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
 
     // First test if the rotated version are in the boundary
     if (!testRotation(tilePos))
     {
         // Add logic to rescue a tile if it could be rotate with a unit movement.
-        if ( testRotation(tilePos + vec2(1, 0)) )
+        if ( testRotation(tilePos + glm::vec2(1, 0)) )
         {
-            tilePos += vec2(1, 0);
+            tilePos += glm::vec2(1, 0);
         }
-        else if ( testRotation(tilePos + vec2(-1, 0)) )
+        else if ( testRotation(tilePos + glm::vec2(-1, 0)) )
         {
-            tilePos += vec2(-1, 0);
+            tilePos += glm::vec2(-1, 0);
         }
-        else if ( testRotation(tilePos + vec2( 0, 1)) )
+        else if ( testRotation(tilePos + glm::vec2( 0, 1)) )
         {
-            tilePos += vec2(0, 1);
+            tilePos += glm::vec2(0, 1);
         }
-        else if ( testRotation(tilePos + vec2( 2, 0)) )
+        else if ( testRotation(tilePos + glm::vec2( 2, 0)) )
         {
-            tilePos += vec2(2, 0);          
+            tilePos += glm::vec2(2, 0);          
         }
-        else if ( testRotation(tilePos + vec2(-2, 0)))
+        else if ( testRotation(tilePos + glm::vec2(-2, 0)))
         {
-            tilePos += vec2(-2, 0);
+            tilePos += glm::vec2(-2, 0);
         }
-        else if ( testRotation(tilePos + vec2( 0, 2)) )
+        else if ( testRotation(tilePos + glm::vec2( 0, 2)) )
         {
-            tilePos += vec2(0, 2);
+            tilePos += glm::vec2(0, 2);
         }
         else{
 
@@ -116,9 +127,9 @@ void shiftTileColor()
 //-------------------------------------------------------------------------------------------------------------------
 // Given (x,y), tries to move the tile x squares to the right and y squares down
 // Returns true if the tile was successfully moved, or false if there was some issue
-bool moveTile(vec2 direction)
+bool moveTile(glm::vec2 direction)
 {
-    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+    glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
             ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
     bool flag = true;
     bool inFlag = true;
@@ -379,7 +390,7 @@ void moveDownFruitTilesCols(bool eliminatedFruitTiles[][BOARD_HEIGHT])
             else if ( flag == true && board[col][row] )
             {
                 // if eliminate fruit match make the tile not connected to bottom
-                Tile item(vec2(col, row), boardColors[col][row]);
+                Tile item(glm::vec2(col, row), boardColors[col][row]);
 
                 // if the item not exists in the dropTiles
                 bool NotExisted = true;
@@ -451,9 +462,9 @@ void printBoolBoardSizeArray(bool _array[][BOARD_HEIGHT])
 }
 
 // Check if the current tile is connected to the bottom
-bool searchConnectToBottom(vec2 vertex)
+bool searchConnectToBottom(glm::vec2 vertex)
 {
-    vector<vec2> stack;
+    vector<glm::vec2> stack;
     bool discovered[BOARD_WIDTH][BOARD_HEIGHT];
     for (int i = 0; i < BOARD_WIDTH; ++i)
         for (int j = 0; j < BOARD_HEIGHT; ++j)
@@ -464,7 +475,7 @@ bool searchConnectToBottom(vec2 vertex)
 
     while( !stack.empty())
     {
-        vec2 current = stack.back();
+        glm::vec2 current = stack.back();
         stack.pop_back();
         int current_x = int(current.x);
         int current_y = int(current.y);
@@ -484,10 +495,10 @@ bool searchConnectToBottom(vec2 vertex)
                     return true;
                 }
 
-                if( _ON_BOARD(current_x + 1, current_y) ) stack.push_back(vec2(current_x + 1, current_y    ));
-                if( _ON_BOARD(current_x - 1, current_y) ) stack.push_back(vec2(current_x - 1, current_y    ));
-                if( _ON_BOARD(current_x, current_y - 1) ) stack.push_back(vec2(current_x    , current_y - 1));
-                if( _ON_BOARD(current_x, current_y + 1) ) stack.push_back(vec2(current_x    , current_y + 1));
+                if( _ON_BOARD(current_x + 1, current_y) ) stack.push_back(glm::vec2(current_x + 1, current_y    ));
+                if( _ON_BOARD(current_x - 1, current_y) ) stack.push_back(glm::vec2(current_x - 1, current_y    ));
+                if( _ON_BOARD(current_x, current_y - 1) ) stack.push_back(glm::vec2(current_x    , current_y - 1));
+                if( _ON_BOARD(current_x, current_y + 1) ) stack.push_back(glm::vec2(current_x    , current_y + 1));
 
             }
         }
@@ -497,10 +508,10 @@ bool searchConnectToBottom(vec2 vertex)
 }
 
 // Search the connected component in the graph and drop down it if not connected
-vector<Tile> searchConnectedComponent(bool (&graph)[BOARD_WIDTH][BOARD_HEIGHT], color4 (&cgraph)[BOARD_WIDTH][BOARD_HEIGHT], vec2 vertex )
+vector<Tile> searchConnectedComponent(bool (&graph)[BOARD_WIDTH][BOARD_HEIGHT], color4 (&cgraph)[BOARD_WIDTH][BOARD_HEIGHT], glm::vec2 vertex )
 {
     vector<Tile> connectedTile;
-    vector<vec2> stack;
+    vector<glm::vec2> stack;
     bool discovered[BOARD_WIDTH][BOARD_HEIGHT];
     for (int i = 0; i < BOARD_WIDTH; ++i)
         for (int j = 0; j < BOARD_HEIGHT; ++j)
@@ -510,7 +521,7 @@ vector<Tile> searchConnectedComponent(bool (&graph)[BOARD_WIDTH][BOARD_HEIGHT], 
 
     while( !stack.empty())
     {
-        vec2 current = stack.back();
+        glm::vec2 current = stack.back();
         stack.pop_back();
         int current_x = int(current.x);
         int current_y = int(current.y);
@@ -522,10 +533,10 @@ vector<Tile> searchConnectedComponent(bool (&graph)[BOARD_WIDTH][BOARD_HEIGHT], 
                 graph[current_x][current_y] = false;
                 connectedTile.push_back(Tile(current, cgraph[current_x][current_y]));
 
-                if( _ON_BOARD(current_x + 1, current_y)) stack.push_back(vec2(current_x + 1, current_y    ));
-                if( _ON_BOARD(current_x - 1, current_y)) stack.push_back(vec2(current_x - 1, current_y    ));
-                if( _ON_BOARD(current_x, current_y - 1)) stack.push_back(vec2(current_x    , current_y - 1));
-                if( _ON_BOARD(current_x, current_y + 1)) stack.push_back(vec2(current_x    , current_y + 1));
+                if( _ON_BOARD(current_x + 1, current_y)) stack.push_back(glm::vec2(current_x + 1, current_y    ));
+                if( _ON_BOARD(current_x - 1, current_y)) stack.push_back(glm::vec2(current_x - 1, current_y    ));
+                if( _ON_BOARD(current_x, current_y - 1)) stack.push_back(glm::vec2(current_x    , current_y - 1));
+                if( _ON_BOARD(current_x, current_y + 1)) stack.push_back(glm::vec2(current_x    , current_y + 1));
             }
         }
     }
@@ -565,7 +576,7 @@ void addTileToDropTiles(Tile _newDropTile)
         for (int col = 0; col < BOARD_WIDTH; ++col)
         {
             if( graph[col][row]){
-                vector<Tile> tileSet = searchConnectedComponent(graph, cgraph, vec2(col, row) );
+                vector<Tile> tileSet = searchConnectedComponent(graph, cgraph, glm::vec2(col, row) );
                 dropTiles.push_back(tileSet);
             }
         }
@@ -609,7 +620,7 @@ void addTilesToDropTiles(vector<Tile> _newDropTiles)
         for (int col = 0; col < BOARD_WIDTH; ++col)
         {
             if( graph[col][row]){
-                vector<Tile> tileSet = searchConnectedComponent(graph, cgraph, vec2(col, row) );
+                vector<Tile> tileSet = searchConnectedComponent(graph, cgraph, glm::vec2(col, row) );
                 dropTiles.push_back(tileSet);
             }
         }
@@ -625,9 +636,9 @@ void addUnsupportedTilesToDropTiles()
     {
         for (int col = 0; col < BOARD_WIDTH; ++col)
         {
-            if( !_COLOR4_EQUAL(boardColors[col][row], black) && !searchConnectToBottom(vec2(col, row)) )
+            if( !_COLOR4_EQUAL(boardColors[col][row], black) && !searchConnectToBottom(glm::vec2(col, row)) )
             {
-                Tile unSupportedTile(vec2(col, row), boardColors[col][row]);
+                Tile unSupportedTile(glm::vec2(col, row), boardColors[col][row]);
 #ifdef DEBUG
                 cout << "addUnsupportedTilesToDropTiles() - Add UnsupportedTiles Conponent:" << 
                 "[" << unSupportedTile.Position.x << "][" << unSupportedTile.Position.y<< "]" << endl;
@@ -642,7 +653,7 @@ void addUnsupportedTilesToDropTiles()
         int y = int(iter->Position.y);
         int x = int(iter->Position.x);
 
-        Tile item(vec2(x, y), boardColors[x][y]);
+        Tile item(glm::vec2(x, y), boardColors[x][y]);
         bool NotExisted = true;
 
         for (vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end(); ++it)
@@ -702,7 +713,7 @@ bool checkFruitMatchAndEliminate()
     return flag;
 }
 
-bool fallTiles(vec2 direction)
+bool fallTiles(glm::vec2 direction)
 {
     for (vector< vector<Tile> >::iterator it = dropTiles.begin(); it != dropTiles.end();)
     {
@@ -761,7 +772,7 @@ void setDropTiles(vector<Tile> &_tile)
 
 void setTiles()
 {
-    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+    glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
         ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
 
     // First check if the collision between tile and grid is detected
@@ -817,8 +828,10 @@ void unsetTiles()
 
 void drawTiles()
 {
+    if(tiles.empty()) return;
+
     // First update the tile position
-    vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
+    glm::vec2 (* pAllRotationShape)[4] = (tileType == TILE_TYPE_L) ?  allRotationsLshape :
             ( (tileType == TILE_TYPE_S)? allRotationsSshape:allRotationsIshape );
     
     for ( int i = 0; i < 4; i++){
@@ -837,15 +850,15 @@ void drawTiles()
         // Contraints that make the tile outside the UP_BOUND of board invisible
         // ==============================================================================
 
-        point4 p1 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
-        point4 p2 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
-        point4 p3 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
-        point4 p4 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
+        point4 p1 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 , 1);
+        point4 p2 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 , 1);
+        point4 p3 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 , 1);
+        point4 p4 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 , 1);
 
-        point4 p5 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
-        point4 p6 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
-        point4 p7 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
-        point4 p8 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
+        point4 p5 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 , 1);
+        point4 p6 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 , 1);
+        point4 p7 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 , 1);
+        point4 p8 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 , 1);
 
         quad( &newPoints[ 0*QUAD_VERTEX_NUM], p1, p2, p3, p4);
         quad( &newPoints[ 1*QUAD_VERTEX_NUM], p1, p5, p6, p2);
@@ -857,7 +870,12 @@ void drawTiles()
         // Put new data in the VBO
         color4 pointsColors[TILE_VERTEX_NUM];
 
-        genColorVertexFromTileColor(pointsColors, iter->Color);
+        if( _ON_BOARD(int(x), int(y)) && board[int(x)][int(y)] ){
+            genColorVertexFromTileColor(pointsColors, grey);
+        }
+        else{
+            genColorVertexFromTileColor(pointsColors, iter->Color);
+        }
 
         glBindBuffer(GL_ARRAY_BUFFER, vboIDs[VBO_TILE_COLOR]);
         glBufferSubData(GL_ARRAY_BUFFER, idx*TILE_VERTEX_NUM*sizeof(color4), TILE_VERTEX_NUM*sizeof(color4), pointsColors);
@@ -874,6 +892,8 @@ void drawTiles()
 
 void drawDropTiles()
 {
+    if(dropTiles.empty()) return;
+
     // Clear the buffer object before update it 
     // cleanVBOTileBuffer();
     int idx = 0;
@@ -887,15 +907,15 @@ void drawDropTiles()
             point4 newPoints[TILE_VERTEX_NUM];
             // Contraints that make the tile outside the UP_BOUND of board invisible
             // ==============================================================================
-            point4 p1 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
-            point4 p2 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
-            point4 p3 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
-            point4 p4 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 + DEPTH_1, 1);
+            point4 p1 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 , 1);
+            point4 p2 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 , 1);
+            point4 p3 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), EDGE_LEN / 2 , 1);
+            point4 p4 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), EDGE_LEN / 2 , 1);
 
-            point4 p5 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
-            point4 p6 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
-            point4 p7 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
-            point4 p8 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 - DEPTH_1, 1);
+            point4 p5 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 , 1);
+            point4 p6 = point4(EDGE_LEN     + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 , 1);
+            point4 p7 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN * 2  + (y * EDGE_LEN), - EDGE_LEN / 2 , 1);
+            point4 p8 = point4(EDGE_LEN * 2 + (x * EDGE_LEN), EDGE_LEN      + (y * EDGE_LEN), - EDGE_LEN / 2 , 1);
 
             // Two points are used by two triangles each
 
