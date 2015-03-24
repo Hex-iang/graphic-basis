@@ -22,7 +22,7 @@ float intersect_sphere(Point o, Vector u, Spheres *sph, Point *hit) {
  * which arguments to use for the function. For exmaple, note that you
  * should return the point of intersection to the calling function.
  **********************************************************************/
-Spheres *intersect_scene() {
+Spheres * intersect_scene() {
 //
 // do your thing here
 //
@@ -32,34 +32,35 @@ Spheres *intersect_scene() {
 
 /*****************************************************
  * This function adds a sphere into the sphere list
- *
- * You need not change this.
  *****************************************************/
-Spheres *add_sphere(Spheres *slist, Point ctr, float rad, float amb[],
-		    float dif[], float spe[], float shine, 
-		    float refl, int sindex) {
+Spheres * add_sphere( Spheres *slist, Point ctr, float rad, float amb[],
+		                  float dif[], float spe[], float shine, 
+		                  float refl, int sindex) 
+{
   Spheres *new_sphere;
 
-  new_sphere = (Spheres *)malloc(sizeof(Spheres));
-  new_sphere->index = sindex;
-  new_sphere->center = ctr;
-  new_sphere->radius = rad;
-  (new_sphere->mat_ambient)[0] = amb[0];
-  (new_sphere->mat_ambient)[1] = amb[1];
-  (new_sphere->mat_ambient)[2] = amb[2];
-  (new_sphere->mat_diffuse)[0] = dif[0];
-  (new_sphere->mat_diffuse)[1] = dif[1];
-  (new_sphere->mat_diffuse)[2] = dif[2];
+  new_sphere                    = (Spheres *)malloc(sizeof(Spheres));
+  new_sphere->index             = sindex;
+  new_sphere->center            = ctr;
+  new_sphere->radius            = rad;
+  (new_sphere->mat_ambient)[0]  = amb[0];
+  (new_sphere->mat_ambient)[1]  = amb[1];
+  (new_sphere->mat_ambient)[2]  = amb[2];
+  (new_sphere->mat_diffuse)[0]  = dif[0];
+  (new_sphere->mat_diffuse)[1]  = dif[1];
+  (new_sphere->mat_diffuse)[2]  = dif[2];
   (new_sphere->mat_specular)[0] = spe[0];
   (new_sphere->mat_specular)[1] = spe[1];
   (new_sphere->mat_specular)[2] = spe[2];
-  new_sphere->mat_shineness = shine;
-  new_sphere->reflectance = refl;
-  new_sphere->next = NULL;
+  new_sphere->mat_shineness     = shine;
+  new_sphere->reflectance       = refl;
+  new_sphere->next              = NULL;
 
-  if (slist == NULL) { // first object
+  if (slist == NULL) { 
+    // first object
     slist = new_sphere;
-  } else { // insert at the beginning
+  } else { 
+    // insert at the beginning
     new_sphere->next = slist;
     slist = new_sphere;
   }
@@ -68,12 +69,11 @@ Spheres *add_sphere(Spheres *slist, Point ctr, float rad, float amb[],
 }
 
 /******************************************
- * computes a sphere normal - done for you
+ * computes a sphere normal
  ******************************************/
 Vector sphere_normal(Point q, Spheres *sph) {
   Vector rc;
 
-  rc = get_vec(sph->center, q);
-  normalize(&rc);
+  rc = (sph->center - q).normalize();
   return rc;
 }

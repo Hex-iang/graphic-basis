@@ -24,17 +24,14 @@ extern float decay_c;
  *******************************************/
 void set_up_default_scene() {
   // set background color
-  background_clr.r = 0.5;
-  background_clr.g = 0.05;
-  background_clr.b = 0.8;
+  background_clr = RGB_float(0.5, 0.05, 0.8);
 
   // setup global ambient term
   global_ambient[0] = global_ambient[1] = global_ambient[2] = 0.2;
 
   // setup light 1
-  light1.x = -2.0;
-  light1.y = 5.0;
-  light1.z = 1.0;
+  light1 = Point(-2.0, 5.0, 1.0);
+
   light1_ambient[0]   = light1_ambient[1]   = light1_ambient[2] = 0.1;
   light1_diffuse[0]   = light1_diffuse[1]   = light1_diffuse[2] = 1.0;
   light1_specular[0]  = light1_specular[1]  = light1_specular[2] = 1.0;
@@ -45,7 +42,7 @@ void set_up_default_scene() {
   decay_c = 0.0;
 
   // sphere 1
-  Point sphere1_ctr         = {1.5, -0.2, -3.2};
+  Point sphere1_ctr         = Point(1.5, -0.2, -3.2);
   float sphere1_rad         = 1.23;
   float sphere1_ambient[]   = {0.7, 0.7, 0.7};
   float sphere1_diffuse[]   = {0.1, 0.5, 0.8};
@@ -57,7 +54,7 @@ void set_up_default_scene() {
                     sphere1_reflectance, 1);
 
   // sphere 2
-  Point sphere2_ctr         = {-1.5, 0.0, -3.5};
+  Point sphere2_ctr         = Point(-1.5, 0.0, -3.5);
   float sphere2_rad         = 1.5;
   float sphere2_ambient[]   = {0.6, 0.6, 0.6};
   float sphere2_diffuse[]   = {1.0, 0.0, 0.25};
@@ -69,7 +66,7 @@ void set_up_default_scene() {
                     sphere2_reflectance, 2);
 
   // sphere 3
-  Point sphere3_ctr         = {-0.35, 1.75, -2.25};
+  Point sphere3_ctr         = Point(-0.35, 1.75, -2.25);
   float sphere3_rad         = 0.5;
   float sphere3_ambient[]   = {0.2, 0.2, 0.2};
   float sphere3_diffuse[]   = {0.0, 1.0, 0.25};
@@ -85,6 +82,7 @@ void set_up_default_scene() {
  * Customized scene with checkboard
  ***************************************/
 void set_up_user_scene() {
+
 }
 
 /***************************************
@@ -92,5 +90,5 @@ void set_up_user_scene() {
  ***************************************/
 
 void set_up_bonus_scene(){
-  
+
 }

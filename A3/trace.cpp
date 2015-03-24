@@ -89,7 +89,7 @@ void ray_trace() {
 
   for (i=0; i < win_height; i++) {
     for (j=0; j < win_width; j++) {
-      ray = get_vec(eye_pos, cur_pixel_pos);
+      ray = eye_pos - cur_pixel_pos;
 
       //
       // You need to change this!!!
@@ -103,17 +103,17 @@ void ray_trace() {
       // ret_color = recursive_ray_trace(cur_pixel_pos, ray, 1);
 
       // Checkboard for testing
-      RGB_float clr = {float(i/32), 0, float(j/32)};
+      RGB_float clr = RGB_float(float(i/32), 0, float(j/32));
       ret_color = clr;
 
-      frame[i][j][0] = GLfloat(ret_color.r);
-      frame[i][j][1] = GLfloat(ret_color.g);
-      frame[i][j][2] = GLfloat(ret_color.b);
+      frame[i][j][0] = GLfloat(ret_color.x);
+      frame[i][j][1] = GLfloat(ret_color.y);
+      frame[i][j][2] = GLfloat(ret_color.z);
 
       cur_pixel_pos.x += x_grid_size;
     }
 
-    cur_pixel_pos.y += y_grid_size;
-    cur_pixel_pos.x = x_start;
+    cur_pixel_pos.y   += y_grid_size;
+    cur_pixel_pos.x   = x_start;
   }
 }

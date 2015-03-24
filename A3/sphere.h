@@ -1,7 +1,7 @@
 /**********************************************************************
  * Some stuff to handle spheres
  **********************************************************************/
-#include "vector.h"
+#include "vector.hpp"
 
 typedef struct sphere {
   int index;               // identifies a sphere; must be greater than 0

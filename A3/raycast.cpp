@@ -15,9 +15,9 @@
 
 #include "include/Angel.h"
 
-#include <iostream>
-#include <cstdlib>
-#include <cstring>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "trace.h"
 #include "global.h"
@@ -47,13 +47,13 @@ float image_height = (float(WIN_HEIGHT) / float(WIN_WIDTH)) * IMAGE_WIDTH;
 
 // some colors
 RGB_float background_clr;         // background color
-RGB_float null_clr = {0.0, 0.0, 0.0};   // NULL color
+RGB_float null_clr = RGB_float(0.0, 0.0, 0.0);   // NULL color
 
 //
 // these view parameters should be fixed
 //
-Point eye_pos = {0.0, 0.0, 0.0};      // eye position
-float image_plane = -1.5;             // image plane position
+Point eye_pos = Point(0.0, 0.0, 0.0);       // eye position
+float image_plane = -1.5;                   // image plane position
 
 // list of spheres in the scene
 Spheres *scene = NULL;
