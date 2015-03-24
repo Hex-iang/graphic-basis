@@ -1,4 +1,4 @@
-	#! /usr/bin/make
+#! /usr/bin/make
 
 # Generic Makefile that should work with any program you're going to compile.
 # Any complaints should be directed at honghual@sfu.ca

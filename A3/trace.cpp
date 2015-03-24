@@ -76,8 +76,8 @@ void ray_trace() {
   int i, j;
   float x_grid_size = image_width / float(win_width);
   float y_grid_size = image_height / float(win_height);
-  float x_start = -0.5 * image_width;
-  float y_start = -0.5 * image_height;
+  float x_start     = -0.5 * image_width;
+  float y_start     = -0.5 * image_height;
   RGB_float ret_color;
   Point cur_pixel_pos;
   Vector ray;
@@ -87,15 +87,14 @@ void ray_trace() {
   cur_pixel_pos.y = y_start + 0.5 * y_grid_size;
   cur_pixel_pos.z = image_plane;
 
-  for (i=0; i<win_height; i++) {
-    for (j=0; j<win_width; j++) {
+  for (i=0; i < win_height; i++) {
+    for (j=0; j < win_width; j++) {
       ray = get_vec(eye_pos, cur_pixel_pos);
 
       //
       // You need to change this!!!
       //
       // ret_color = recursive_ray_trace();
-      ret_color = background_clr; // just background for now
 
       // Parallel rays can be cast instead using below
       //
@@ -103,9 +102,9 @@ void ray_trace() {
       // ray.z = -1.0;
       // ret_color = recursive_ray_trace(cur_pixel_pos, ray, 1);
 
-// Checkboard for testing
-RGB_float clr = {float(i/32), 0, float(j/32)};
-ret_color = clr;
+      // Checkboard for testing
+      RGB_float clr = {float(i/32), 0, float(j/32)};
+      ret_color = clr;
 
       frame[i][j][0] = GLfloat(ret_color.r);
       frame[i][j][1] = GLfloat(ret_color.g);
