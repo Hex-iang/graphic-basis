@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <GL/glut.h>
 #include <string.h>
+#include <string>
 #include "global.h"
+
+using namespace std;
 
 // Global variables
 extern int win_width;
@@ -14,7 +17,7 @@ extern GLfloat frame[WIN_HEIGHT][WIN_WIDTH][3];
  *    
  * DO NOT CHANGE
  *********************************************************/
-void save_image() {
+void save_image(const string imagefullpath = "scene.bmp") {
   int w = win_width;
   int h = win_height;
 
@@ -56,13 +59,13 @@ void save_image() {
 
 
   FILE *fp;
-  char fname[32];
+  string fname;
 
-  strcpy(fname, "scene.bmp");
-  printf("Saving image %s: %d x %d\n", fname, w, h);
+  fname = imagefullpath;
+  printf("Saving image %s: %d x %d\n", fname.c_str(), w, h);
   fp = fopen(fname, "wb");
   if (!fp) {
-  printf("Unable to open file '%s'\n",fname);
+  printf("Unable to open file '%s'\n",fname.c_str());
   return;
   }
 
@@ -74,7 +77,7 @@ void save_image() {
   {
     int offset = w * (h - 1 - y) * 3;
     fwrite(bImg + offset, 3, w, fp);
-    fwrite(bmppad,1,(4-(w*3)%4)%4,fp);
+    fwrite(bmppad, 1, (4-(w*3)%4)%4, fp);
   }
 
  

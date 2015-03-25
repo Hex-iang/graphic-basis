@@ -8,9 +8,6 @@
  *  NAME:         Hexiang Hu
  *  SFU ID:       301239910
  *
- *  Template code for drawing a scene using raycasting.
- *  Some portions of the code was originally written by 
- *  M. vandePanne - and then modified by R. Zhang & H. Li
 ***********************************************************/
 
 #include "include/Angel.h"
@@ -27,11 +24,6 @@
 
 //
 // Global variables
-//
-// Here we avoid dynamic memory allocation as a convenience. You can
-// change the resolution of your rendered image by changing the values
-// of WIN_X_SIZE and WIN_Y_SIZE in "global.h", along with other
-// global variables
 //
 
 int win_width = WIN_WIDTH;
@@ -76,14 +68,14 @@ float decay_c;
 // is implemented and for how many levels
 int step_max = 1;
 
-// You can put your flags here
-// a flag to indicate whether you want to have shadows
+// All global flags for controlling different degree of ray tracing
 bool shadow_on                    = false;
 bool illuminance_on               = false;
 bool refraction_on                = false;
 bool checkboard_on                = false;
 bool diffuse_interreflection_on   = false;
 bool antialiasing_on              = false;
+bool nondisplay_on                = false;
 
 // OpenGL
 const int NumPoints = 6;
@@ -235,24 +227,27 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+f") == 0) diffuse_interreflection_on = true;
     else if (strcmp(argv[i], "+c") == 0) checkboard_on              = true;
     else if (strcmp(argv[i], "+p") == 0) antialiasing_on            = true;
-    else{
+    else if (strcmp(argv[i], "+n") == 0) nondisplay_on              = true;
+    else {
       std::cout << "Unknown command: " << argv[i] << std::endl;
       return -1;
     }
   }
 
-  //
   // ray trace the scene now
-  //
-  // we have used so many global variables and this function is
-  // happy to carry no parameters
-  //
   printf("Rendering scene using my fantastic ray tracer ...\n");
   ray_trace();
 
   // we want to make sure that intensity values are normalized
   histogram_normalization();
   
+
+  // use a non displayable mode to just generate image and skip OpenGL rendering
+  if (nondisplay_on) {
+    save_image();
+    return 0;
+  }
+
   // Show the result in glut via texture mapping
   glutInit( &argc, argv );
   glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE );
