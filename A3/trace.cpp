@@ -2,7 +2,7 @@
 #include <GL/glut.h>
 #include <math.h>
 #include "global.h"
-#include "sphere.h"
+#include "sphere.hpp"
 
 //
 // Global variables
@@ -20,7 +20,7 @@ extern float image_plane;
 extern RGB_float background_clr;
 extern RGB_float null_clr;
 
-extern Spheres *scene;
+extern vector<Sphere> scene;
 
 // light 1 position and color
 extern Point light1;
@@ -36,7 +36,13 @@ extern float decay_a;
 extern float decay_b;
 extern float decay_c;
 
-extern int shadow_on;
+extern bool shadow_on;
+extern bool illuminance_on;
+extern bool refraction_on;
+extern bool checkboard_on;
+extern bool diffuse_interreflection_on;
+extern bool antialiasing_on;
+
 extern int step_max;
 
 /////////////////////////////////////////////////////////////////////
@@ -44,10 +50,13 @@ extern int step_max;
 /*********************************************************************
  * Phong illumination - you need to implement this!
  *********************************************************************/
-RGB_float phong(Point q, Vector v, Vector surf_norm, Spheres *sph) {
+RGB_float phong(const Point &q, const Vector &v, 
+  const Vector &surf_norm, const vector<Sphere> &scene) {
+
 //
 // do your thing here
 //
+
 	RGB_float color;
 	return color;
 }
@@ -56,11 +65,40 @@ RGB_float phong(Point q, Vector v, Vector surf_norm, Spheres *sph) {
  * This is the recursive ray tracer - you need to implement this!
  * You should decide what arguments to use.
  ************************************************************************/
-RGB_float recursive_ray_trace() {
-//
-// do your thing here
-//
-	RGB_float color;
+RGB_float recursive_ray_trace(const Point &eye, const Vector &direction, 
+  const vector<Sphere> &local_scene, const int &depth) {
+  
+  const Sphere *pSphere = NULL;
+
+  float tnear = INFINITY;
+  // find ray-sphere intersection
+  for (unsigned i = 0; i < scene.size(); ++i)
+  {
+    float hit0 = INFINITY,  hit1 = INFINITY;
+    if (scene[i].intersect(eye, direction, &hit0, &hit1)) {
+      // if the intersection is in the opposite side of sphere,
+      if (hit0 < 0) hit0 = hit1;
+      if (hit0 < tnear) {
+        tnear = hit0;
+        pSphere = &scene[i];
+      }
+    }
+  }
+
+  // if there is no intersection found, return background color
+  if (!pSphere) return background_clr;
+  RGB_float color;
+  Point     pHit = eye + direction * tnear;
+
+  // calculate shading
+  if ( depth < step_max )
+  {
+
+  }
+  else {
+
+  }
+	
 	return color;
 }
 
@@ -78,9 +116,9 @@ void ray_trace() {
   float y_grid_size = image_height / float(win_height);
   float x_start     = -0.5 * image_width;
   float y_start     = -0.5 * image_height;
-  RGB_float ret_color;
-  Point cur_pixel_pos;
-  Vector ray;
+  RGB_float   ret_color;
+  Point       cur_pixel_pos;
+  Vector      ray;
 
   // ray is cast through center of pixel
   cur_pixel_pos.x = x_start + 0.5 * x_grid_size;
@@ -94,7 +132,7 @@ void ray_trace() {
       //
       // You need to change this!!!
       //
-      // ret_color = recursive_ray_trace();
+      ret_color = recursive_ray_trace(eye_pos, ray, scene, 0);
 
       // Parallel rays can be cast instead using below
       //

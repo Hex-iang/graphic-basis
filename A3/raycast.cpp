@@ -21,7 +21,7 @@
 
 #include "trace.h"
 #include "global.h"
-#include "sphere.h"
+#include "sphere.hpp"
 #include "image_util.h"
 #include "scene.h"
 
@@ -56,7 +56,7 @@ Point eye_pos = Point(0.0, 0.0, 0.0);       // eye position
 float image_plane = -1.5;                   // image plane position
 
 // list of spheres in the scene
-Spheres *scene = NULL;
+vector<Sphere> scene;
 
 // light 1 position and color
 Point light1;
@@ -192,7 +192,6 @@ void keyboard(unsigned char key, int x, int y)
 {
   switch (key) {
   case 'q':case 'Q':
-    free(scene);
     exit(0);
     break;
   case 's':case 'S':

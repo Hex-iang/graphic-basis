@@ -1,7 +1,7 @@
 //
 // this provide functions to set up the scene
 //
-#include "sphere.h"
+#include "sphere.hpp"
 #include <stdio.h>
 
 extern Point light1;
@@ -10,7 +10,7 @@ extern float light1_diffuse[3];
 extern float light1_specular[3];
 
 extern float global_ambient[3];
-extern Spheres *scene;
+extern vector<Sphere> scene;
 
 extern RGB_float background_clr;
 extern float decay_a;
@@ -49,9 +49,10 @@ void set_up_default_scene() {
   float sphere1_specular[]  = {1.0, 1.0, 1.0};
   float sphere1_shineness   = 10;
   float sphere1_reflectance = 0.4;
-  scene = add_sphere(scene, sphere1_ctr, sphere1_rad, sphere1_ambient,
-                    sphere1_diffuse, sphere1_specular, sphere1_shineness,
-                    sphere1_reflectance, 1);
+  float sphere1_transp      = 0.0;
+  scene.push_back(Sphere(sphere1_ctr, sphere1_rad, sphere1_ambient,
+                  sphere1_diffuse, sphere1_specular, sphere1_shineness,
+                  sphere1_reflectance, sphere1_transp));
 
   // sphere 2
   Point sphere2_ctr         = Point(-1.5, 0.0, -3.5);
@@ -61,9 +62,10 @@ void set_up_default_scene() {
   float sphere2_specular[]  = {1.0, 1.0, 1.0};
   float sphere2_shineness   = 6;
   float sphere2_reflectance = 0.3;
-  scene = add_sphere(scene, sphere2_ctr, sphere2_rad, sphere2_ambient,
-                    sphere2_diffuse, sphere2_specular, sphere2_shineness,
-                    sphere2_reflectance, 2);
+  float sphere2_transp      = 0.0;
+  scene.push_back(Sphere(sphere2_ctr, sphere2_rad, sphere2_ambient,
+                  sphere2_diffuse, sphere2_specular, sphere2_shineness,
+                  sphere2_reflectance, sphere2_transp));
 
   // sphere 3
   Point sphere3_ctr         = Point(-0.35, 1.75, -2.25);
@@ -73,9 +75,11 @@ void set_up_default_scene() {
   float sphere3_specular[]  = {0.0, 1.0, 0.0};
   float sphere3_shineness   = 30;
   float sphere3_reflectance = 0.3;
-  scene = add_sphere(scene, sphere3_ctr, sphere3_rad, sphere3_ambient,
-                    sphere3_diffuse, sphere3_specular, sphere3_shineness,
-                    sphere3_reflectance, 3);
+  float sphere3_transp      = 0.0;
+
+  scene.push_back(Sphere(sphere3_ctr, sphere3_rad, sphere3_ambient,
+                  sphere3_diffuse, sphere3_specular, sphere3_shineness,
+                  sphere3_reflectance, sphere3_transp));
 }
 
 /***************************************
