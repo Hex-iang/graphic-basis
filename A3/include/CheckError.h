@@ -8,7 +8,12 @@
 #define __CHECKERROR_H__
 
 #include <stdio.h>
-#include <GL/gl.h>
+
+#ifdef __APPLE__
+  #include <OPENGL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
 
 //----------------------------------------------------------------------------
 

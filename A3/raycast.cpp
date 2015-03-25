@@ -188,7 +188,11 @@ void keyboard(unsigned char key, int x, int y)
     break;
   case 's':case 'S':
     save_image();
+
+#if undefined __APPLE__
     glutPostRedisplay();
+#endif
+    
     break;
   default:
     break;
@@ -242,6 +246,12 @@ int main( int argc, char **argv )
   histogram_normalization();
   
 
+#ifdef __APPLE__
+  // if the current platform is a macitosh, output the tracing result immediately and finish
+  save_image("ray-tracer-picture/generated.bmp");
+  return 0;
+
+#else
   // use a non displayable mode to just generate image and skip OpenGL rendering
   if (nondisplay_on) {
     save_image("ray-tracer-picture/generated.bmp");
@@ -259,5 +269,9 @@ int main( int argc, char **argv )
   glutDisplayFunc( display );
   glutKeyboardFunc( keyboard );
   glutMainLoop();
+
   return 0;
+#endif
+
+
 }

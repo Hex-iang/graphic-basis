@@ -1,7 +1,13 @@
+#ifdef __APPLE__
+  #include <GLUT/glut.h>
+#else
+  #include <GL/glut.h>
+#endif
+
 #include <stdio.h>
-#include <GL/glut.h>
 #include <string.h>
 #include <string>
+
 #include "global.h"
 
 using namespace std;
