@@ -244,7 +244,7 @@ int main( int argc, char **argv )
 
   // use a non displayable mode to just generate image and skip OpenGL rendering
   if (nondisplay_on) {
-    save_image();
+    save_image("ray-tracer-picture/generated.bmp");
     return 0;
   }
 

@@ -17,7 +17,7 @@ extern GLfloat frame[WIN_HEIGHT][WIN_WIDTH][3];
  *    
  * DO NOT CHANGE
  *********************************************************/
-void save_image(const string imagefullpath = "scene.bmp") {
+void save_image(const string imagefullpath) {
   int w = win_width;
   int h = win_height;
 
@@ -63,7 +63,7 @@ void save_image(const string imagefullpath = "scene.bmp") {
 
   fname = imagefullpath;
   printf("Saving image %s: %d x %d\n", fname.c_str(), w, h);
-  fp = fopen(fname, "wb");
+  fp = fopen(fname.c_str(), "wb");
   if (!fp) {
   printf("Unable to open file '%s'\n",fname.c_str());
   return;
