@@ -11,9 +11,9 @@ public:
   Point center;
   float radius, radius2;
 
-  float mat_ambient[3];    // material property used in Phong model
-  float mat_diffuse[3];
-  float mat_specular[3];
+  Vector mat_ambient;    // material property used in Phong model
+  Vector mat_diffuse;
+  Vector mat_specular;
   float mat_shineness;
 
   float reflectance;       // Quantity of reflected light constribution to pixel
@@ -23,21 +23,13 @@ public:
   // *********************************************************************
   // Sphere constructor
   // *********************************************************************
-  Sphere(const Point &ctr, const float &rad, const float amb[], const float dif[], 
-    const float spe[], const float &shine, const float &refl, const float &transp) : 
-    center(ctr), radius(rad), radius2(rad * rad),mat_shineness(shine),
-    reflectance(refl), transparency(transp)
-  {
-    (this->mat_ambient)[0]  = amb[0];
-    (this->mat_ambient)[1]  = amb[1];
-    (this->mat_ambient)[2]  = amb[2];
-    (this->mat_diffuse)[0]  = dif[0];
-    (this->mat_diffuse)[1]  = dif[1];
-    (this->mat_diffuse)[2]  = dif[2];
-    (this->mat_specular)[0] = spe[0];
-    (this->mat_specular)[1] = spe[1];
-    (this->mat_specular)[2] = spe[2];
-  }
+  Sphere(const Point &ctr, const float &rad, const Vector &amb, 
+    const Vector &dif, const Vector &spe, const float &shine, 
+    const float &refl, const float &transp) : 
+    center(ctr), radius(rad), radius2(rad * rad),
+    mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
+    mat_shineness(shine), reflectance(refl), transparency(transp)
+  {}
 
   // *********************************************************************
   // Function for calculate sphere normal
@@ -49,22 +41,33 @@ public:
   // *********************************************************************
   // Function for finding ray-sphere intersection point 
   // *********************************************************************
-  bool intersect(const Point &rayorig, const Vector &raydir, float *hit0 = NULL, float *hit1 = NULL) const
+  bool intersect(const Point &origin, const Vector &direction, float *hit0 = NULL, float *hit1 = NULL) const
   {
-    Vector l = this->center - rayorig;
-    float tca = l.dot(raydir);
+    // Geometric formula for the ray sphere interaction 
+
+    // l is the vector from ray center to sphere center
+    Vector l = this->center - origin;
+
+    // t_ca is the projection of ray-sphere vector on ray's direction
+    float t_ca = l.dot(direction);
     
-    // if the angle between sp
-    if (tca < 0) return false;
-    float d2 = l.dot(l) - tca * tca;
+    // The ray didn't shoot to the sphere direction if projection < 0
+    if (t_ca < 0) return false;
+
+    // Pythagorean theorem
+    float d2 = l.dot(l) - t_ca * t_ca;
     
+    // if the ray-center distance is larger, means there is no intersection
     if (d2 > this->radius2) return false;
-    float thc = sqrt(radius2 - d2);
+    // Pythagorean theorem to 
+    float t_hc = sqrt(radius2 - d2);
     
     // find near hit and far hit
+    // if near hit < 0, means that eye is inside sphere, then use hit1; 
+    // otherwise use hit0
     if (hit0 != NULL && hit1 != NULL) {
-      *hit0 = tca - thc;
-      *hit1 = tca + thc;
+      *hit0 = t_ca - t_hc;
+      *hit1 = t_ca + t_hc;
     }
 
     return true;

@@ -35,8 +35,6 @@ public:
 	}	
 };
 
-typedef Vec3<float> Point;  // geometric 3D point
-
-typedef Vec3<float> Vector; // geometric 3D vector
-
-typedef Vec3<float> RGB_float;  // 3D RBG color
+typedef Vec3<float> Point;  			// geometric 3D point
+typedef Vec3<float> Vector; 			// geometric 3D vector
+typedef Vec3<float> RGB_float;  	// 3D RBG color

@@ -73,18 +73,20 @@ RGB_float phong(const Point &q, const Vector &v,
 RGB_float recursive_ray_trace(const Point &eye, const Vector &direction, 
   const vector<Sphere> &local_scene, const int &depth) {
   
-  const Sphere *pSphere = NULL;
+  Sphere *pSphere = NULL;
 
-  float tnear = INFINITY;
-  // find ray-sphere intersection
+  float tHit = INFINITY;
+  bool inSphere = false;
+  // find the nearest ray-sphere intersection point
   for (unsigned i = 0; i < scene.size(); ++i)
   {
     float hit0 = INFINITY,  hit1 = INFINITY;
     if (scene[i].intersect(eye, direction, &hit0, &hit1)) {
-      // if the intersection is in the opposite side of sphere,
+      // if hit0 < 0, means that eye inside sphere, should use hit1
       if (hit0 < 0) hit0 = hit1;
-      if (hit0 < tnear) {
-        tnear = hit0;
+      if (hit0 < tHit) {
+        // if current sphere have a more near hit, use it 
+        tHit = hit0;
         pSphere = &scene[i];
       }
     }
@@ -92,16 +94,27 @@ RGB_float recursive_ray_trace(const Point &eye, const Vector &direction,
 
   // if there is no intersection found, return background color
   if (!pSphere) return background_clr;
-  RGB_float color;
-  Point     pHit = eye + direction * tnear;
 
-  // calculate shading
-  if ( depth < step_max )
+  // find intersection point and its corresponding surface normal 
+  RGB_float color;
+  Point     hitPoint  = eye + direction * tHit;
+  Vector    hitNormal = pSphere->normal(hitPoint);
+
+  // if normal and ray direction on the same side, means eye inside sphere
+  // so we should reverse the normal direction
+  if (hitNormal.dot(direction) > 0)
+  {
+    hitNormal = - hitNormal;
+    inSphere = true;
+  }
+
+  // Recursive ray tracing for reflection
+  if ( false && ( depth < step_max ) )
   {
 
   }
   else {
-
+    
   }
 	
 	return color;

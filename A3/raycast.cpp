@@ -51,13 +51,13 @@ float image_plane = -1.5;                   // image plane position
 vector<Sphere> scene;
 
 // light 1 position and color
-Point light1;
-float light1_ambient[3];
-float light1_diffuse[3];
-float light1_specular[3];
+Point light;
+Vector light_ambient;
+Vector light_diffuse;
+Vector light_specular;
 
 // global ambient term
-float global_ambient[3];
+Vector global_ambient;
 
 // light decay parameters
 float decay_a;
@@ -158,6 +158,7 @@ void init()
  *
  * There is no need to change this.
  **********************************************************/
+#ifdef __linux__
 
 void display( void )
 {
@@ -166,12 +167,12 @@ void display( void )
   glEnable(GL_CULL_FACE);
 
   glDrawArrays( GL_TRIANGLES, 0, NumPoints );
-  
+
   glutPostRedisplay();
 
   glutSwapBuffers();
 }
-
+#endif
 /*********************************************************
  * This function handles keypresses
  *
@@ -189,7 +190,7 @@ void keyboard(unsigned char key, int x, int y)
   case 's':case 'S':
     save_image();
 
-#if undefined __APPLE__
+#ifdef __linux__
     glutPostRedisplay();
 #endif
     

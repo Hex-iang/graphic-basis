@@ -2,14 +2,15 @@
 // this provide functions to set up the scene
 //
 #include "sphere.hpp"
+#include "vector.hpp"
 #include <stdio.h>
 
-extern Point light1;
-extern float light1_ambient[3];
-extern float light1_diffuse[3];
-extern float light1_specular[3];
+extern Point light;
+extern Vector light_ambient;
+extern Vector light_diffuse;
+extern Vector light_specular;
 
-extern float global_ambient[3];
+extern Vector global_ambient;
 extern vector<Sphere> scene;
 
 extern RGB_float background_clr;
@@ -27,14 +28,14 @@ void set_up_default_scene() {
   background_clr = RGB_float(0.5, 0.05, 0.8);
 
   // setup global ambient term
-  global_ambient[0] = global_ambient[1] = global_ambient[2] = 0.2;
+  global_ambient = Vector(0.2, 0.2, 0.2);
 
   // setup light 1
-  light1 = Point(-2.0, 5.0, 1.0);
+  light = Point(-2.0, 5.0, 1.0);
 
-  light1_ambient[0]   = light1_ambient[1]   = light1_ambient[2] = 0.1;
-  light1_diffuse[0]   = light1_diffuse[1]   = light1_diffuse[2] = 1.0;
-  light1_specular[0]  = light1_specular[1]  = light1_specular[2] = 1.0;
+  light_ambient  = Vector(0.1, 0.1, 0.1);
+  light_diffuse  = Vector(1.0, 1.0, 1.0);
+  light_specular = Vector(1.0, 1.0, 1.0);
 
   // set up decay parameters
   decay_a = 0.5;
@@ -44,9 +45,9 @@ void set_up_default_scene() {
   // sphere 1
   Point sphere1_ctr         = Point(1.5, -0.2, -3.2);
   float sphere1_rad         = 1.23;
-  float sphere1_ambient[]   = {0.7, 0.7, 0.7};
-  float sphere1_diffuse[]   = {0.1, 0.5, 0.8};
-  float sphere1_specular[]  = {1.0, 1.0, 1.0};
+  Vector sphere1_ambient    = Vector(0.7, 0.7, 0.7);
+  Vector sphere1_diffuse    = Vector(0.1, 0.5, 0.8);
+  Vector sphere1_specular   = Vector(1.0, 1.0, 1.0);
   float sphere1_shineness   = 10;
   float sphere1_reflectance = 0.4;
   float sphere1_transp      = 0.0;
@@ -57,9 +58,9 @@ void set_up_default_scene() {
   // sphere 2
   Point sphere2_ctr         = Point(-1.5, 0.0, -3.5);
   float sphere2_rad         = 1.5;
-  float sphere2_ambient[]   = {0.6, 0.6, 0.6};
-  float sphere2_diffuse[]   = {1.0, 0.0, 0.25};
-  float sphere2_specular[]  = {1.0, 1.0, 1.0};
+  Vector sphere2_ambient    = Vector(0.6, 0.6, 0.6);
+  Vector sphere2_diffuse    = Vector(1.0, 0.0, 0.25);
+  Vector sphere2_specular   = Vector(1.0, 1.0, 1.0);
   float sphere2_shineness   = 6;
   float sphere2_reflectance = 0.3;
   float sphere2_transp      = 0.0;
@@ -70,9 +71,9 @@ void set_up_default_scene() {
   // sphere 3
   Point sphere3_ctr         = Point(-0.35, 1.75, -2.25);
   float sphere3_rad         = 0.5;
-  float sphere3_ambient[]   = {0.2, 0.2, 0.2};
-  float sphere3_diffuse[]   = {0.0, 1.0, 0.25};
-  float sphere3_specular[]  = {0.0, 1.0, 0.0};
+  Vector sphere3_ambient    = Vector(0.2, 0.2, 0.2);
+  Vector sphere3_diffuse    = Vector(0.0, 1.0, 0.25);
+  Vector sphere3_specular   = Vector(0.0, 1.0, 0.0);
   float sphere3_shineness   = 30;
   float sphere3_reflectance = 0.3;
   float sphere3_transp      = 0.0;
