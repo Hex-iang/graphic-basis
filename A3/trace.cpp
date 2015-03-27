@@ -64,11 +64,11 @@ bool shadow_test(const Point &rayOrigin, const Vector &rayDirect, const Sphere *
   for (unsigned i = 0; i < scene.size(); ++i)
   {
     if( psh == scene[i] ) continue;
+
     float hit0 = INFINITY,  hit1 = INFINITY;
     // maximum ray range
     float tmax = 1000.0;
     if (scene[i]->intersect(rayOrigin, rayDirect, tmax, &hit0, &hit1)) {
-
       if(hit1 < 0 && hit0 < 0) continue;
       
       return false;
@@ -91,7 +91,7 @@ RGB phong(const Point &hitPoint, const Vector &view, const Vector &hitNormal, co
   // Normalize it shadow ray to get its direction L
   Vector L = (light_source - hitPoint).normalize();
 
-  if( false || shadow_test(hitPoint, shadow_ray, sphere) ){
+  if( (!shadow_on) || shadow_test(hitPoint, shadow_ray, sphere) ){
 
     float d_L2 = shadow_ray.dot(shadow_ray);
     float d_L = std::sqrt(d_L2);
