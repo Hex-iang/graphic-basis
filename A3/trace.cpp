@@ -30,7 +30,7 @@ extern RGB null_clr;
 extern std::vector<Sphere *> scene;
 
 // light 1 position and color
-extern Point light_source;
+extern Point  light_source;
 extern Vector light_ambient;
 extern Vector light_diffuse;
 extern Vector light_specular;
@@ -58,17 +58,17 @@ extern int step_max;
  * Shadow test for phong model
  *********************************************************************/
 
-bool shadow_test(const Point &rayOrigin, const Vector &rayDirect, const Sphere * psh)
+bool shadow_test(const Point &ray_origin, const Vector &ray_direct, const Sphere * psh_ignore)
 {
   // find the nearest ray-sphere intersection point
   for (unsigned i = 0; i < scene.size(); ++i)
   {
-    if( psh == scene[i] ) continue;
+    if( psh_ignore == scene[i] ) continue;
 
     float hit0 = INFINITY,  hit1 = INFINITY;
     // maximum ray range
     float tmax = 1000.0;
-    if (scene[i]->intersect(rayOrigin, rayDirect, tmax, &hit0, &hit1)) {
+    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit0, &hit1)) {
       if(hit1 < 0 && hit0 < 0) continue;
       
       return false;
@@ -78,45 +78,9 @@ bool shadow_test(const Point &rayOrigin, const Vector &rayDirect, const Sphere *
 }
 
 /*********************************************************************
- * Phong local illumination + shadow ray generation
- *********************************************************************/
-RGB phong(const Point &hitPoint, const Vector &view, const Vector &hitNormal, const Sphere * sphere) 
-{
-  // first calculate globla/local ambient term for the sphere 
-	RGB color = global_ambient * sphere->mat_ambient + light_ambient * sphere->mat_ambient;
-
-  // assume that we have a point light source and shot the shadow ray
-  Vector shadow_ray = light_source - hitPoint; 
-  
-  // Normalize it shadow ray to get its direction L
-  Vector L = (light_source - hitPoint).normalize();
-
-  if( (!shadow_on) || shadow_test(hitPoint, shadow_ray, sphere) ){
-
-    float d_L2 = shadow_ray.dot(shadow_ray);
-    float d_L = std::sqrt(d_L2);
-    float light_att = 1 / (decay_a + decay_b * d_L + decay_c * d_L2);
-
-    // second, plus diffuse reflectance for the object
-    color += light_diffuse * sphere->mat_diffuse * std::max(hitNormal.dot(L), (float)0.0) * light_att;
-
-    // compute vector R from the L and normal
-    Vector R = hitNormal * 2 * (hitNormal.dot(L)) - L;
-    
-    // third, plus specular reflectance for the object
-    RGB specular = light_specular * sphere->mat_specular * std::max( (float)std::pow(R.dot(view), sphere->mat_shineness), (float)0.0) * light_att;
-    
-    color += specular;
-
-  }
-
-  return color;
-}
-
-/*********************************************************************
  * Scene intersection
  *********************************************************************/
-float intersect_scene(const Point &rayOrigin, const Vector &rayDirect, Sphere * &pSphere)
+float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Sphere * &pSphere, Sphere * pShere_ignore = NULL)
 {
   float tHit = INFINITY;
   // find the nearest ray-sphere intersection point
@@ -125,8 +89,11 @@ float intersect_scene(const Point &rayOrigin, const Vector &rayDirect, Sphere * 
     float hit0 = INFINITY,  hit1 = INFINITY;
     // maximum ray range
     float tmax = 1000.0;
-    if (scene[i]->intersect(rayOrigin, rayDirect, tmax, &hit0, &hit1)) {
-      // if hit0 < 0, means that rayOrigin inside sphere, should use hit1
+    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit0, &hit1)) {
+      // skip the sphere we want to ignore
+      if(pShere_ignore == scene[i]) continue;
+
+      // if hit0 < 0, means that ray_origin inside sphere, should use hit1
       // cout << "Intersected point: " << hit0 << ", " << hit1 << endl;
       if (hit0 < 0 && hit1 > 0) {
         hit0 = hit1;
@@ -147,50 +114,105 @@ float intersect_scene(const Point &rayOrigin, const Vector &rayDirect, Sphere * 
   return tHit;
 }
 
+
+/*********************************************************************
+ * Phong local illumination + shadow ray generation
+ *********************************************************************/
+RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, const Sphere * sphere) 
+{
+  // first calculate globla/local ambient term for the sphere 
+	RGB color = global_ambient * sphere->mat_ambient + light_ambient * sphere->mat_ambient;
+
+  // assume that we have a point light source and shot the shadow ray
+  Vector shadow_ray = light_source - hit_point; 
+  
+  // Normalize it shadow ray to get its direction L
+  Vector L = (light_source - hit_point).normalize();
+
+  if( (!shadow_on) || shadow_test(hit_point, shadow_ray, sphere) ){
+
+    float d_L2 = shadow_ray.dot(shadow_ray);
+    float d_L = std::sqrt(d_L2);
+    float light_att = 1 / (decay_a + decay_b * d_L + decay_c * d_L2);
+
+    // second, plus diffuse reflectance for the object
+    color += light_diffuse * sphere->mat_diffuse * std::max(hit_normal.dot(L), (float)0.0) * light_att;
+
+    // compute vector R from the L and normal
+    Vector R = (hit_normal * 2 * (hit_normal.dot(L)) - L).normalize();
+    
+    // third, plus specular reflectance for the object
+    RGB specular = light_specular * sphere->mat_specular * std::max( (float)std::pow(R.dot(view), sphere->mat_shineness), (float)0.0) * light_att;
+    
+    color += specular;
+
+  }
+
+  return color;
+}
+
 /************************************************************************
  * This is the recursive ray tracer ************************************************************************/
-RGB recursive_ray_trace(const Point &rayOrigin, const Vector &rayDirect, const int &depth) {
+RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const int &depth, Sphere * pShere_ignore = NULL) {
   
   Sphere * pSphere = NULL;
 
   // find the nearest ray-sphere intersection point
-  float tHit = intersect_scene(rayOrigin, rayDirect, pSphere);
+  float tHit = intersect_scene(ray_origin, ray_direct, pSphere, pShere_ignore);
 
   // if there is no intersection found, return background color
   if (!pSphere){
-    return background_clr;
+    if(depth > 0)
+      return null_clr;
+    else
+      return background_clr;
   }
 
   bool inSphere = false;
   // find intersection point and its corresponding surface normal 
-  RGB color;
-  Point     hitPoint  = rayOrigin + rayDirect * tHit;
-  Vector    hitNormal = pSphere->normal(hitPoint);
+  RGB     color(0.0, 0.0, 0.0);
+  Point   hit_point  = ray_origin + ray_direct * tHit;
+  Vector  hit_normal = pSphere->normal(hit_point);
 
-  // if normal and ray rayDirect on the same side, means rayOrigin inside sphere
-  // so we should reverse the normal rayDirect
-  if (hitNormal.dot(rayDirect) > 0)
+  // if normal and ray ray_direct on the same side, means ray_origin inside sphere
+  // so we should reverse the normal ray_direct
+  if (hit_normal.dot(ray_direct) > 0)
   {
-    hitNormal = - hitNormal;
+    hit_normal = - hit_normal;
     inSphere = true;
   }
 
+
+  // Calculate local reflectance at current point
+
+  // view = - ray_direct
+  Vector view = - ray_direct;
+  color = phong(hit_point, view, hit_normal, pSphere);
+
   // Recursive ray tracing for reflection
-  if ( reflection_on && ( depth < step_max ) )
+  if ( reflection_on && ( pSphere->reflection > 0 ) && ( depth < step_max ) )
   {
+    // for object with reflection property
+    Vector refl_direct = ( ray_direct - hit_normal * 2 * ray_direct.dot(hit_normal) ).normalize();
 
+    RGB reflection = recursive_ray_trace(hit_point, refl_direct, depth + 1, pSphere);
+
+    if(depth == 0)
+    {
+      std::cout << "reflection color accumulated: " << pSphere->reflection * reflection << std::endl;
+    }
+
+    color += pSphere->reflection * reflection;
   }
-  else {
-    // when reflection is turn off, just use phong model to calculate
-    // the local reflectance at current point
+  // else {
+  //   // when reflection is turn off, just use phong model to calculate
+  //   // the local reflectance at current point
 
-    // view = - rayDirect
-    Vector view = - rayDirect;
-    color = phong(hitPoint, view, hitNormal, pSphere);
+  //   // view = - ray_direct
+  //   Vector view = - ray_direct;
+  //   color = phong(hit_point, view, hit_normal, pSphere);
 
-
-
-  }
+  // }
 	
 	return color;
 }

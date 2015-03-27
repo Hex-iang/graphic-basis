@@ -17,7 +17,7 @@ public:
   Vector mat_specular;
   float mat_shineness;
 
-  float reflectance;       // Quantity of reflected light constribution to pixel
+  float reflection;       // Quantity of reflected light constribution to pixel
   float transparency;      // Quantity of transparency level of sphere
 
 
@@ -29,7 +29,7 @@ public:
     const float &refl, const float &transp) : 
     center(ctr), radius(rad), radius2(rad * rad),
     mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
-    mat_shineness(shine), reflectance(refl), transparency(transp)
+    mat_shineness(shine), reflection(refl), transparency(transp)
   {}
 
   // *********************************************************************
