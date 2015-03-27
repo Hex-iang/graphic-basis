@@ -38,8 +38,8 @@ float image_width = IMAGE_WIDTH;
 float image_height = (float(WIN_HEIGHT) / float(WIN_WIDTH)) * IMAGE_WIDTH;
 
 // some colors
-RGB_float background_clr;         // background color
-RGB_float null_clr = RGB_float(0.0, 0.0, 0.0);   // NULL color
+RGB background_clr;         // background color
+RGB null_clr = RGB(0.0, 0.0, 0.0);   // NULL color
 
 //
 // these view parameters should be fixed
@@ -48,10 +48,10 @@ Point eye_pos = Point(0.0, 0.0, 0.0);       // eye position
 float image_plane = -1.5;                   // image plane position
 
 // list of spheres in the scene
-vector<Sphere> scene;
+vector<Sphere *> scene;
 
 // light 1 position and color
-Point light;
+Point light_source;
 Vector light_ambient;
 Vector light_diffuse;
 Vector light_specular;
@@ -70,10 +70,10 @@ int step_max = 1;
 
 // All global flags for controlling different degree of ray tracing
 bool shadow_on                    = false;
-bool illuminance_on               = false;
+bool reflection_on                = false;
 bool refraction_on                = false;
 bool checkboard_on                = false;
-bool diffuse_interreflection_on   = false;
+bool diffuse_reflection_on        = false;
 bool antialiasing_on              = false;
 bool nondisplay_on                = false;
 
@@ -213,7 +213,9 @@ int main( int argc, char **argv )
     return -1;
   }
   
-  if (strcmp(argv[1], "-u") == 0) {  
+  bool user_scene_on = strcmp(argv[1], "-u");
+  
+  if (user_scene_on == false) {  
     // user defined scene
     set_up_user_scene();
   } else { 
@@ -227,9 +229,9 @@ int main( int argc, char **argv )
   for(int i = 3; i < argc; i++)
   {
     if      (strcmp(argv[i], "+s") == 0) shadow_on                  = true;
-    else if (strcmp(argv[i], "+l") == 0) illuminance_on             = true;
+    else if (strcmp(argv[i], "+l") == 0) reflection_on              = true;
     else if (strcmp(argv[i], "+r") == 0) refraction_on              = true;
-    else if (strcmp(argv[i], "+f") == 0) diffuse_interreflection_on = true;
+    else if (strcmp(argv[i], "+f") == 0) diffuse_reflection_on      = true;
     else if (strcmp(argv[i], "+c") == 0) checkboard_on              = true;
     else if (strcmp(argv[i], "+p") == 0) antialiasing_on            = true;
     else if (strcmp(argv[i], "+n") == 0) nondisplay_on              = true;
@@ -274,5 +276,10 @@ int main( int argc, char **argv )
   return 0;
 #endif
 
-
+  if (user_scene_on == false) {  
+    release_default_scene();
+  }
+  else{
+    release_user_scene();
+  }
 }

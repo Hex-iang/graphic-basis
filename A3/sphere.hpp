@@ -4,6 +4,7 @@
 #pragma once
 #include "vector.hpp"
 #include <vector>
+#include <iostream>
 using namespace std;
 
 class Sphere{
@@ -39,36 +40,51 @@ public:
   }
 
   // *********************************************************************
+  // Quadratic function solver 
+  // *********************************************************************
+  static bool solveQuadraticEquation(const float &a, const float &b, const float &c, float *x0, float *x1)
+  {
+    // discriminant for the equation
+    float discr = b * b - 4 * a * c;
+    if (discr < 0){
+      // no solution to this case
+      return false;
+    }
+    else if (discr == 0) {
+      // single solution
+      *x0 = *x1 = - 0.5 * b / a;
+    }
+    else {
+      // dual solution
+      // notice that the original root equation is replaced for more stable
+      // floating point computation
+      float q = (b > 0) ? -0.5 * (b + sqrt(discr)) : -0.5 * (b - sqrt(discr));
+      *x0 = q / a;
+      *x1 = c / q;
+    }
+    if (*x0 > *x1) std::swap(*x0, *x1);
+    return true;
+  }
+
+
+  // *********************************************************************
   // Function for finding ray-sphere intersection point 
   // *********************************************************************
-  bool intersect(const Point &origin, const Vector &direction, float *hit0 = NULL, float *hit1 = NULL) const
+  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit0 = NULL, float *hit1 = NULL) const
   {
-    // Geometric formula for the ray sphere interaction 
 
-    // l is the vector from ray center to sphere center
-    Vector l = this->center - origin;
+    Vector L = origin - center;
+    float a = direction.dot(direction);
+    float b = 2 * direction.dot(L);
+    float c = L.dot(L) - radius2;
+    
+    // if there is no solution to the qudratic solver, return false
+    if (!solveQuadraticEquation(a, b, c, hit0, hit1)) 
+      return false;
 
-    // t_ca is the projection of ray-sphere vector on ray's direction
-    float t_ca = l.dot(direction);
-    
-    // The ray didn't shoot to the sphere direction if projection < 0
-    if (t_ca < 0) return false;
-
-    // Pythagorean theorem
-    float d2 = l.dot(l) - t_ca * t_ca;
-    
-    // if the ray-center distance is larger, means there is no intersection
-    if (d2 > this->radius2) return false;
-    // Pythagorean theorem to 
-    float t_hc = sqrt(radius2 - d2);
-    
-    // find near hit and far hit
-    // if near hit < 0, means that eye is inside sphere, then use hit1; 
-    // otherwise use hit0
-    if (hit0 != NULL && hit1 != NULL) {
-      *hit0 = t_ca - t_hc;
-      *hit1 = t_ca + t_hc;
-    }
+    // if the nearest hit point is also outside the ray range, return false
+    if (*hit0 > tmax)
+      return false;
 
     return true;
   }

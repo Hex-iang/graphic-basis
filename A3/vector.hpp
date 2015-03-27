@@ -20,6 +20,7 @@ public:
 	}
 	Vec3<T> operator * (const T &f) const { return Vec3<T>(x * f, y * f, z * f); }
 	Vec3<T> operator * (const Vec3<T> &v) const { return Vec3<T>(x * v.x, y * v.y, z * v.z); }
+	friend Vec3<T> operator * ( const T s, const Vec3<T>& v ) { return v * s; }
 	T dot(const Vec3<T> &v) const { return x * v.x + y * v.y + z * v.z; }
 	Vec3<T> operator - (const Vec3<T> &v) const { return Vec3<T>(x - v.x, y - v.y, z - v.z); }
 	Vec3<T> operator + (const Vec3<T> &v) const { return Vec3<T>(x + v.x, y + v.y, z + v.z); }
@@ -37,4 +38,4 @@ public:
 
 typedef Vec3<float> Point;  			// geometric 3D point
 typedef Vec3<float> Vector; 			// geometric 3D vector
-typedef Vec3<float> RGB_float;  	// 3D RBG color
+typedef Vec3<float> RGB;  				// 3D RBG color

@@ -5,7 +5,9 @@
 #endif
 
 #include <stdio.h>
-#include <math.h>
+#include <iostream>
+#include <algorithm>
+#include <cmath>
 #include "global.h"
 #include "sphere.hpp"
 
@@ -22,19 +24,19 @@ extern float image_height;
 
 extern Point eye_pos;
 extern float image_plane;
-extern RGB_float background_clr;
-extern RGB_float null_clr;
+extern RGB background_clr;
+extern RGB null_clr;
 
-extern vector<Sphere> scene;
+extern std::vector<Sphere *> scene;
 
 // light 1 position and color
-extern Point light1;
-extern float light1_ambient[3];
-extern float light1_diffuse[3];
-extern float light1_specular[3];
+extern Point light_source;
+extern Vector light_ambient;
+extern Vector light_diffuse;
+extern Vector light_specular;
 
 // global ambient term
-extern float global_ambient[3];
+extern Vector global_ambient;
 
 // light decay parameters
 extern float decay_a;
@@ -42,10 +44,10 @@ extern float decay_b;
 extern float decay_c;
 
 extern bool shadow_on;
-extern bool illuminance_on;
+extern bool reflection_on;
 extern bool refraction_on;
 extern bool checkboard_on;
-extern bool diffuse_interreflection_on;
+extern bool diffuse_reflection_on;
 extern bool antialiasing_on;
 
 extern int step_max;
@@ -55,66 +57,100 @@ extern int step_max;
 /*********************************************************************
  * Phong illumination - you need to implement this!
  *********************************************************************/
-RGB_float phong(const Point &q, const Vector &v, 
-  const Vector &surf_norm, const vector<Sphere> &scene) {
+RGB phong(const Point &hitPoint, const Vector &view, const Vector &hitNormal, const Sphere * sphere) 
+{
+  // first calculate globla/local ambient term for the sphere 
+	RGB color = global_ambient * sphere->mat_ambient + light_ambient * sphere->mat_ambient;
 
-//
-// do your thing here
-//
+  // assume that we have a point light source
+  Vector L = light_source - hitPoint;
+  
+  float d_L2 = L.dot(L);
+  float d_L = std::sqrt(d_L2);
+  float light_att = 1 / (1 + d_L + d_L2);
+  
+  L = L.normalize();
 
-	RGB_float color;
-	return color;
+  // second, plus diffuse reflectance for the object
+  color += light_diffuse * sphere->mat_diffuse * std::max(hitNormal.dot(L), (float)0.0);
+
+  // compute vector R from the L and normal
+  Vector R = hitNormal * 2 * (hitNormal.dot(L)) - L;
+  
+  // third, plus specular reflectance for the object
+  RGB specular = light_specular * sphere->mat_specular * std::max( (float)std::pow(R.dot(view), sphere->mat_shineness), (float)0.0);
+  
+  color += specular;
+
+  return color;
+}
+
+float intersect_scene(const Point &rayOrigin, const Vector &rayDirect, Sphere * &pSphere)
+{
+  float tHit = INFINITY;
+  // find the nearest ray-sphere intersection point
+  for (unsigned i = 0; i < scene.size(); ++i)
+  {
+    float hit0 = INFINITY,  hit1 = INFINITY;
+    // maximum ray range
+    float tmax = 1000.0;
+    if (scene[i]->intersect(rayOrigin, rayDirect, tmax, &hit0, &hit1)) {
+      // if hit0 < 0, means that rayOrigin inside sphere, should use hit1
+      // cout << "Intersected point: " << hit0 << ", " << hit1 << endl;
+      if (hit0 < 0) hit0 = hit1;
+      if (hit0 < tHit) {
+        // if current sphere have a more near hit, use it 
+        tHit = hit0;
+        pSphere = scene[i];
+      }
+    }
+  }
+
+  return tHit;
 }
 
 /************************************************************************
  * This is the recursive ray tracer - you need to implement this!
  * You should decide what arguments to use.
  ************************************************************************/
-RGB_float recursive_ray_trace(const Point &eye, const Vector &direction, 
-  const vector<Sphere> &local_scene, const int &depth) {
+RGB recursive_ray_trace(const Point &rayOrigin, const Vector &rayDirect, const int &depth) {
   
-  Sphere *pSphere = NULL;
+  Sphere * pSphere = NULL;
 
-  float tHit = INFINITY;
-  bool inSphere = false;
   // find the nearest ray-sphere intersection point
-  for (unsigned i = 0; i < scene.size(); ++i)
-  {
-    float hit0 = INFINITY,  hit1 = INFINITY;
-    if (scene[i].intersect(eye, direction, &hit0, &hit1)) {
-      // if hit0 < 0, means that eye inside sphere, should use hit1
-      if (hit0 < 0) hit0 = hit1;
-      if (hit0 < tHit) {
-        // if current sphere have a more near hit, use it 
-        tHit = hit0;
-        pSphere = &scene[i];
-      }
-    }
-  }
+  float tHit = intersect_scene(rayOrigin, rayDirect, pSphere);
 
   // if there is no intersection found, return background color
-  if (!pSphere) return background_clr;
+  if (!pSphere){
+    return background_clr;
+  }
 
+  bool inSphere = false;
   // find intersection point and its corresponding surface normal 
-  RGB_float color;
-  Point     hitPoint  = eye + direction * tHit;
+  RGB color;
+  Point     hitPoint  = rayOrigin + rayDirect * tHit;
   Vector    hitNormal = pSphere->normal(hitPoint);
 
-  // if normal and ray direction on the same side, means eye inside sphere
-  // so we should reverse the normal direction
-  if (hitNormal.dot(direction) > 0)
+  // if normal and ray rayDirect on the same side, means rayOrigin inside sphere
+  // so we should reverse the normal rayDirect
+  if (hitNormal.dot(rayDirect) > 0)
   {
     hitNormal = - hitNormal;
     inSphere = true;
   }
 
   // Recursive ray tracing for reflection
-  if ( false && ( depth < step_max ) )
+  if ( false && reflection_on && ( depth < step_max ) )
   {
 
   }
   else {
-    
+    // when reflection is turn off, just use phong model to calculate
+    // the local reflectance at current point
+
+    // view = - rayDirect
+    Vector view = - rayDirect;
+    color = phong(hitPoint, view, hitNormal, pSphere);   
   }
 	
 	return color;
@@ -128,13 +164,14 @@ RGB_float recursive_ray_trace(const Point &eye, const Vector &direction,
  * ray tracer. Feel free to change other parts of the function however,
  * if you must.
  *********************************************************************/
+
 void ray_trace() {
   int i, j;
   float x_grid_size = image_width / float(win_width);
   float y_grid_size = image_height / float(win_height);
   float x_start     = -0.5 * image_width;
   float y_start     = -0.5 * image_height;
-  RGB_float   ret_color;
+  RGB   ret_color;
   Point       cur_pixel_pos;
   Vector      ray;
 
@@ -145,12 +182,12 @@ void ray_trace() {
 
   for (i=0; i < win_height; i++) {
     for (j=0; j < win_width; j++) {
-      ray = eye_pos - cur_pixel_pos;
+      ray = (cur_pixel_pos - eye_pos).normalize();
 
       //
       // You need to change this!!!
       //
-      ret_color = recursive_ray_trace(eye_pos, ray, scene, 0);
+      ret_color = recursive_ray_trace(eye_pos, ray, 0);
 
       // Parallel rays can be cast instead using below
       //
@@ -159,8 +196,8 @@ void ray_trace() {
       // ret_color = recursive_ray_trace(cur_pixel_pos, ray, 1);
 
       // Checkboard for testing
-      RGB_float clr = RGB_float(float(i/32), 0, float(j/32));
-      ret_color = clr;
+      // RGB clr = RGB(float(i/32), 0, float(j/32));
+      // ret_color = clr;
 
       frame[i][j][0] = GLfloat(ret_color.x);
       frame[i][j][1] = GLfloat(ret_color.y);
