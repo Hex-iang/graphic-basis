@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "light.hpp"
 #include "trace.h"
 #include "global.h"
 #include "sphere.hpp"
@@ -48,13 +49,10 @@ Point eye_pos = Point(0.0, 0.0, 0.0);       // eye position
 float image_plane = -1.5;                   // image plane position
 
 // list of spheres in the scene
-vector<Sphere *> scene;
+vector<Object *> scene;
 
 // light 1 position and color
-Point light_source;
-Vector light_ambient;
-Vector light_diffuse;
-Vector light_specular;
+Light light;
 
 // global ambient term
 Vector global_ambient;

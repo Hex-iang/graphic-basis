@@ -1,25 +1,18 @@
 /**********************************************************************
- * Some stuff to handle spheres
+ * Spheres class
  **********************************************************************/
 #pragma once
 #include "vector.hpp"
+#include "object.h"
 #include <vector>
 #include <iostream>
 using namespace std;
 
-class Sphere{
+class Sphere: public Object
+{
 public: 
   Point center;
   float radius, radius2;
-
-  Vector mat_ambient;    // material property used in Phong model
-  Vector mat_diffuse;
-  Vector mat_specular;
-  float mat_shineness;
-
-  float reflection;       // Quantity of reflected light constribution to pixel
-  float transparency;      // Quantity of transparency level of sphere
-
 
   // *********************************************************************
   // Sphere constructor
@@ -27,10 +20,12 @@ public:
   Sphere(const Point &ctr, const float &rad, const Vector &amb, 
     const Vector &dif, const Vector &spe, const float &shine, 
     const float &refl, const float &transp) : 
-    center(ctr), radius(rad), radius2(rad * rad),
-    mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
-    mat_shineness(shine), reflection(refl), transparency(transp)
+    Object(amb, dif, spe, shine, refl, transp),
+    center(ctr), radius(rad), radius2(rad * rad)
   {}
+
+
+  ~Sphere() {}
 
   // *********************************************************************
   // Function for calculate sphere normal
@@ -70,21 +65,25 @@ public:
   // *********************************************************************
   // Function for finding ray-sphere intersection point 
   // *********************************************************************
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit0 = NULL, float *hit1 = NULL) const
+  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL)
   {
-
+    float t0, t1;
     Vector L = origin - center;
     float a = direction.dot(direction);
     float b = 2 * direction.dot(L);
     float c = L.dot(L) - radius2;
     
     // if there is no solution to the qudratic solver, return false
-    if (!solveQuadraticEquation(a, b, c, hit0, hit1)) 
+    if (!solveQuadraticEquation(a, b, c, &t0, &t1)) 
       return false;
 
-    // if the nearest hit point is also outside the ray range, return false
-    if (*hit0 > tmax)
+    // if nearest hit out of range or both hits are negative, return false
+    if (t0 > tmax || (t0 < 0 && t1 < 0)){ 
       return false;
+    }
+
+    if(t0 > 0) *hit = t0;
+    else *hit = t1;
 
     return true;
   }

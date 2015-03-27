@@ -2,16 +2,14 @@
 // this provide functions to set up the scene
 //
 #include "sphere.hpp"
+#include "light.hpp"
 #include "vector.hpp"
 #include <stdio.h>
 
-extern Point light_source;
-extern Vector light_ambient;
-extern Vector light_diffuse;
-extern Vector light_specular;
+extern Light light;
 
 extern Vector global_ambient;
-extern std::vector<Sphere *> scene;
+extern std::vector<Object *> scene;
 
 extern RGB background_clr;
 extern float decay_a;
@@ -31,16 +29,7 @@ void set_up_default_scene() {
   global_ambient = Vector(0.2, 0.2, 0.2);
 
   // setup light 1
-  light_source = Point(-2.0, 5.0, 1.0);
-
-  light_ambient  = Vector(0.1, 0.1, 0.1);
-  light_diffuse  = Vector(1.0, 1.0, 1.0);
-  light_specular = Vector(1.0, 1.0, 1.0);
-
-  // set up decay parameters
-  decay_a = 0.5;
-  decay_b = 0.3;
-  decay_c = 0.0;
+  light = Light( Point(-2.0, 5.0, 1.0), Vector(0.1, 0.1, 0.1), Vector(1.0, 1.0, 1.0), Vector(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
   // sphere 1
   Point sphere1_ctr         = Point(1.5, -0.2, -3.2);
@@ -84,14 +73,14 @@ void set_up_default_scene() {
 
 
   // sphere 4 for testing shadow
-  sphere3_ctr         = Point(0.0, -1.5, -3.5);
-  sphere3_rad         = 0.5;
-  sphere3_ambient     = Vector(0.2, 0.2, 0.2);
-  sphere3_diffuse     = Vector(0.0, 1.0, 0.25);
-  sphere3_specular    = Vector(0.0, 1.0, 0.0);
-  sphere3_shineness   = 30;
-  sphere3_reflectance = 0.3;
-  sphere3_transp      = 0.0;
+  // sphere3_ctr         = Point(0.0, -1.5, -3.5);
+  // sphere3_rad         = 0.5;
+  // sphere3_ambient     = Vector(0.2, 0.2, 0.2);
+  // sphere3_diffuse     = Vector(0.0, 1.0, 0.25);
+  // sphere3_specular    = Vector(0.0, 1.0, 0.0);
+  // sphere3_shineness   = 30;
+  // sphere3_reflectance = 0.3;
+  // sphere3_transp      = 0.0;
 
   // scene.push_back(new Sphere(sphere3_ctr, sphere3_rad, sphere3_ambient,
   //                 sphere3_diffuse, sphere3_specular, sphere3_shineness,
@@ -103,7 +92,7 @@ void set_up_default_scene() {
 void release_default_scene() {
 
   while (!scene.empty()) {
-    Sphere * sph = scene.back();
+    Object * sph = scene.back();
     scene.pop_back();
     delete sph;
   }
