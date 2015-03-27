@@ -27,6 +27,7 @@ public:
 	Vec3<T>& operator += (const Vec3<T> &v) { x += v.x, y += v.y, z += v.z; return *this; }
 	Vec3<T>& operator *= (const Vec3<T> &v) { x *= v.x, y *= v.y, z *= v.z; return *this; }
 	Vec3<T> operator - () const { return Vec3<T>(-x, -y, -z); }
+	bool operator == (const Vec3<T> &v) { return x == v.x && y == v.y && z == v.z; }
 	T length2() const { return x * x + y * y + z * z; }
 	T length() const { return sqrt(length2()); }
 	friend std::ostream & operator << (std::ostream &os, const Vec3<T> &v)

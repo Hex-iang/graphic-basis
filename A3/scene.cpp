@@ -81,6 +81,22 @@ void set_up_default_scene() {
   scene.push_back(new Sphere(sphere3_ctr, sphere3_rad, sphere3_ambient,
                   sphere3_diffuse, sphere3_specular, sphere3_shineness,
                   sphere3_reflectance, sphere3_transp));
+
+
+  // sphere 4 for testing shadow
+  // sphere3_ctr         = Point(0.0, -1.5, -3.5);
+  // sphere3_rad         = 0.5;
+  // sphere3_ambient     = Vector(0.2, 0.2, 0.2);
+  // sphere3_diffuse     = Vector(0.0, 1.0, 0.25);
+  // sphere3_specular    = Vector(0.0, 1.0, 0.0);
+  // sphere3_shineness   = 30;
+  // sphere3_reflectance = 0.3;
+  // sphere3_transp      = 0.0;
+
+  // scene.push_back(new Sphere(sphere3_ctr, sphere3_rad, sphere3_ambient,
+  //                 sphere3_diffuse, sphere3_specular, sphere3_shineness,
+  //                 sphere3_reflectance, sphere3_transp));
+
 }
 
 
