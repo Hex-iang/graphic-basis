@@ -19,6 +19,16 @@ public:
 		}
 		return *this;
 	}
+	Vec3 & rerange()
+	{
+		if(this->x > 1.0) this->x = 1.0;
+		if(this->y > 1.0) this->y = 1.0;
+		if(this->z > 1.0) this->z = 1.0;
+		if(this->x < 0.0) this->x = 0.0;
+		if(this->y < 0.0) this->y = 0.0;
+		if(this->z < 0.0) this->z = 0.0;
+		return *this;
+	}
 	Vec3<T> operator * (const T &f) const { return Vec3<T>(x * f, y * f, z * f); }
 	Vec3<T> operator * (const Vec3<T> &v) const { return Vec3<T>(x * v.x, y * v.y, z * v.z); }
 	friend Vec3<T> operator * ( const T &s, const Vec3<T>& v ) { return v * s; }

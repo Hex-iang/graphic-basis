@@ -104,7 +104,8 @@ float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Object 
 RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, const Object * pObject) 
 {
   // first calculate globla/local ambient term for the sphere 
-	RGB color(0.0, 0.0, 0.0);
+	RGB color;
+  // RGB color = (global_ambient + light.ambient ) * pObject->ambient(hit_point);
   // assume that we have a point light source and shot the shadow ray
   Vector shadow_ray = light.source - hit_point; 
   
@@ -199,12 +200,12 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
 
       diffuse += recursive_ray_trace(hit_point, diffuse_direct, depth + 1, pObject);
     }
-    diffuse = diffuse * (float) (1.0 / DIFFUSE_RAY_NUM )
+    diffuse = (diffuse * (float) (1.0 / DIFFUSE_RAY_NUM )).rerange();
     // std::cout << "diffuse color: " << diffuse << std::endl;
   }
   else
   {
-    // if diffuse reflection is off, use the ambient term instead
+    // if diffuse inter-reflection turned off, then use the ambient term
     diffuse = (global_ambient + light.ambient ) * pObject->ambient(hit_point);
   }
 
@@ -239,8 +240,11 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
     refraction = recursive_ray_trace(hit_point, refr_direct, depth + 1, pObject);
   }
 
-
-  color = pObject->transparency(hit_point) * refraction  + pObject->reflection(hit_point) * reflection + phong(hit_point, view, hit_normal, pObject) + diffuse;
+  // calculate final color effect
+  color = pObject->transparency(hit_point) * refraction  
+        + pObject->reflection(hit_point) * reflection
+        + phong(hit_point, view, hit_normal, pObject)
+        + diffuse;
 
 	return color;
 }
@@ -271,10 +275,34 @@ void ray_trace() {
 
   for (i=0; i < win_height; i++) {
     for (j=0; j < win_width; j++) {
+      
+      if(antialiasing_on)
+      {
+        // super sampling the result
+        float antialias_cnt = 5.0;
+        Poisson pRandom( float( sqrt(x_grid_size * y_grid_size) / ( 2 * sqrt(antialias_cnt) ) ), (float) 0.0, (float) 1.0);
+        pRandom.reset();
 
-      ray = (cur_pixel_pos - eye_pos).normalize();
+        for (int k = 0; k < int(antialias_cnt); ++k)
+        {
+          Vector new_pixel_pos = cur_pixel_pos;
+          Point p = pRandom.generate();
+          
+          new_pixel_pos.x += (p.x + i) / float(win_height) * x_grid_size;
+          new_pixel_pos.y += (p.y + j) / float(win_width ) * y_grid_size;
 
-      ret_color = recursive_ray_trace(eye_pos, ray, 0);
+          ray = (new_pixel_pos - eye_pos).normalize();
+          ret_color += recursive_ray_trace(eye_pos, ray, 0);
+        }
+        ret_color = ( ret_color * float( 1.0 / antialias_cnt)).rerange();
+      }
+      else
+      {
+        // traditional ray tracing
+        ray = (cur_pixel_pos - eye_pos).normalize();
+
+        ret_color = recursive_ray_trace(eye_pos, ray, 0);
+      }
 
       frame[i][j][0] = GLfloat(ret_color.x);
       frame[i][j][1] = GLfloat(ret_color.y);

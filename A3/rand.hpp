@@ -46,13 +46,14 @@ public:
 
     do{
       valid = true;
-      p = Vec3<float>(random() , random(), random()).normalize();
+      p = Vec3<float>(random() , random(), 0).normalize();
       for (unsigned int i = 0; i < history.size(); ++i)
       {
         if ( (history[i] - p).length() < min_dist )
           valid = false; 
       }
     }while(!valid);
+    
     history.push_back(p);
     
     return p;
