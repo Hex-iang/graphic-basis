@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cstdlib>
+#include <ctime>
 
 #include "chessboard.hpp"
 #include "light.hpp"
@@ -209,6 +211,9 @@ int main( int argc, char **argv )
     printf("./raycast [-u | -d] step_max <options>\n");
     return -1;
   }
+  
+  // generate random seed for global usage
+  srand(time(NULL));
   
   bool user_scene_on = strcmp(argv[1], "-u");
 

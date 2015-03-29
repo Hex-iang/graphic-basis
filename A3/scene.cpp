@@ -123,7 +123,7 @@ void set_up_user_scene() {
   RGB sphere1_specular      = RGB(1.0, 1.0, 1.0);
   float sphere1_shineness   = 10;
   float sphere1_reflectance = 0.4;
-  float sphere1_transp      = 0.5;
+  float sphere1_transp      = 0.3;
   float sphere1_transm      = 1.1;
   scene.push_back(new Sphere(sphere1_ambient,sphere1_diffuse, 
                   sphere1_specular, sphere1_shineness,sphere1_reflectance, 
@@ -151,7 +151,7 @@ void set_up_user_scene() {
   RGB sphere3_specular      = RGB(0.0, 1.0, 0.0);
   float sphere3_shineness   = 30;
   float sphere3_reflectance = 0.3;
-  float sphere3_transp      = 0.5;
+  float sphere3_transp      = 0.2;
   float sphere3_transm      = 1.1;  
   scene.push_back(new Sphere(sphere3_ambient,sphere3_diffuse, 
                   sphere3_specular, sphere3_shineness,sphere3_reflectance, 

@@ -12,6 +12,7 @@
 #include "sphere.hpp"
 #include "light.hpp"
 #include "chessboard.hpp"
+#include "rand.hpp"
 
 //==================================================
 // Global variables
@@ -97,15 +98,13 @@ float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Object 
   return tHit;
 }
 
-
 /*********************************************************************
  * Phong local illumination + shadow ray generation
  *********************************************************************/
 RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, const Object * pObject) 
 {
   // first calculate globla/local ambient term for the sphere 
-	RGB color = (global_ambient + light.ambient ) * pObject->ambient(hit_point);
-
+	RGB color(0.0, 0.0, 0.0);
   // assume that we have a point light source and shot the shadow ray
   Vector shadow_ray = light.source - hit_point; 
   
@@ -125,11 +124,8 @@ RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, 
     Vector R = ( hit_normal * 2 * (hit_normal.dot(L)) - L ).normalize();
 
     // third, plus specular reflectance for the object
-    RGB specular = light.specular * pObject->specular(hit_point) 
+    color += light.specular * pObject->specular(hit_point) 
       * std::max( (float)std::pow(R.dot(view), pObject->shineness(hit_point)), (float)0.0) * light_att;
-    
-    color += specular;
-
   }
 
   return color;
@@ -154,8 +150,7 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
     else if(depth > 0)
     {
       // if no intersection, then return background color when depth > 0
-      // if(depth > 0)
-        return null_clr;
+      return null_clr;
     }
     // or return null color otherwise
     else
@@ -167,6 +162,7 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
   RGB     color(0.0, 0.0, 0.0);
   RGB     reflection(0.0, 0.0, 0.0);
   RGB     refraction(0.0, 0.0, 0.0);
+  RGB     diffuse(0.0, 0.0, 0.0);
   Point   hit_point  = ray_origin + ray_direct * tHit;
   Vector  hit_normal = pObject->normal(hit_point);
 
@@ -182,6 +178,35 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
 
   // view = - ray_direct
   Vector view = - ray_direct;
+
+  // recursive ray tracing for diffuse inter-reflection
+  if( diffuse_reflection_on && (depth < step_max) )
+  {
+    // if diffuse inter-reflection is on, there is no ambient light any more
+    Rand random( (float) -1.0, (float ) 1.0);
+    for(int i = 0; i < DIFFUSE_RAY_NUM; i++)
+    {
+      // randomly generate rays for diffused reflection orientations
+      bool valid;
+      Vector diffuse_direct;
+      do{
+        valid = true;
+        diffuse_direct = random.generate();
+        // the random diffuse ray must on the same side of hit point normal
+        if( diffuse_direct.dot(hit_normal) < 0)
+          valid = false;
+      }while(!valid);
+
+      diffuse += recursive_ray_trace(hit_point, diffuse_direct, depth + 1, pObject);
+    }
+    diffuse = diffuse * (float) (1.0 / DIFFUSE_RAY_NUM )
+    // std::cout << "diffuse color: " << diffuse << std::endl;
+  }
+  else
+  {
+    // if diffuse reflection is off, use the ambient term instead
+    diffuse = (global_ambient + light.ambient ) * pObject->ambient(hit_point);
+  }
 
   // Recursive ray tracing for reflection
   if ( reflection_on && ( pObject->reflection(hit_point) > 0 ) 
@@ -212,10 +237,10 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
     refr_direct = refr_direct.normalize();
 
     refraction = recursive_ray_trace(hit_point, refr_direct, depth + 1, pObject);
-
   }
 
-  color = pObject->transparency(hit_point) * refraction  + pObject->reflection(hit_point) * reflection + phong(hit_point, view, hit_normal, pObject);
+
+  color = pObject->transparency(hit_point) * refraction  + pObject->reflection(hit_point) * reflection + phong(hit_point, view, hit_normal, pObject) + diffuse;
 
 	return color;
 }
@@ -246,6 +271,7 @@ void ray_trace() {
 
   for (i=0; i < win_height; i++) {
     for (j=0; j < win_width; j++) {
+
       ray = (cur_pixel_pos - eye_pos).normalize();
 
       ret_color = recursive_ray_trace(eye_pos, ray, 0);
