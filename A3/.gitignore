@@ -1,6 +1,7 @@
 # ignore all image files
 *.bmp
 *.o
+*.txt
 
 # ignore binary file
 raycast
