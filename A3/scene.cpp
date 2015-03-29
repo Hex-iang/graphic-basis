@@ -18,6 +18,8 @@ extern float decay_a;
 extern float decay_b;
 extern float decay_c;
 
+extern bool chessboard_on;
+
 //////////////////////////////////////////////////////////////////////////
 
 /*******************************************
@@ -72,21 +74,22 @@ void set_up_default_scene() {
   scene.push_back(new Sphere(sphere3_ctr, sphere3_rad, sphere3_ambient,
                   sphere3_diffuse, sphere3_specular, sphere3_shineness,
                   sphere3_reflectance, sphere3_transp));
+  
 
+  if( chessboard_on ){
+    RGB board_ambient        = RGB(0.20, 0.20, 0.20);
+    RGB board_light_diffuse  = RGB(1.00, 1.00, 1.00);
+    RGB board_dark_diffuse   = RGB(0.10, 0.10, 0.10);
+    RGB board_specular       = RGB(1.00, 1.00, 1.00);
+    float board_shineness    = 30;
+    float board_reflectance  = 0.5;
+    float board_transp       = 0.0;
 
-  // sphere 4 for testing shadow
-  // sphere3_ctr         = Point(0.0, -1.5, -3.5);
-  // sphere3_rad         = 0.5;
-  // sphere3_ambient     = RGB(0.2, 0.2, 0.2);
-  // sphere3_diffuse     = RGB(0.0, 1.0, 0.25);
-  // sphere3_specular    = RGB(0.0, 1.0, 0.0);
-  // sphere3_shineness   = 30;
-  // sphere3_reflectance = 0.3;
-  // sphere3_transp      = 0.0;
-
-  // scene.push_back(new Sphere(sphere3_ctr, sphere3_rad, sphere3_ambient,
-  //                 sphere3_diffuse, sphere3_specular, sphere3_shineness,
-  //                 sphere3_reflectance, sphere3_transp));
+    scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
+                    board_dark_diffuse, board_specular, 
+                    board_shineness, board_reflectance, 
+                    board_transp, -4.0, 1.0));
+  }
 
 }
 
@@ -95,10 +98,12 @@ void release_default_scene() {
 
   // release scene objects
   while (!scene.empty()) {
-    Object * pObj = scene.back();
+    Object * pObject = scene.back();
     scene.pop_back();
-    delete pObj;
+    delete pObject;
+    pObject = NULL;
   }
+
 }
 
 /***************************************

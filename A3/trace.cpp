@@ -42,7 +42,6 @@ extern Vector global_ambient;
 extern bool shadow_on;
 extern bool reflection_on;
 extern bool refraction_on;
-extern bool checkboard_on;
 extern bool diffuse_reflection_on;
 extern bool antialiasing_on;
 

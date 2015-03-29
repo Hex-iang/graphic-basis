@@ -48,7 +48,6 @@ RGB null_clr = RGB(0.0, 0.0, 0.0);   // NULL color
 //
 Point eye_pos = Point(0.0, 0.0, 0.0);       // eye position
 float image_plane = -1.5;                   // image plane position
-
 // list of spheres in the scene
 vector<Object *> scene;
 ChessBoard * chess_board;
@@ -72,7 +71,7 @@ int step_max = 1;
 bool shadow_on                    = false;
 bool reflection_on                = false;
 bool refraction_on                = false;
-bool checkboard_on                = false;
+bool chessboard_on                = false;
 bool diffuse_reflection_on        = false;
 bool antialiasing_on              = false;
 bool nondisplay_on                = false;
@@ -155,8 +154,6 @@ void init()
  * the event handler to draw the scene after you have
  * rendered the image using ray tracing. Remember that
  * the pointer to the image memory is stored in 'frame'.
- *
- * There is no need to change this.
  **********************************************************/
 #ifdef __linux__
 
@@ -179,7 +176,6 @@ void display( void )
  *   s - save image
  *   q - quit
  *
- * DO NOT CHANGE
  *********************************************************/
 void keyboard(unsigned char key, int x, int y)
 {
@@ -214,14 +210,6 @@ int main( int argc, char **argv )
   }
   
   bool user_scene_on = strcmp(argv[1], "-u");
-  
-  if (user_scene_on == false) {  
-    // user defined scene
-    set_up_user_scene();
-  } else { 
-    // default scene
-    set_up_default_scene();
-  }
 
   step_max = atoi(argv[2]); // maximum level of recursions
 
@@ -232,13 +220,21 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+l") == 0) reflection_on              = true;
     else if (strcmp(argv[i], "+r") == 0) refraction_on              = true;
     else if (strcmp(argv[i], "+f") == 0) diffuse_reflection_on      = true;
-    else if (strcmp(argv[i], "+c") == 0) checkboard_on              = true;
+    else if (strcmp(argv[i], "+c") == 0) chessboard_on              = true;
     else if (strcmp(argv[i], "+p") == 0) antialiasing_on            = true;
     else if (strcmp(argv[i], "+n") == 0) nondisplay_on              = true;
     else {
       std::cout << "Unknown command: " << argv[i] << std::endl;
       return -1;
     }
+  }
+
+  if (user_scene_on == false) {  
+    // user defined scene
+    set_up_user_scene();
+  } else { 
+    // default scene
+    set_up_default_scene();
   }
 
   // ray trace the scene now
