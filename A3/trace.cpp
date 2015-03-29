@@ -36,6 +36,8 @@ extern Light light;
 
 // global ambient term
 extern Vector global_ambient;
+// global transmission rate
+extern float global_transm;
 
 // light decay parameters
 
@@ -144,17 +146,27 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
 
   // if there is no intersection found
   if (!pObject){
-    // if no intersection, then return background color when depth > 0
-    if(depth > 0)
-      return null_clr;
+
+    if( pObject_ignore != NULL && pObject_ignore->transparency(ray_origin) > 0)
+    {
+      return background_clr;
+    }
+    else if(depth > 0)
+    {
+      // if no intersection, then return background color when depth > 0
+      // if(depth > 0)
+        return null_clr;
+    }
     // or return null color otherwise
     else
-      return background_clr;
+      return background_clr;  
   }
 
   bool inSphere = false;
   // find intersection point and its corresponding surface normal 
   RGB     color(0.0, 0.0, 0.0);
+  RGB     reflection(0.0, 0.0, 0.0);
+  RGB     refraction(0.0, 0.0, 0.0);
   Point   hit_point  = ray_origin + ray_direct * tHit;
   Vector  hit_normal = pObject->normal(hit_point);
 
@@ -170,7 +182,6 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
 
   // view = - ray_direct
   Vector view = - ray_direct;
-  color = phong(hit_point, view, hit_normal, pObject);
 
   // Recursive ray tracing for reflection
   if ( reflection_on && ( pObject->reflection(hit_point) > 0 ) 
@@ -180,13 +191,32 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
     // Vector refl_direct = ( ray_direct - hit_normal * 2 * ray_direct.dot(hit_normal) ).normalize();
     Vector refl_direct = ( ray_direct - hit_normal * 2 * ray_direct.dot(hit_normal) ).normalize();
 
+    reflection = recursive_ray_trace(hit_point, refl_direct, depth + 1, pObject);
 
-
-    RGB reflection = recursive_ray_trace(hit_point, refl_direct, depth + 1, pObject);
-
-    color += pObject->reflection(hit_point) * reflection;
   }
 	
+  // recursive ray tracing for refraction
+  if ( refraction_on && ( pObject->transparency(hit_point) > 0 ) 
+  && ( depth < step_max) )
+  {
+    // In our scene, we are always outside of the sphere
+    float eta = global_transm / pObject->transmission(hit_point);
+
+    // Sin(refr) = Sin(in) * eta
+    float cos_in = - hit_normal.dot(ray_direct);
+    // Cos(refr) = sqrt( 1 - (Sin(in) * eta)^2 )
+    float cos_refr = sqrt( 1 - eta * eta * (1 - cos_in * cos_in) );
+    
+    // Vector for refraction direction
+    Vector refr_direct = (eta * cos_in - cos_refr) * hit_normal + ray_direct * eta;
+    refr_direct = refr_direct.normalize();
+
+    refraction = recursive_ray_trace(hit_point, refr_direct, depth + 1, pObject);
+
+  }
+
+  color = pObject->transparency(hit_point) * refraction  + pObject->reflection(hit_point) * reflection + phong(hit_point, view, hit_normal, pObject);
+
 	return color;
 }
 

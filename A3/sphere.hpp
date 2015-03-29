@@ -17,7 +17,7 @@ class Sphere: public Object
 
   float mat_reflection;
   float mat_transparency; 
-
+  float mat_transmission;
 public: 
   Point center;
   float radius, radius2;
@@ -25,12 +25,12 @@ public:
   // *********************************************************************
   // Sphere constructor
   // *********************************************************************
-  Sphere(const Point &ctr, const float &rad, const Vector &amb, 
-    const Vector &dif, const Vector &spe, const float &shine, 
-    const float &refl, const float &transp) : 
+  Sphere(const Vector &amb, const Vector &dif, const Vector &spe, 
+    const float &shine, const float &refl, const float &transp, 
+    const float &transm, const Point &ctr, const float &rad) : 
     mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
     mat_shineness(shine), mat_reflection(refl), mat_transparency(transp),
-    center(ctr), radius(rad), radius2(rad * rad)
+    mat_transmission(transm), center(ctr), radius(rad), radius2(rad * rad)
   {}
 
 
@@ -106,4 +106,5 @@ public:
   float shineness(const Point &q)     const { return mat_shineness; }
   float reflection(const Point &q)    const { return mat_reflection; }
   float transparency(const Point &q)  const { return mat_transparency; }
+  float transmission(const Point &q)  const { return mat_transmission; }
 };

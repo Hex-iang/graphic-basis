@@ -57,6 +57,7 @@ Light light;
 
 // global ambient term
 Vector global_ambient;
+float global_transm;
 
 // light decay parameters
 float decay_a;
@@ -247,13 +248,13 @@ int main( int argc, char **argv )
 
 #ifdef __APPLE__
   // if the current platform is a macitosh, output the tracing result immediately and finish
-  save_image("ray-tracer-picture/generated.bmp");
+  save_image("ray-tracer-picture/generated.png");
   return 0;
 
 #else
   // use a non displayable mode to just generate image and skip OpenGL rendering
   if (nondisplay_on) {
-    save_image("ray-tracer-picture/generated.bmp");
+    save_image("ray-tracer-picture/generated.png");
     return 0;
   }
 
@@ -272,10 +273,6 @@ int main( int argc, char **argv )
   return 0;
 #endif
 
-  if (user_scene_on == false) {  
-    release_default_scene();
-  }
-  else{
-    release_user_scene();
-  }
+  // release scene object
+  release_scene();
 }

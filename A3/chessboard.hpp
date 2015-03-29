@@ -21,7 +21,7 @@ class ChessBoard : public Object
 
   float mat_reflection;
   float mat_transparency; 
-
+  float mat_transmission;
 public:
 
   // Since chess board is infinite and lays on the x-z plane, 
@@ -31,11 +31,14 @@ public:
   // Grid width variable for determinating grid size
   float grid_wid;
 
-  ChessBoard(const RGB &ambient, const RGB &light_dif, const Vector &dark_dif, const Vector &spe, const float &shine, const float &refl, const float &transp,
-    const float y = - 2.0, const float wid = 1.0) : 
+  ChessBoard(const RGB &ambient, const RGB &light_dif, const Vector &dark_dif, 
+    const Vector &spe, const float &shine, const float &refl, 
+    const float &transp, const float &transm, const float y = - 2.0, 
+    const float wid = 1.0) : 
     mat_ambient(ambient), light_diffuse(light_dif), dark_diffuse(dark_dif),
     mat_specular(spe), mat_shineness(shine), mat_reflection(refl), 
-    mat_transparency(transp), plane_y(y), grid_wid(wid) {}
+    mat_transparency(transp), mat_transmission(transm), 
+    plane_y(y), grid_wid(wid) {}
 
   ~ChessBoard(){}
 
@@ -66,6 +69,8 @@ public:
   float shineness(const Point &q)     const { return mat_shineness; }
   float reflection(const Point &q)    const { return mat_reflection; }
   float transparency(const Point &q)  const { return mat_transparency; }
+  float transmission(const Point &q)  const { return mat_transmission; }
+
   RGB diffuse(const Point &q) const 
   {
     // calculate point coordinates on chess board 

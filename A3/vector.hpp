@@ -20,10 +20,16 @@ public:
 	}
 	Vec3<T> operator * (const T &f) const { return Vec3<T>(x * f, y * f, z * f); }
 	Vec3<T> operator * (const Vec3<T> &v) const { return Vec3<T>(x * v.x, y * v.y, z * v.z); }
-	friend Vec3<T> operator * ( const T s, const Vec3<T>& v ) { return v * s; }
+	friend Vec3<T> operator * ( const T &s, const Vec3<T>& v ) { return v * s; }
 	T dot(const Vec3<T> &v) const { return x * v.x + y * v.y + z * v.z; }
+	// minus operation
 	Vec3<T> operator - (const Vec3<T> &v) const { return Vec3<T>(x - v.x, y - v.y, z - v.z); }
+	Vec3<T> operator - (const T &s) const { return Vec3<T>(x - s, y - s, z - s); }
+	friend Vec3<T> operator - (const T &s, const Vec3<T>& v) { return Vec3<T>(s - v.x, s - v.y, s - v.z); }
+	// plus operation
 	Vec3<T> operator + (const Vec3<T> &v) const { return Vec3<T>(x + v.x, y + v.y, z + v.z); }
+	Vec3<T> operator + (const T &s) const { return Vec3<T>(x + s, y + s, z + s); }
+	friend Vec3<T> operator + (const T &s, const Vec3<T>& v) { return v + s; }
 	Vec3<T>& operator += (const Vec3<T> &v) { x += v.x, y += v.y, z += v.z; return *this; }
 	Vec3<T>& operator *= (const Vec3<T> &v) { x *= v.x, y *= v.y, z *= v.z; return *this; }
 	Vec3<T> operator - () const { return Vec3<T>(-x, -y, -z); }

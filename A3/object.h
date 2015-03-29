@@ -16,10 +16,11 @@ public:
   virtual Vector normal(const Point &) = 0;
 
   // // getter function for derived class variable 
-  virtual RGB ambient(const Point &) const        = 0;
-  virtual RGB diffuse(const Point &) const        = 0;
-  virtual RGB specular(const Point &) const       = 0;
-  virtual float shineness(const Point &) const    = 0;
-  virtual float reflection(const Point &) const   = 0;
+  virtual RGB ambient(const Point &)        const = 0;
+  virtual RGB diffuse(const Point &)        const = 0;
+  virtual RGB specular(const Point &)       const = 0;
+  virtual float shineness(const Point &)    const = 0;
+  virtual float reflection(const Point &)   const = 0;
   virtual float transparency(const Point &) const = 0;
+  virtual float transmission(const Point &) const = 0;
 };
