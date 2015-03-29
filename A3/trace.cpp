@@ -11,6 +11,8 @@
 #include "global.h"
 #include "sphere.hpp"
 #include "light.hpp"
+#include "chessboard.hpp"
+
 //==================================================
 // Global variables
 //==================================================
@@ -28,7 +30,7 @@ extern RGB background_clr;
 extern RGB null_clr;
 
 extern std::vector<Object *> scene;
-
+extern ChessBoard * chess_board;
 // light 1
 extern Light light;
 
@@ -63,7 +65,6 @@ bool shadow_test(const Point &ray_origin, const Vector &ray_direct, const Object
     // maximum ray range
     float tmax = 1000.0;
     if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit)) {
-      
       return false;
     }
   }
@@ -92,7 +93,6 @@ float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Object 
       }
     }
   }
-
   return tHit;
 }
 
@@ -103,7 +103,7 @@ float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Object 
 RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, const Object * pObject) 
 {
   // first calculate globla/local ambient term for the sphere 
-	RGB color = global_ambient * pObject->mat_ambient + light.ambient * pObject->mat_ambient;
+	RGB color = (global_ambient + light.ambient ) * pObject->ambient(hit_point);
 
   // assume that we have a point light source and shot the shadow ray
   Vector shadow_ray = light.source - hit_point; 
@@ -118,13 +118,14 @@ RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, 
     float light_att = light.attenuation(d_L, d_L2);
 
     // second, plus diffuse reflectance for the object
-    color += light.diffuse * pObject->mat_diffuse * std::max(hit_normal.dot(L), (float)0.0) * light_att;
+    color += light.diffuse * pObject->diffuse(hit_point) * std::max(hit_normal.dot(L), (float)0.0) * light_att;
 
     // compute vector R from the L and normal
-    Vector R = (hit_normal * 2 * (hit_normal.dot(L)) - L).normalize();
-    
+    Vector R = ( hit_normal * 2 * (hit_normal.dot(L)) - L ).normalize();
+
     // third, plus specular reflectance for the object
-    RGB specular = light.specular * pObject->mat_specular * std::max( (float)std::pow(R.dot(view), pObject->mat_shineness), (float)0.0) * light_att;
+    RGB specular = light.specular * pObject->specular(hit_point) 
+      * std::max( (float)std::pow(R.dot(view), pObject->shineness(hit_point)), (float)0.0) * light_att;
     
     color += specular;
 
@@ -144,8 +145,10 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
 
   // if there is no intersection found
   if (!pObject){
+    // if no intersection, then return background color when depth > 0
     if(depth > 0)
       return null_clr;
+    // or return null color otherwise
     else
       return background_clr;
   }
@@ -171,14 +174,18 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
   color = phong(hit_point, view, hit_normal, pObject);
 
   // Recursive ray tracing for reflection
-  if ( reflection_on && ( pObject->reflection > 0 ) && ( depth < step_max ) )
+  if ( reflection_on && ( pObject->reflection(hit_point) > 0 ) 
+  && ( depth < step_max ) )
   {
     // for object with reflection property
+    // Vector refl_direct = ( ray_direct - hit_normal * 2 * ray_direct.dot(hit_normal) ).normalize();
     Vector refl_direct = ( ray_direct - hit_normal * 2 * ray_direct.dot(hit_normal) ).normalize();
+
+
 
     RGB reflection = recursive_ray_trace(hit_point, refl_direct, depth + 1, pObject);
 
-    color += pObject->reflection * reflection;
+    color += pObject->reflection(hit_point) * reflection;
   }
 	
 	return color;

@@ -8,16 +8,16 @@ class Light
 {
 public:
   Point   source;
-  Vector  ambient;
-  Vector  diffuse;
-  Vector  specular;
+  RGB     ambient;
+  RGB     diffuse;
+  RGB     specular;
   float   decay_a;
   float   decay_b;
   float   decay_c;
 
   Light(){};
 
-  Light(const Point & ctr, const Vector & light_ambient, const Vector & light_diffuse, const Vector & light_specular, const float & a, const float & b, const float & c):
+  Light(const Point & ctr, const RGB & light_ambient, const RGB & light_diffuse, const RGB & light_specular, const float & a, const float & b, const float & c):
     source(ctr), ambient(light_ambient), diffuse(light_diffuse), 
     specular(light_specular), decay_a(a), decay_b(b), decay_c(c)
   {}

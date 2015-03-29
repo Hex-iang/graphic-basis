@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "chessboard.hpp"
 #include "light.hpp"
 #include "trace.h"
 #include "global.h"
@@ -50,6 +51,7 @@ float image_plane = -1.5;                   // image plane position
 
 // list of spheres in the scene
 vector<Object *> scene;
+ChessBoard * chess_board;
 
 // light 1 position and color
 Light light;

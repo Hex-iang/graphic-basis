@@ -7,22 +7,19 @@ class Object
 {
 public:
   // material property used in Phong model
-  Vector mat_ambient;
-  Vector mat_diffuse;
-  Vector mat_specular;
-  float mat_shineness;
 
-  float reflection;
-  float transparency; 
+  Object(){}
 
-  Object(const Vector &amb, const Vector &dif, const Vector &spe, 
-    const float &shine, const float &refl, const float &transp):
-    mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
-    mat_shineness(shine), reflection(refl), transparency(transp)
-  {}
+  virtual ~Object() {}
 
-  virtual ~Object() {};
-
-  virtual bool intersect(const Point &, const Vector &, const float tmax, float *) = 0;
+  virtual bool intersect(const Point &, const RGB &, const float, float *) = 0;
   virtual Vector normal(const Point &) = 0;
+
+  // // getter function for derived class variable 
+  virtual RGB ambient(const Point &) const        = 0;
+  virtual RGB diffuse(const Point &) const        = 0;
+  virtual RGB specular(const Point &) const       = 0;
+  virtual float shineness(const Point &) const    = 0;
+  virtual float reflection(const Point &) const   = 0;
+  virtual float transparency(const Point &) const = 0;
 };

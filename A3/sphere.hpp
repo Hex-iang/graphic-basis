@@ -10,6 +10,14 @@ using namespace std;
 
 class Sphere: public Object
 {
+  RGB mat_ambient;
+  RGB mat_diffuse;
+  RGB mat_specular;
+  float mat_shineness;
+
+  float mat_reflection;
+  float mat_transparency; 
+
 public: 
   Point center;
   float radius, radius2;
@@ -20,7 +28,8 @@ public:
   Sphere(const Point &ctr, const float &rad, const Vector &amb, 
     const Vector &dif, const Vector &spe, const float &shine, 
     const float &refl, const float &transp) : 
-    Object(amb, dif, spe, shine, refl, transp),
+    mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
+    mat_shineness(shine), mat_reflection(refl), mat_transparency(transp),
     center(ctr), radius(rad), radius2(rad * rad)
   {}
 
@@ -88,4 +97,13 @@ public:
     return true;
   }
 
+  // *********************************************************************
+  // Function for returning material property
+  // *********************************************************************
+  RGB ambient(const Point &q)         const { return mat_ambient; }
+  RGB diffuse(const Point &q)         const { return mat_diffuse; }
+  RGB specular(const Point &q)        const { return mat_specular; }
+  float shineness(const Point &q)     const { return mat_shineness; }
+  float reflection(const Point &q)    const { return mat_reflection; }
+  float transparency(const Point &q)  const { return mat_transparency; }
 };

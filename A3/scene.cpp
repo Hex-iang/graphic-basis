@@ -4,12 +4,14 @@
 #include "sphere.hpp"
 #include "light.hpp"
 #include "vector.hpp"
+#include "chessboard.hpp"
 #include <stdio.h>
 
 extern Light light;
 
-extern Vector global_ambient;
+extern RGB global_ambient;
 extern std::vector<Object *> scene;
+extern ChessBoard * chess_board;
 
 extern RGB background_clr;
 extern float decay_a;
@@ -26,17 +28,17 @@ void set_up_default_scene() {
   background_clr = RGB(0.5, 0.05, 0.8);
 
   // setup global ambient term
-  global_ambient = Vector(0.2, 0.2, 0.2);
+  global_ambient = RGB(0.2, 0.2, 0.2);
 
   // setup light 1
-  light = Light( Point(-2.0, 5.0, 1.0), Vector(0.1, 0.1, 0.1), Vector(1.0, 1.0, 1.0), Vector(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
+  light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
   // sphere 1
   Point sphere1_ctr         = Point(1.5, -0.2, -3.2);
   float sphere1_rad         = 1.23;
-  Vector sphere1_ambient    = Vector(0.7, 0.7, 0.7);
-  Vector sphere1_diffuse    = Vector(0.1, 0.5, 0.8);
-  Vector sphere1_specular   = Vector(1.0, 1.0, 1.0);
+  RGB sphere1_ambient       = RGB(0.7, 0.7, 0.7);
+  RGB sphere1_diffuse       = RGB(0.1, 0.5, 0.8);
+  RGB sphere1_specular      = RGB(1.0, 1.0, 1.0);
   float sphere1_shineness   = 10;
   float sphere1_reflectance = 0.4;
   float sphere1_transp      = 0.0;
@@ -47,9 +49,9 @@ void set_up_default_scene() {
   // sphere 2
   Point sphere2_ctr         = Point(-1.5, 0.0, -3.5);
   float sphere2_rad         = 1.5;
-  Vector sphere2_ambient    = Vector(0.6, 0.6, 0.6);
-  Vector sphere2_diffuse    = Vector(1.0, 0.0, 0.25);
-  Vector sphere2_specular   = Vector(1.0, 1.0, 1.0);
+  RGB sphere2_ambient       = RGB(0.6, 0.6, 0.6);
+  RGB sphere2_diffuse       = RGB(1.0, 0.0, 0.25);
+  RGB sphere2_specular      = RGB(1.0, 1.0, 1.0);
   float sphere2_shineness   = 6;
   float sphere2_reflectance = 0.3;
   float sphere2_transp      = 0.0;
@@ -60,9 +62,9 @@ void set_up_default_scene() {
   // sphere 3
   Point sphere3_ctr         = Point(-0.35, 1.75, -2.25);
   float sphere3_rad         = 0.5;
-  Vector sphere3_ambient    = Vector(0.2, 0.2, 0.2);
-  Vector sphere3_diffuse    = Vector(0.0, 1.0, 0.25);
-  Vector sphere3_specular   = Vector(0.0, 1.0, 0.0);
+  RGB sphere3_ambient       = RGB(0.2, 0.2, 0.2);
+  RGB sphere3_diffuse       = RGB(0.0, 1.0, 0.25);
+  RGB sphere3_specular      = RGB(0.0, 1.0, 0.0);
   float sphere3_shineness   = 30;
   float sphere3_reflectance = 0.3;
   float sphere3_transp      = 0.0;
@@ -75,9 +77,9 @@ void set_up_default_scene() {
   // sphere 4 for testing shadow
   // sphere3_ctr         = Point(0.0, -1.5, -3.5);
   // sphere3_rad         = 0.5;
-  // sphere3_ambient     = Vector(0.2, 0.2, 0.2);
-  // sphere3_diffuse     = Vector(0.0, 1.0, 0.25);
-  // sphere3_specular    = Vector(0.0, 1.0, 0.0);
+  // sphere3_ambient     = RGB(0.2, 0.2, 0.2);
+  // sphere3_diffuse     = RGB(0.0, 1.0, 0.25);
+  // sphere3_specular    = RGB(0.0, 1.0, 0.0);
   // sphere3_shineness   = 30;
   // sphere3_reflectance = 0.3;
   // sphere3_transp      = 0.0;
@@ -91,10 +93,11 @@ void set_up_default_scene() {
 
 void release_default_scene() {
 
+  // release scene objects
   while (!scene.empty()) {
-    Object * sph = scene.back();
+    Object * pObj = scene.back();
     scene.pop_back();
-    delete sph;
+    delete pObj;
   }
 }
 
