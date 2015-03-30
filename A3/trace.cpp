@@ -47,6 +47,7 @@ extern bool reflection_on;
 extern bool refraction_on;
 extern bool diffuse_reflection_on;
 extern bool antialiasing_on;
+extern bool poisson_on;
 
 extern int step_max;
 
@@ -146,7 +147,8 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
 
     if( pObject_ignore != NULL && pObject_ignore->transparency(ray_origin) > 0)
     {
-      return background_clr;
+      // return background_clr;
+      return background_clr * global_ambient;
     }
     else if(depth > 0)
     {
@@ -155,7 +157,7 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
     }
     // or return null color otherwise
     else
-      return background_clr;  
+      return background_clr * global_ambient;  
   }
 
   bool inSphere = false;
@@ -276,7 +278,7 @@ void ray_trace() {
   for (i=0; i < win_height; i++) {
     for (j=0; j < win_width; j++) {
       
-      if(antialiasing_on)
+      if(antialiasing_on && poisson_on)
       {
         // super sampling the result
         float antialias_cnt = 5.0;
@@ -295,6 +297,23 @@ void ray_trace() {
           ret_color += recursive_ray_trace(eye_pos, ray, 0);
         }
         ret_color = ( ret_color * float( 1.0 / antialias_cnt)).rerange();
+      }
+      else if( antialiasing_on )
+      {
+        float antialias_cnt = 5.0;
+        int sampling[][2] = { {-1, -1}, {0, 0}, {-1, 1}, {1, -1}, {1, 1}};
+        for (int k = 0; k < int(antialias_cnt); ++k)
+        {
+          Vector new_pixel_pos = cur_pixel_pos;
+
+          new_pixel_pos.x += sampling[k][0] * 0.25 * x_grid_size;
+          new_pixel_pos.y += sampling[k][1] * 0.25 * y_grid_size;
+
+          ray = (new_pixel_pos - eye_pos).normalize();
+          ret_color += recursive_ray_trace(eye_pos, ray, 0);
+        }
+        ret_color = ( ret_color * float( 1.0 / antialias_cnt)).rerange();
+
       }
       else
       {

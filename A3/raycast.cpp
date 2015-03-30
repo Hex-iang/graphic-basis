@@ -78,6 +78,7 @@ bool chessboard_on                = false;
 bool diffuse_reflection_on        = false;
 bool antialiasing_on              = false;
 bool nondisplay_on                = false;
+bool poisson_on                   = false;
 
 // OpenGL
 const int NumPoints = 6;
@@ -214,7 +215,7 @@ int main( int argc, char **argv )
   
   // generate random seed for global usage
   srand(time(NULL));
-  
+
   bool user_scene_on = strcmp(argv[1], "-u");
 
   step_max = atoi(argv[2]); // maximum level of recursions
@@ -229,6 +230,7 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+c") == 0) chessboard_on              = true;
     else if (strcmp(argv[i], "+p") == 0) antialiasing_on            = true;
     else if (strcmp(argv[i], "+n") == 0) nondisplay_on              = true;
+    else if (strcmp(argv[i], "+b") == 0) poisson_on                 = true;
     else {
       std::cout << "Unknown command: " << argv[i] << std::endl;
       return -1;
