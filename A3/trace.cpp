@@ -148,7 +148,7 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
     if( pObject_ignore != NULL && pObject_ignore->transparency(ray_origin) > 0)
     {
       // return background_clr;
-      return background_clr * global_ambient;
+      return background_clr;
     }
     else if(depth > 0)
     {
@@ -157,7 +157,7 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
     }
     // or return null color otherwise
     else
-      return background_clr * global_ambient;  
+      return background_clr;  
   }
 
   bool inSphere = false;

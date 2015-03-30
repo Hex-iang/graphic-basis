@@ -105,7 +105,7 @@ void set_up_default_scene() {
  ***************************************/
 void set_up_user_scene() {
   // set background color
-  background_clr = RGB(0.5, 0.05, 0.8);
+  background_clr = RGB(0.1, 0.01, 0.16);
 
   // setup global ambient term
   global_ambient = RGB(0.2, 0.2, 0.2);
