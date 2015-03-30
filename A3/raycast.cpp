@@ -48,8 +48,11 @@ RGB null_clr = RGB(0.0, 0.0, 0.0);   // NULL color
 //
 // these view parameters should be fixed
 //
-Point eye_pos = Point(0.0, 0.0, 0.0);       // eye position
-float image_plane = -1.5;                   // image plane position
+// Point eye_pos = Point(0.0, 0.0, 0.0);       // eye position
+// float image_plane = -1.5;                   // image plane position
+Point eye_pos = Point(0.0, 0.0, 5.0);       // eye position
+float image_plane = 1.5;                   // image plane position
+
 // list of spheres in the scene
 vector<Object *> scene;
 ChessBoard * chess_board;

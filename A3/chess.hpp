@@ -191,8 +191,10 @@ public:
   		{
   			if(primitives[i]->intersect(origin, direction, tmax, hit, NULL, NULL))
   			{
-  				pObject = primitives[i];
-  				*flag = true;
+          if( flag == NULL){
+            pObject = primitives[i];
+            *flag = true; 
+          }
 
   				return true;
   			}

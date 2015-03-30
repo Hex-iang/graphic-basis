@@ -111,8 +111,8 @@ float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Object 
 RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, const Object * pObject) 
 {
   // first calculate globla/local ambient term for the sphere 
-	RGB color;
-  // RGB color = (global_ambient + light.ambient ) * pObject->ambient(hit_point);
+	// RGB color;
+  RGB color = (global_ambient + light.ambient ) * pObject->ambient(hit_point);
   // assume that we have a point light source and shot the shadow ray
   Vector shadow_ray = light.source - hit_point; 
   
@@ -132,8 +132,9 @@ RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, 
     Vector R = ( hit_normal * 2 * (hit_normal.dot(L)) - L ).normalize();
 
     // third, plus specular reflectance for the object
-    color += light.specular * pObject->specular(hit_point) 
-      * std::max( (float)std::pow(R.dot(view), pObject->shineness(hit_point)), (float)0.0) * light_att;
+    color += light.specular * pObject->specular(hit_point) * light_att * 
+        (float)std::pow( std::max(R.dot(view),(float)0.0), 
+                          pObject->shineness(hit_point)   );
   }
 
   return color;
@@ -151,12 +152,13 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
   // if there is no intersection found
   if (!pObject){
 
-    if( pObject_ignore != NULL && pObject_ignore->transparency(ray_origin) > 0)
-    {
-      // return background_clr;
-      return background_clr;
-    }
-    else if(depth > 0)
+    // if( pObject_ignore != NULL && pObject_ignore->transparency(ray_origin) > 0)
+    // {
+    //   // return background_clr;
+    //   return background_clr;
+    // }
+    // else if(depth > 0)
+    if( depth > 0 )
     {
       // if no intersection, then return background color when depth > 0
       return null_clr;
@@ -209,11 +211,6 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
     diffuse = (diffuse * (float) (1.0 / DIFFUSE_RAY_NUM )).rerange();
     // std::cout << "diffuse color: " << diffuse << std::endl;
   }
-  else
-  {
-    // if diffuse inter-reflection turned off, then use the ambient term
-    diffuse = (global_ambient + light.ambient ) * pObject->ambient(hit_point);
-  }
 
   // Recursive ray tracing for reflection
   if ( reflection_on && ( pObject->reflection(hit_point) > 0 ) 
@@ -250,7 +247,7 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
   color = pObject->transparency(hit_point) * refraction  
         + pObject->reflection(hit_point) * reflection
         + phong(hit_point, view, hit_normal, pObject)
-        + diffuse;
+        + pObject->ambient(hit_point) * diffuse;
 
 	return color;
 }
