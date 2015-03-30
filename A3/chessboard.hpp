@@ -4,6 +4,7 @@
 #pragma once
 #include "vector.hpp"
 #include "object.h"
+#include <cmath>
 #include <vector>
 #include <iostream>
 using namespace std;
@@ -80,16 +81,16 @@ public:
     // rescale chessboard coordinates and calculate its coresponding color
     if( y >= 0)
     {
-      if( (abs(x) % 2 == 0 && abs(y) % 2 == 0) || 
-          (abs(x) % 2 == 1 && abs(y) % 2 == 1) )
+      if( ( (int(abs(x)) % 2 ) == 0 && (int(abs(y)) % 2 ) == 0) || 
+          ( (int(abs(x)) % 2 ) == 1 && (int(abs(y)) % 2 ) == 1) )
         return light_diffuse;
       else
         return dark_diffuse;
     }
     else
     {
-      if( (abs(x) % 2 == 0 && abs(y) % 2 == 0) || 
-          (abs(x) % 2 == 1 && abs(y) % 2 == 1) )
+      if( ( (int(abs(x)) % 2 ) == 0 && (int(abs(y)) % 2 ) == 0) || 
+          ( (int(abs(x)) % 2 ) == 1 && (int(abs(y)) % 2 ) == 1) )
         return dark_diffuse;
       else
         return light_diffuse;

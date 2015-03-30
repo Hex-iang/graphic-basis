@@ -106,6 +106,7 @@ void set_up_default_scene() {
 void set_up_user_scene() {
   // set background color
   background_clr = RGB(0.1, 0.01, 0.16);
+  // background_clr = RGB(0.8, 0.8, 0.8);
 
   // setup global ambient term
   global_ambient = RGB(0.2, 0.2, 0.2);
@@ -175,6 +176,43 @@ void set_up_user_scene() {
   }
 }
 
+/***************************************
+ * bonus scene with chess
+ ***************************************/
+
+void set_up_bonus_scene(){
+  // set background color
+  background_clr = RGB(0.1, 0.01, 0.16);
+  // background_clr = RGB(0.8, 0.8, 0.8);
+
+  // setup global ambient term
+  global_ambient = RGB(0.2, 0.2, 0.2);
+
+  // setup air tranmission rate
+  global_transm = 1.0;
+  
+  // setup light 1
+  light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
+
+
+
+  // add chess board to the ground of the chess 
+  RGB board_ambient        = RGB(0.20, 0.20, 0.20);
+  RGB board_light_diffuse  = RGB(1.00, 1.00, 1.00);
+  RGB board_dark_diffuse   = RGB(0.10, 0.10, 0.10);
+  RGB board_specular       = RGB(1.00, 1.00, 1.00);
+  float board_shineness    = 30;
+  float board_reflectance  = 0.0;
+  float board_transp       = 0.0;
+  float board_transm       = 1.0;
+
+  scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
+                  board_dark_diffuse, board_specular, 
+                  board_shineness, board_reflectance, 
+                  board_transp, board_transm, -4.0, 1.0));
+}
+
+
 void release_scene()
 {
   // release scene objects
@@ -184,14 +222,6 @@ void release_scene()
     delete pObject;
     pObject = NULL;
   }
-
-}
-
-/***************************************
- * bonus scene with chess
- ***************************************/
-
-void set_up_bonus_scene(){
 
 }
 

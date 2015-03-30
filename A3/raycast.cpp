@@ -216,7 +216,9 @@ int main( int argc, char **argv )
   // generate random seed for global usage
   srand(time(NULL));
 
-  bool user_scene_on = strcmp(argv[1], "-u");
+  int default_scene_on = strcmp(argv[1], "-d");
+  int user_scene_on    = strcmp(argv[1], "-u");
+  int bonus_scene_on   = strcmp(argv[1], "-b");
 
   step_max = atoi(argv[2]); // maximum level of recursions
 
@@ -237,13 +239,9 @@ int main( int argc, char **argv )
     }
   }
 
-  if (user_scene_on == false) {  
-    // user defined scene
-    set_up_user_scene();
-  } else { 
-    // default scene
-    set_up_default_scene();
-  }
+  if ( !user_scene_on )   set_up_user_scene();
+  if ( !bonus_scene_on )   set_up_bonus_scene();
+  if ( !default_scene_on )   set_up_default_scene();
 
   // ray trace the scene now
   printf("Rendering scene using my fantastic ray tracer ...\n");

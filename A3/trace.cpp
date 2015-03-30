@@ -160,7 +160,6 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
       return background_clr;  
   }
 
-  bool inSphere = false;
   // find intersection point and its corresponding surface normal 
   RGB     color(0.0, 0.0, 0.0);
   RGB     reflection(0.0, 0.0, 0.0);
@@ -174,7 +173,6 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
   if (hit_normal.dot(ray_direct) > 0)
   {
     hit_normal = - hit_normal;
-    inSphere = true;
   }
 
   // Calculate local reflectance at current point
