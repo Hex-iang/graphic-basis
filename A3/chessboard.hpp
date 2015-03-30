@@ -33,7 +33,7 @@ public:
   float grid_wid;
 
   ChessBoard(const RGB &ambient, const RGB &light_dif, const Vector &dark_dif, 
-    const Vector &spe, const float &shine, const float &refl, 
+    const RGB &spe, const float &shine, const float &refl, 
     const float &transp, const float &transm, const float y = - 2.0, 
     const float wid = 1.0) : 
     mat_ambient(ambient), light_diffuse(light_dif), dark_diffuse(dark_dif),
@@ -45,7 +45,7 @@ public:
 
   Vector normal(const Point & q) { return Vector(0.0, 1.0, 0.0); }
   
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL)
+  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL, Object * pObject = NULL, bool * flag = NULL)
   {
     // if there is no y component, then there is no intersection
     if (direction.y == 0) return false;

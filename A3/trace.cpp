@@ -67,7 +67,7 @@ bool shadow_test(const Point &ray_origin, const Vector &ray_direct, const Object
     float hit = INFINITY;
     // maximum ray range
     float tmax = 1000.0;
-    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit)) {
+    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit, NULL, NULL)) {
       return false;
     }
   }
@@ -80,19 +80,25 @@ bool shadow_test(const Point &ray_origin, const Vector &ray_direct, const Object
 float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Object * &pObject, Object * pObject_ignore = NULL)
 {
   float tHit = INFINITY;
-  // find the nearest ray-sphere intersection point
+  // find the nearest ray-object intersection point
   for (unsigned i = 0; i < scene.size(); ++i)
   {
+    // skip the object we want to ignore
     if(pObject_ignore == scene[i]) continue;
     float hit = INFINITY;
     // maximum ray range
     float tmax = 1000.0;
-    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit)) {
-      // skip the sphere we want to ignore
+    bool flag = false;
+    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit, pObject, &flag)) {
       if (hit < tHit) {
-        // if current sphere have a more near hit, use it 
-        tHit = hit;
-        pObject = scene[i];
+        // if current object have a more near hit, use it 
+        if( flag ){
+          tHit = hit;
+        }
+        else{
+          tHit = hit;
+          pObject = scene[i];
+        }
       }
     }
   }

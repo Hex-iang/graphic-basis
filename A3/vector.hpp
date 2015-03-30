@@ -53,6 +53,10 @@ public:
 		os << "[" << v.x << " " << v.y << " " << v.z << "]";
 		return os;
 	}
+	Vec3<T> cross(const Vec3<T>& v )
+	{
+	    return Vec3<T>( y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x );
+	}
 };
 
 typedef Vec3<float> Point;  			// geometric 3D point

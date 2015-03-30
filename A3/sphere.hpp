@@ -6,7 +6,6 @@
 #include "object.h"
 #include <vector>
 #include <iostream>
-using namespace std;
 
 class Sphere: public Object
 {
@@ -25,7 +24,7 @@ public:
   // *********************************************************************
   // Sphere constructor
   // *********************************************************************
-  Sphere(const Vector &amb, const Vector &dif, const Vector &spe, 
+  Sphere(const RGB &amb, const RGB &dif, const RGB &spe, 
     const float &shine, const float &refl, const float &transp, 
     const float &transm, const Point &ctr, const float &rad) : 
     mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
@@ -74,7 +73,7 @@ public:
   // *********************************************************************
   // Function for finding ray-sphere intersection point 
   // *********************************************************************
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL)
+  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL, Object * pObject = NULL, bool * flag = NULL)
   {
     float t0, t1;
     Vector L = origin - center;

@@ -5,8 +5,10 @@
 #include "light.hpp"
 #include "vector.hpp"
 #include "chessboard.hpp"
-#include <stdio.h>
+#include "chess.hpp"
 
+#include <stdio.h>
+#include <string>
 
 extern Light light;
 
@@ -194,22 +196,36 @@ void set_up_bonus_scene(){
   // setup light 1
   light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
+  RGB chess_ambient       = RGB(0.2, 0.2, 0.2);
+  RGB chess_diffuse       = RGB(0.0, 1.0, 0.25);
+  RGB chess_specular      = RGB(0.0, 1.0, 0.0);
+  float chess_shineness   = 30;
+  float chess_reflectance = 0.3;
+  float chess_transp      = 0.0;
+  float chess_transm      = 1.1;  
 
+  scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,chess_shineness,
+                             chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf")));
 
-  // add chess board to the ground of the chess 
-  RGB board_ambient        = RGB(0.20, 0.20, 0.20);
-  RGB board_light_diffuse  = RGB(1.00, 1.00, 1.00);
-  RGB board_dark_diffuse   = RGB(0.10, 0.10, 0.10);
-  RGB board_specular       = RGB(1.00, 1.00, 1.00);
-  float board_shineness    = 30;
-  float board_reflectance  = 0.0;
-  float board_transp       = 0.0;
-  float board_transm       = 1.0;
+  scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,chess_shineness,
+                             chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop.smf")));
 
-  scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
-                  board_dark_diffuse, board_specular, 
-                  board_shineness, board_reflectance, 
-                  board_transp, board_transm, -4.0, 1.0));
+  if( chessboard_on ){
+    // add chess board to the ground of the chess 
+    RGB board_ambient        = RGB(0.20, 0.20, 0.20);
+    RGB board_light_diffuse  = RGB(1.00, 1.00, 1.00);
+    RGB board_dark_diffuse   = RGB(0.10, 0.10, 0.10);
+    RGB board_specular       = RGB(1.00, 1.00, 1.00);
+    float board_shineness    = 30;
+    float board_reflectance  = 0.0;
+    float board_transp       = 0.0;
+    float board_transm       = 1.0;
+
+    scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
+                    board_dark_diffuse, board_specular, 
+                    board_shineness, board_reflectance, 
+                    board_transp, board_transm, -4.0, 1.0));
+  }
 }
 
 
