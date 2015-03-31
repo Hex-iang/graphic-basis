@@ -7,7 +7,8 @@
 class Ray
 {
 public:
-  Vector origin, direction;
+  Point origin;
+  Vector direction;
   float tmax;
   unsigned triangleId;  
 
@@ -23,7 +24,7 @@ public:
     sign[2] = (invdir.z < 0);
   }
 
-  Vector intersecPoint(const float &t) const
+  Point intersecPoint(const float &t) const
   { 
     return origin + direction * t; 
   }

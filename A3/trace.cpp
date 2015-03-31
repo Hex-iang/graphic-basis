@@ -308,7 +308,7 @@ void ray_trace() {
         // traditional ray tracing
         direct = (cur_pixel_pos - eye_pos).normalize();
 
-        ret_color += recursive_ray_trace( Ray(eye_pos, direct), 0);
+        ret_color = recursive_ray_trace( Ray(eye_pos, direct), 0);
       }
 
       frame[i][j][0] = GLfloat(ret_color.x);
