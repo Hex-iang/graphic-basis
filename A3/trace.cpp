@@ -222,11 +222,19 @@ RGB recursive_ray_trace(const Ray &ray, const int &depth, Object * pObject_ignor
     // Cos(refr) = sqrt( 1 - (Sin(in) * eta)^2 )
     float cos_refr = sqrt( 1 - eta * eta * (1 - cos_in * cos_in) );
     
-    // Vector for refraction direction
-    Vector refr_direct = (eta * cos_in - cos_refr) * hit_normal + ray.direction * eta;
-    refr_direct = refr_direct.normalize();
+    if( cos_refr >= 0 ){
+      // Vector for refraction direction
+      Vector refr_direct = (eta * cos_in - cos_refr) * hit_normal + ray.direction * eta;
+      refr_direct = refr_direct.normalize();
 
-    refraction = recursive_ray_trace(Ray(hit_point, refr_direct), depth + 1, pObject);
+      refraction = recursive_ray_trace(Ray(hit_point, refr_direct), depth + 1, pObject);
+    }
+    else
+    {
+      // total refraction case, no refraction
+      refraction = RGB(0.0, 0.0, 0.0);
+    }
+
   }
 
   // calculate final color effect
