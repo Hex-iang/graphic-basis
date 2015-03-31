@@ -182,6 +182,44 @@ void set_up_user_scene() {
  * bonus scene with chess
  ***************************************/
 
+void naive_load(const RGB &amb, const RGB &dif, const RGB &spe, 
+    const float &shine, const float &refl, const float &transp, 
+    const float &transm, const string &str)
+{
+    vector<Point > vertices;
+
+    std::ifstream infile(str.c_str());
+    std::cout << "reading file:" << str << "..." << std::endl;
+    std::string line;
+    while (std::getline(infile, line)){
+      std::istringstream buffer(line);
+      char type;
+      // read the first character and see which type of line it is
+      buffer >> type;
+      
+      if(type == '#') continue;
+
+      if(type == 'v')
+      {
+        float x, y, z;
+        buffer >> x >> y >> z;
+        // x*=10.0;
+        // y*=10.0;
+        // z*=10.0;
+        vertices.push_back(Point(x, y, z));
+      }
+      else if( type == 'f')
+      {
+        int i, j, k;
+        buffer >> i >> j >> k;
+        scene.push_back( new Triangle(amb, dif, spe, shine, refl, transp, transm, vertices[i], vertices[j], vertices[k]));
+      }
+      
+    }
+
+}
+
+
 void set_up_bonus_scene(){
   // set background color
   background_clr = RGB(0.5, 0.05, 0.8);
@@ -196,19 +234,31 @@ void set_up_bonus_scene(){
   // setup light 1
   light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
-  RGB chess_ambient       = RGB(0.2, 0.2, 0.2);
-  RGB chess_diffuse       = RGB(0.0, 1.0, 0.25);
-  RGB chess_specular      = RGB(0.0, 1.0, 0.0);
+  RGB chess_ambient       = RGB(0.3, 0.3, 0.3);
+  RGB chess_diffuse       = RGB(0.5, 0.5, 0.8);
+  RGB chess_specular      = RGB(0.5, 0.5, 0.5);
   float chess_shineness   = 30;
   float chess_reflectance = 0.3;
   float chess_transp      = 0.0;
   float chess_transm      = 1.1;  
 
-  scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,chess_shineness,
-                             chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf")));
+  // scene.push_back( new Chess(chess_ambient, chess_diffuse, 
+  //                            chess_specular,chess_shineness,
+  //                            chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf")));
 
-  scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,chess_shineness,
-                             chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop.smf")));
+  // scene.push_back( new Chess(chess_ambient, chess_diffuse, 
+  //                            chess_specular,chess_shineness,
+  //                            chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop.smf")));
+
+  // naive_load(chess_ambient, chess_diffuse,
+  //            chess_specular,chess_shineness,
+  //            chess_reflectance, chess_transp, 
+  //            chess_transm, std::string("chess_pieces/bishop.smf"));
+
+  naive_load(chess_ambient, chess_diffuse,
+             chess_specular,chess_shineness,
+             chess_reflectance, chess_transp, 
+             chess_transm, std::string("chess_pieces/chess_piece.smf"));
 
   if( chessboard_on ){
     // add chess board to the ground of the chess 
