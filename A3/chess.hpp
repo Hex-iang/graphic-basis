@@ -79,7 +79,7 @@ public:
   float transmission(const Point &q) const { return mat_transmission;}
 };
 
-
+#define DEBUG
 class Chess: public Object
 {
   RGB mat_ambient;
@@ -101,11 +101,14 @@ public:
     mat_transmission(transm)
   {
   	vector<Point > vertices;
+    int vertices_cnt = 0, triangles_cnt = 0, line_cnt =0;
 
   	std::ifstream infile(str.c_str());
   	std::cout << "reading file:" << str << "..." << std::endl;
   	std::string line;
   	while (std::getline(infile, line)){
+      line_cnt++;
+
   		std::istringstream buffer(line);
   		char type;
   		// read the first character and see which type of line it is
@@ -115,17 +118,16 @@ public:
 
   		if(type == 'v')
   		{
+        vertices_cnt ++;
   			float x, y, z;
   			buffer >> x >> y >> z;
         Point p(x, y, z);
 
-#ifdef DEBUG
-        std::cout << "point" << p << endl;
-#endif
   			vertices.push_back(p);
   		}
   		else if( type == 'f')
   		{
+        triangles_cnt++;
   			int i, j, k;
   			buffer >> i >> j >> k;
   			primitives.push_back( new Triangle(amb, dif, spe, shine, refl, transp, transm, vertices[i], vertices[j], vertices[k]));
@@ -133,8 +135,12 @@ public:
   		
   	}
 
-  	std::cout << "triangle number: " << primitives.size() << std::endl;
+#ifdef DEBUG
+      std::cout << "[naive_load] Read file complete: " << line_cnt << " lines in total" << std::endl;
 
+      std::cout << "total points number: "    << vertices_cnt << endl;
+      std::cout << "total triangles number: " << triangles_cnt << endl;
+#endif
   }
 
   ~Chess() {
@@ -174,6 +180,7 @@ public:
   
   Vector normal(const Point &q) 
   {
+    std::cout << "there should be something wrong" << std::endl;
   	return Vector();
   }
 

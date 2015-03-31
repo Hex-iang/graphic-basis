@@ -251,16 +251,16 @@ void set_up_bonus_scene(){
   light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
   RGB chess_ambient       = RGB(0.3, 0.3, 0.3);
-  RGB chess_diffuse       = RGB(0.5, 0.5, 0.8);
-  RGB chess_specular      = RGB(0.5, 0.5, 0.5);
+  RGB chess_diffuse       = RGB(0.5, 0.5, 1.0);
+  RGB chess_specular      = RGB(0.8, 0.8, 0.8);
   float chess_shineness   = 30;
-  float chess_reflectance = 0.3;
-  float chess_transp      = 0.0;
-  float chess_transm      = 1.1;  
+  float chess_reflectance = 0.5;
+  float chess_transp      = 0.2;
+  float chess_transm      = 1.0;  
 
-  // scene.push_back( new Chess(chess_ambient, chess_diffuse, 
-  //                            chess_specular,chess_shineness,
-  //                            chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf")));
+  scene.push_back( new Chess(chess_ambient, chess_diffuse, 
+                             chess_specular,chess_shineness,
+                             chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf")));
 
   // scene.push_back( new Chess(chess_ambient, chess_diffuse, 
   //                            chess_specular,chess_shineness,
@@ -271,10 +271,10 @@ void set_up_bonus_scene(){
   //            chess_reflectance, chess_transp, 
   //            chess_transm, std::string("chess_pieces/bishop.smf"));
 
-  naive_load(chess_ambient, chess_diffuse,
-             chess_specular,chess_shineness,
-             chess_reflectance, chess_transp, 
-             chess_transm, std::string("chess_pieces/chess_piece.smf"));
+  // naive_load(chess_ambient, chess_diffuse,
+  //            chess_specular,chess_shineness,
+  //            chess_reflectance, chess_transp, 
+  //            chess_transm, std::string("chess_pieces/chess_piece.smf"));
 
   if( chessboard_on ){
     // add chess board to the ground of the chess 
