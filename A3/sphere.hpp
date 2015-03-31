@@ -73,7 +73,7 @@ public:
   // *********************************************************************
   // Function for finding ray-sphere intersection point 
   // *********************************************************************
-  bool intersect(const Ray &ray, float * hit )
+  bool intersect(const Ray &ray, Intersection & insect )
   {
     float t0, t1;
     Vector L = ray.origin - center;
@@ -90,8 +90,11 @@ public:
       return false;
     }
 
-    if(t0 > 0) *hit = t0;
-    else *hit = t1;
+    if(t0 > 0) insect.t = t0;
+    else insect.t = t1;
+
+    insect.point  = ray.intersectPoint(insect.t);
+    insect.normal = normal( insect.point );
 
     return true;
   }

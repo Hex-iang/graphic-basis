@@ -40,7 +40,7 @@ public:
 
 	~Triangle(){}
 
-  bool intersect(const Ray &ray, float *hit = NULL)
+  bool intersect(const Ray &ray, Intersection & insect)
   {
 
   	// first, test if the ray direction is parallel to the surface
@@ -54,13 +54,16 @@ public:
   	if ( t > ray.tmax) 	{ return false; }
   	else if( t < 0) { return false; }
   	// test if interestion point is inside triangle
-  	Point p = ray.intersecPoint(t);
+  	Point p = ray.intersectPoint(t);
 
   	bool inside = ( (p - p1).dot( (p2 - p1).cross(mat_normal) ) >= 0 ) && 
   					 			( (p - p2).dot( (p3 - p2).cross(mat_normal) ) >= 0 ) &&
   					 			( (p - p3).dot( (p1 - p3).cross(mat_normal) ) >= 0 );
 
-  	if ( inside ) *hit = t;
+  	if ( inside ) insect.t = t;
+
+    insect.point  = p;
+    insect.normal = this->normal(p);
 
   	return inside;
 
@@ -114,8 +117,12 @@ public:
   		{
   			float x, y, z;
   			buffer >> x >> y >> z;
+        Point p(x, y, z);
 
-  			vertices.push_back(Point(x, y, z));
+#ifdef DEBUG
+        std::cout << "point" << p << endl;
+#endif
+  			vertices.push_back(p);
   		}
   		else if( type == 'f')
   		{
@@ -140,26 +147,27 @@ public:
   	}
   }
 
-  bool intersect(const Ray &ray, float *hit)
+  bool intersect(const Ray &ray, Intersection & insect)
   {
-    float tHit = INFINITY;
+    Intersection tHit(INFINITY);
+
 		for (unsigned int i = 0; i < primitives.size(); ++i)
 		{
-      float tmpHit = INFINITY;
-			if( primitives[i]->intersect(ray, &tmpHit) )
+      Intersection tmpHit(INFINITY);
+			if( primitives[i]->intersect(ray, tmpHit) )
 			{
-        if( tmpHit < tHit )
+        if( tmpHit.t < tHit.t )
         {
           tHit = tmpHit;
         }
 			}
 		}
     
-    if( tHit == INFINITY)
+    if( tHit.t == INFINITY)
   	  return false;
     else
     {
-      *hit = tHit;
+      insect = tHit;
       return true;
     }
   }

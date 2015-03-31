@@ -45,7 +45,7 @@ public:
 
   Vector normal(const Point & q) { return Vector(0.0, 1.0, 0.0); }
   
-  bool intersect(const Ray &ray, float *hit = NULL)
+  bool intersect(const Ray &ray, Intersection & insect)
   {
     // if there is no y component, then there is no intersection
     if (ray.direction.y == 0) return false;
@@ -57,7 +57,11 @@ public:
     // else if ray is negative, return false
     else if ( t < 0 ) return false;
     // else the ray hits the plane, return true
-    else *hit = t;
+    else insect.t = t;
+
+    insect.point = ray.intersectPoint(insect.t);
+    // get intersection normal
+    insect.normal = normal( insect.point );
 
     return true;
   }

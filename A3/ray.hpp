@@ -1,5 +1,5 @@
 /**********************************************************************
- * Ray class
+ * Ray class & Ray intersection class
  **********************************************************************/
  #pragma once
  #include "vector.hpp"
@@ -24,9 +24,27 @@ public:
     sign[2] = (invdir.z < 0);
   }
 
-  Point intersecPoint(const float &t) const
+  Point intersectPoint(const float &t) const
   { 
     return origin + direction * t; 
   }
 };
 
+class Intersection
+{
+public:
+  // intersection depth
+  float t;
+  // intersection normal
+  Vector normal;
+  Point point;
+
+  Intersection(){};
+  Intersection(const float & _t):t(_t){}
+  Intersection(const Intersection &p) { 
+    this->t       = p.t; 
+    this->normal  = p.normal; 
+    this->point   = p.point;
+  }
+  ~Intersection(){};
+};

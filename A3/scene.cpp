@@ -178,6 +178,7 @@ void set_up_user_scene() {
   }
 }
 
+#define DEBUG
 /***************************************
  * bonus scene with chess
  ***************************************/
@@ -186,12 +187,17 @@ void naive_load(const RGB &amb, const RGB &dif, const RGB &spe,
     const float &shine, const float &refl, const float &transp, 
     const float &transm, const string &str)
 {
+    int line_cnt      = 0;
+    int vertices_cnt  = 0;
+    int triangles_cnt = 0;
+
     vector<Point > vertices;
 
     std::ifstream infile(str.c_str());
     std::cout << "reading file:" << str << "..." << std::endl;
     std::string line;
     while (std::getline(infile, line)){
+      line_cnt ++;
       std::istringstream buffer(line);
       char type;
       // read the first character and see which type of line it is
@@ -201,21 +207,31 @@ void naive_load(const RGB &amb, const RGB &dif, const RGB &spe,
 
       if(type == 'v')
       {
+        vertices_cnt++;
+
         float x, y, z;
         buffer >> x >> y >> z;
-        // x*=10.0;
-        // y*=10.0;
-        // z*=10.0;
-        vertices.push_back(Point(x, y, z));
+        Point p(x, y, z);
+
+        vertices.push_back(p);
       }
       else if( type == 'f')
       {
+        triangles_cnt++;
+
         int i, j, k;
         buffer >> i >> j >> k;
         scene.push_back( new Triangle(amb, dif, spe, shine, refl, transp, transm, vertices[i], vertices[j], vertices[k]));
       }
       
     }
+    
+#ifdef DEBUG
+      std::cout << "[naive_load] Read file complete: " << line_cnt << " lines in total" << std::endl;
+
+      std::cout << "total points number: "    << vertices_cnt << endl;
+      std::cout << "total triangles number: " << triangles_cnt << endl;
+#endif
 
 }
 
