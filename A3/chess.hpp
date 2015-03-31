@@ -40,7 +40,7 @@ public:
 
 	~Triangle(){}
 
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL, Object * pObject = NULL, bool * flag = NULL)
+  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL)
   {
   	// first, test if the ray direction is parallel to the surface
   	float divider = direction.dot(mat_normal);
@@ -89,7 +89,6 @@ class Chess: public Object
   float mat_transmission;
 public:
 	vector<Object *> primitives;
-	vector<Object *> boundingboxes;
 
   Chess(const RGB &amb, const RGB &dif, const RGB &spe, 
     const float &shine, const float &refl, const float &transp, 
@@ -99,8 +98,6 @@ public:
     mat_transmission(transm)
   {
   	vector<Point > vertices;
-  	float xmax = -INFINITY, ymax = -INFINITY, zmax = -INFINITY;
-  	float xmin = INFINITY, ymin = INFINITY, zmin = INFINITY;
 
   	std::ifstream infile(str.c_str());
   	std::cout << "reading file:" << str << "..." << std::endl;
@@ -117,13 +114,6 @@ public:
   		{
   			float x, y, z;
   			buffer >> x >> y >> z;
-  			z-= 3.0;
-  			if( x > xmax) xmax = x;
-  			if( x < xmin) xmin = x;
-  			if( y > ymax) ymax = y;
-  			if( y < ymin) ymin = y;
-  			if( z > zmax) zmax = z;
-  			if( z < zmin) zmin = z;
 
   			vertices.push_back(Point(x, y, z));
   		}
@@ -135,22 +125,6 @@ public:
   		}
   		
   	}
-
-  	Point p[8] = {Point(xmin, ymin, zmin), Point(xmin, ymin, zmax), Point(xmin, ymax, zmin), Point(xmin, ymax, zmax),
-  								Point(xmax, ymin, zmin), Point(xmax, ymin, zmax), Point(xmax, ymax, zmin), Point(xmax, ymax, zmax)};
-  	// build up bounding box through maximum primitives
-  	boundingboxes.push_back( new Triangle(p[0], p[1], p[2]));
-  	boundingboxes.push_back( new Triangle(p[1], p[2], p[3]));
-  	boundingboxes.push_back( new Triangle(p[0], p[2], p[4]));
-  	boundingboxes.push_back( new Triangle(p[2], p[6], p[4]));
-  	boundingboxes.push_back( new Triangle(p[0], p[1], p[5]));
-  	boundingboxes.push_back( new Triangle(p[0], p[5], p[4]));
-  	boundingboxes.push_back( new Triangle(p[4], p[7], p[6]));
-  	boundingboxes.push_back( new Triangle(p[4], p[5], p[7]));
-  	boundingboxes.push_back( new Triangle(p[2], p[3], p[7]));
-  	boundingboxes.push_back( new Triangle(p[2], p[7], p[6]));
-  	boundingboxes.push_back( new Triangle(p[1], p[3], p[7]));
-  	boundingboxes.push_back( new Triangle(p[1], p[7], p[5]));
 
   	std::cout << "triangle number: " << primitives.size() << std::endl;
 
@@ -164,44 +138,30 @@ public:
   		delete pTriangle;
   		pTriangle = NULL;
   	}
-
-  	for (unsigned int i = 0; i < boundingboxes.size(); ++i)
-  	{
-  		Object * pTriangle = boundingboxes.back();
-  		boundingboxes.pop_back();
-  		delete pTriangle;
-  		pTriangle = NULL;
-  	}
   }
 
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL, Object * pObject = NULL, bool * flag = NULL)
+  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL)
   {
-  	bool inside = false;
-  	for (unsigned int i = 0; i < boundingboxes.size(); ++i)
-  	{
-  		if(boundingboxes[i]->intersect(origin, direction, tmax, hit, NULL, NULL)){
-  			inside = true;
-  			break;
-  		}
-  	}
-
-  	if( inside )
-  	{
-  		for (unsigned int i = 0; i < primitives.size(); ++i)
-  		{
-  			if(primitives[i]->intersect(origin, direction, tmax, hit, NULL, NULL))
-  			{
-          if( flag == NULL){
-            pObject = primitives[i];
-            *flag = true; 
-          }
-
-  				return true;
-  			}
-  		}
-  	}
-
-  	return false;
+    float tHit = INFINITY;
+		for (unsigned int i = 0; i < primitives.size(); ++i)
+		{
+      float tmpHit = INFINITY;
+			if( primitives[i]->intersect(origin, direction, tmax, &tmpHit) )
+			{
+        if( tmpHit < tHit )
+        {
+          tHit = tmpHit;
+        }
+			}
+		}
+    
+    if( tHit == INFINITY)
+  	  return false;
+    else
+    {
+      *hit = tHit;
+      return true;
+    }
   }
   
   Vector normal(const Point &q) 

@@ -67,7 +67,7 @@ bool shadow_test(const Point &ray_origin, const Vector &ray_direct, const Object
     float hit = INFINITY;
     // maximum ray range
     float tmax = 1000.0;
-    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit, NULL, NULL)) {
+    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit)) {
       return false;
     }
   }
@@ -89,7 +89,7 @@ float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Object 
     // maximum ray range
     float tmax = 1000.0;
     bool flag = false;
-    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit, pObject, &flag)) {
+    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit)) {
       if (hit < tHit) {
         // if current object have a more near hit, use it 
         if( flag ){

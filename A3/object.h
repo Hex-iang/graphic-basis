@@ -14,7 +14,7 @@ public:
 
   virtual ~Object() {}
 
-  virtual bool intersect(const Point &, const RGB &, const float, float *, Object *, bool *) = 0;
+  virtual bool intersect(const Point &, const RGB &, const float, float *) = 0;
   virtual Vector normal(const Point &) = 0;
 
   // // getter function for derived class variable 

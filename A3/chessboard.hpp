@@ -45,7 +45,7 @@ public:
 
   Vector normal(const Point & q) { return Vector(0.0, 1.0, 0.0); }
   
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL, Object * pObject = NULL, bool * flag = NULL)
+  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL)
   {
     // if there is no y component, then there is no intersection
     if (direction.y == 0) return false;

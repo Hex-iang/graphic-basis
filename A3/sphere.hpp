@@ -73,7 +73,7 @@ public:
   // *********************************************************************
   // Function for finding ray-sphere intersection point 
   // *********************************************************************
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL, Object * pObject = NULL, bool * flag = NULL)
+  bool intersect(const Point &origin, const Vector &direction, const float tmax, float * hit )
   {
     float t0, t1;
     Vector L = origin - center;
