@@ -45,15 +45,15 @@ public:
 
   Vector normal(const Point & q) { return Vector(0.0, 1.0, 0.0); }
   
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL)
+  bool intersect(const Ray &ray, float *hit = NULL)
   {
     // if there is no y component, then there is no intersection
-    if (direction.y == 0) return false;
+    if (ray.direction.y == 0) return false;
 
-    float t = (origin.y + plane_y) /  direction.y;
+    float t = (ray.origin.y + plane_y) / ray.direction.y;
 
     // if the ray is out of the maximum range, return false
-    if ( t > tmax) return false;
+    if ( t > ray.tmax) return false;
     // else if ray is negative, return false
     else if ( t < 0 ) return false;
     // else the ray hits the plane, return true

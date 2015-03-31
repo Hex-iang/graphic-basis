@@ -73,12 +73,12 @@ public:
   // *********************************************************************
   // Function for finding ray-sphere intersection point 
   // *********************************************************************
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float * hit )
+  bool intersect(const Ray &ray, float * hit )
   {
     float t0, t1;
-    Vector L = origin - center;
-    float a = direction.dot(direction);
-    float b = 2 * direction.dot(L);
+    Vector L = ray.origin - center;
+    float a = ray.direction.dot(ray.direction);
+    float b = 2 * ray.direction.dot(L);
     float c = L.dot(L) - radius2;
     
     // if there is no solution to the qudratic solver, return false
@@ -86,7 +86,7 @@ public:
       return false;
 
     // if nearest hit out of range or both hits are negative, return false
-    if (t0 > tmax || (t0 < 0 && t1 < 0)){ 
+    if (t0 > ray.tmax || (t0 < 0 && t1 < 0)){ 
       return false;
     }
 

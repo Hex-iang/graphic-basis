@@ -13,6 +13,7 @@
 #include "light.hpp"
 #include "chessboard.hpp"
 #include "rand.hpp"
+#include "ray.hpp"
 
 //==================================================
 // Global variables
@@ -57,17 +58,16 @@ extern int step_max;
  * Shadow test for phong model
  *********************************************************************/
 
-bool shadow_test(const Point &ray_origin, const Vector &ray_direct, const Object * pObject_ignore)
+bool shadow_test(const Ray &shadow_ray, const Object * pObject_ignore)
 {
   // find the nearest ray-sphere intersection point
   for (unsigned i = 0; i < scene.size(); ++i)
   {
     if( pObject_ignore == scene[i] ) continue;
 
-    float hit = INFINITY;
-    // maximum ray range
-    float tmax = 1000.0;
-    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit)) {
+    float hit = std::numeric_limits<float>::max();
+
+    if (scene[i]->intersect(shadow_ray, &hit)) {
       return false;
     }
   }
@@ -77,7 +77,7 @@ bool shadow_test(const Point &ray_origin, const Vector &ray_direct, const Object
 /*********************************************************************
  * Scene intersection
  *********************************************************************/
-float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Object * &pObject, Object * pObject_ignore = NULL)
+float intersect_scene(const Ray & ray, Object * &pObject, Object * pObject_ignore = NULL)
 {
   float tHit = INFINITY;
   // find the nearest ray-object intersection point
@@ -87,18 +87,11 @@ float intersect_scene(const Point &ray_origin, const Vector &ray_direct, Object 
     if(pObject_ignore == scene[i]) continue;
     float hit = INFINITY;
     // maximum ray range
-    float tmax = 1000.0;
-    bool flag = false;
-    if (scene[i]->intersect(ray_origin, ray_direct, tmax, &hit)) {
+    if (scene[i]->intersect(ray, &hit)) {
       if (hit < tHit) {
         // if current object have a more near hit, use it 
-        if( flag ){
-          tHit = hit;
-        }
-        else{
-          tHit = hit;
-          pObject = scene[i];
-        }
+        tHit = hit;
+        pObject = scene[i];
       }
     }
   }
@@ -119,7 +112,7 @@ RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, 
   // Normalize it shadow ray to get its direction L
   Vector L = (light.source - hit_point).normalize();
 
-  if( (!shadow_on) || shadow_test(hit_point, shadow_ray, pObject) ){
+  if( (!shadow_on) || shadow_test( Ray(hit_point, shadow_ray), pObject) ){
 
     float d_L2 = shadow_ray.dot(shadow_ray);
     float d_L = std::sqrt(d_L2);
@@ -142,22 +135,16 @@ RGB phong(const Point &hit_point, const Vector &view, const Vector &hit_normal, 
 
 /************************************************************************
  * This is the recursive ray tracer ************************************************************************/
-RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const int &depth, Object * pObject_ignore = NULL) {
+RGB recursive_ray_trace(const Ray &ray, const int &depth, Object * pObject_ignore = NULL) {
   
   Object * pObject = NULL;
 
   // find the nearest ray-sphere intersection point
-  float tHit = intersect_scene(ray_origin, ray_direct, pObject, pObject_ignore);
+  float tHit = intersect_scene(ray, pObject, pObject_ignore);
 
   // if there is no intersection found
   if (!pObject){
 
-    // if( pObject_ignore != NULL && pObject_ignore->transparency(ray_origin) > 0)
-    // {
-    //   // return background_clr;
-    //   return background_clr;
-    // }
-    // else if(depth > 0)
     if( depth > 0 )
     {
       // if no intersection, then return background color when depth > 0
@@ -173,12 +160,12 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
   RGB     reflection(0.0, 0.0, 0.0);
   RGB     refraction(0.0, 0.0, 0.0);
   RGB     diffuse(0.0, 0.0, 0.0);
-  Point   hit_point  = ray_origin + ray_direct * tHit;
+  Point   hit_point  = ray.intersecPoint(tHit);
   Vector  hit_normal = pObject->normal(hit_point);
 
   // if normal and ray ray_direct on the same side, means ray_origin inside sphere
   // so we should reverse the normal ray_direct
-  if (hit_normal.dot(ray_direct) > 0)
+  if (hit_normal.dot(ray.direction) > 0)
   {
     hit_normal = - hit_normal;
   }
@@ -186,7 +173,7 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
   // Calculate local reflectance at current point
 
   // view = - ray_direct
-  Vector view = - ray_direct;
+  Vector view = - ray.direction;
 
   // recursive ray tracing for diffuse inter-reflection
   if( diffuse_reflection_on && (depth < step_max) )
@@ -206,7 +193,7 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
           valid = false;
       }while(!valid);
 
-      diffuse += recursive_ray_trace(hit_point, diffuse_direct, depth + 1, pObject);
+      diffuse += recursive_ray_trace(Ray(hit_point, diffuse_direct), depth + 1, pObject);
     }
     diffuse = (diffuse * (float) (1.0 / DIFFUSE_RAY_NUM )).rerange();
     // std::cout << "diffuse color: " << diffuse << std::endl;
@@ -217,10 +204,9 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
   && ( depth < step_max ) )
   {
     // for object with reflection property
-    // Vector refl_direct = ( ray_direct - hit_normal * 2 * ray_direct.dot(hit_normal) ).normalize();
-    Vector refl_direct = ( ray_direct - hit_normal * 2 * ray_direct.dot(hit_normal) ).normalize();
+    Vector refl_direct = ( ray.direction - hit_normal * 2 * ray.direction.dot(hit_normal) ).normalize();
 
-    reflection = recursive_ray_trace(hit_point, refl_direct, depth + 1, pObject);
+    reflection = recursive_ray_trace(Ray(hit_point, refl_direct), depth + 1, pObject);
 
   }
 	
@@ -232,15 +218,15 @@ RGB recursive_ray_trace(const Point &ray_origin, const Vector &ray_direct, const
     float eta = global_transm / pObject->transmission(hit_point);
 
     // Sin(refr) = Sin(in) * eta
-    float cos_in = - hit_normal.dot(ray_direct);
+    float cos_in = - hit_normal.dot(ray.direction);
     // Cos(refr) = sqrt( 1 - (Sin(in) * eta)^2 )
     float cos_refr = sqrt( 1 - eta * eta * (1 - cos_in * cos_in) );
     
     // Vector for refraction direction
-    Vector refr_direct = (eta * cos_in - cos_refr) * hit_normal + ray_direct * eta;
+    Vector refr_direct = (eta * cos_in - cos_refr) * hit_normal + ray.direction * eta;
     refr_direct = refr_direct.normalize();
 
-    refraction = recursive_ray_trace(hit_point, refr_direct, depth + 1, pObject);
+    refraction = recursive_ray_trace(Ray(hit_point, refr_direct), depth + 1, pObject);
   }
 
   // calculate final color effect
@@ -267,7 +253,8 @@ void ray_trace() {
   float y_grid_size = image_height / float(win_height);
   float x_start     = -0.5 * image_width;
   float y_start     = -0.5 * image_height;
-  RGB   ret_color;
+  Vector      direct;
+  RGB         ret_color;
   Point       cur_pixel_pos;
   Vector      ray;
 
@@ -294,8 +281,8 @@ void ray_trace() {
           new_pixel_pos.x += (p.x + i) / float(win_height) * x_grid_size;
           new_pixel_pos.y += (p.y + j) / float(win_width ) * y_grid_size;
 
-          ray = (new_pixel_pos - eye_pos).normalize();
-          ret_color += recursive_ray_trace(eye_pos, ray, 0);
+          Vector direct = (new_pixel_pos - eye_pos).normalize();
+          ret_color += recursive_ray_trace( Ray(eye_pos, direct), 0);
         }
         ret_color = ( ret_color * float( 1.0 / antialias_cnt)).rerange();
       }
@@ -310,8 +297,8 @@ void ray_trace() {
           new_pixel_pos.x += sampling[k][0] * 0.25 * x_grid_size;
           new_pixel_pos.y += sampling[k][1] * 0.25 * y_grid_size;
 
-          ray = (new_pixel_pos - eye_pos).normalize();
-          ret_color += recursive_ray_trace(eye_pos, ray, 0);
+          direct = (new_pixel_pos - eye_pos).normalize();
+          ret_color += recursive_ray_trace( Ray(eye_pos, direct), 0);
         }
         ret_color = ( ret_color * float( 1.0 / antialias_cnt)).rerange();
 
@@ -319,9 +306,9 @@ void ray_trace() {
       else
       {
         // traditional ray tracing
-        ray = (cur_pixel_pos - eye_pos).normalize();
+        direct = (cur_pixel_pos - eye_pos).normalize();
 
-        ret_color = recursive_ray_trace(eye_pos, ray, 0);
+        ret_color += recursive_ray_trace( Ray(eye_pos, direct), 0);
       }
 
       frame[i][j][0] = GLfloat(ret_color.x);

@@ -12,16 +12,16 @@
 
 class Triangle: public Object
 {
-  RGB mat_ambient;
-  RGB mat_diffuse;
-  RGB mat_specular;
+  RGB   mat_ambient;
+  RGB   mat_diffuse;
+  RGB   mat_specular;
   float mat_shineness;
 
   float mat_reflection;
   float mat_transparency; 
   float mat_transmission;
 public:
-	Point p1, p2, p3;
+	Point  p1, p2, p3;
 	Vector mat_normal;
 	Triangle(const Point & _p1, const Point & _p2, const Point & _p3): p1(_p1), p2(_p2), p3(_p3) 
 	{ 
@@ -40,20 +40,21 @@ public:
 
 	~Triangle(){}
 
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL)
+  bool intersect(const Ray &ray, float *hit = NULL)
   {
+
   	// first, test if the ray direction is parallel to the surface
-  	float divider = direction.dot(mat_normal);
+  	float divider = ray.direction.dot(mat_normal);
   	if( divider == 0) return false;
   	
   	// calculate intersection point t to the plane
-  	float t = ( p1.dot(mat_normal) - origin.dot(mat_normal) ) / divider;
+  	float t = ( p1.dot(mat_normal) - ray.origin.dot(mat_normal) ) / divider;
   
   	// test if the intersection point is outside the range 
-  	if ( t > tmax) 	{ return false; }
+  	if ( t > ray.tmax) 	{ return false; }
   	else if( t < 0) { return false; }
   	// test if interestion point is inside triangle
-  	Point p = origin + direction * t;
+  	Point p = ray.intersecPoint(t);
 
   	bool inside = ( (p - p1).dot( (p2 - p1).cross(mat_normal) ) >= 0 ) && 
   					 			( (p - p2).dot( (p3 - p2).cross(mat_normal) ) >= 0 ) &&
@@ -61,12 +62,11 @@ public:
 
   	if ( inside ) *hit = t;
 
-
   	return inside;
 
   }
   
-  Vector normal(const Point &q) { return mat_normal; }
+  Vector normal(const Point &q)            { return mat_normal;      }
   RGB 	ambient(const Point &q)      const { return mat_ambient;     }
   RGB 	diffuse(const Point &q)      const { return mat_diffuse;     }
   RGB 	specular(const Point &q)     const { return mat_specular;    }
@@ -140,13 +140,13 @@ public:
   	}
   }
 
-  bool intersect(const Point &origin, const Vector &direction, const float tmax, float *hit = NULL)
+  bool intersect(const Ray &ray, float *hit)
   {
     float tHit = INFINITY;
 		for (unsigned int i = 0; i < primitives.size(); ++i)
 		{
       float tmpHit = INFINITY;
-			if( primitives[i]->intersect(origin, direction, tmax, &tmpHit) )
+			if( primitives[i]->intersect(ray, &tmpHit) )
 			{
         if( tmpHit < tHit )
         {

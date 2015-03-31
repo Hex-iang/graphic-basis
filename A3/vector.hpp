@@ -55,8 +55,12 @@ public:
 	}
 	Vec3<T> cross(const Vec3<T>& v )
 	{
-	    return Vec3<T>( y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x );
+	    return Vec3<T>( y * v.z - z * v.y, 
+	    								z * v.x - x * v.z, 
+	    								x * v.y - y * v.x );
 	}
+	friend Vec3<T> operator / (const T &s, const Vec3<T> &v) { return Vec3<T>( s / v.x, s / v.y, s / v.z); } 
+
 };
 
 typedef Vec3<float> Point;  			// geometric 3D point

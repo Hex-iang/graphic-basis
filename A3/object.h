@@ -3,8 +3,8 @@
  * An abstract class for polymorphism
  **********************************************************************/
 #pragma once
-#include "vector.hpp"
- 
+#include "ray.hpp"
+
 class Object 
 {
 public:
@@ -14,7 +14,7 @@ public:
 
   virtual ~Object() {}
 
-  virtual bool intersect(const Point &, const RGB &, const float, float *) = 0;
+  virtual bool intersect(const Ray &, float *) = 0;
   virtual Vector normal(const Point &) = 0;
 
   // // getter function for derived class variable 
