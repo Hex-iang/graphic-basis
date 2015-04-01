@@ -90,18 +90,25 @@ class Chess: public Object
   float mat_reflection;
   float mat_transparency; 
   float mat_transmission;
+
+  // chess piece position property 
 public:
 	vector<Object *> primitives;
+  vector<Triangle> box;
 
   Chess(const RGB &amb, const RGB &dif, const RGB &spe, 
     const float &shine, const float &refl, const float &transp, 
-    const float &transm, const string &str) : 
+    const float &transm, const string &str, 
+    const Vector displacement = Vector(0.0, 0.0, 0.0), const float scale = 1.0) : 
     mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
     mat_shineness(shine), mat_reflection(refl), mat_transparency(transp),
     mat_transmission(transm)
   {
   	vector<Point > vertices;
     int vertices_cnt = 0, triangles_cnt = 0, line_cnt =0;
+
+    float xmin = INFINITY, ymin = INFINITY, zmin = INFINITY;
+    float xmax = -INFINITY, ymax = -INFINITY, zmax = -INFINITY;
 
   	std::ifstream infile(str.c_str());
   	std::cout << "reading file:" << str << "..." << std::endl;
@@ -121,8 +128,18 @@ public:
         vertices_cnt ++;
   			float x, y, z;
   			buffer >> x >> y >> z;
-        Point p(x, y, z);
+        Point p = scale * Point(x, y, z) + displacement;
 
+        // std::cout << p << std::endl;
+
+        if(xmin > p.x) xmin = p.x - 0.1;
+        if(ymin > p.y) ymin = p.y - 0.1;
+        if(zmin > p.z) zmin = p.z - 0.1;
+        if(xmax < p.x) xmax = p.x + 0.1;
+        if(ymax < p.y) ymax = p.y + 0.1;
+        if(zmax < p.z) zmax = p.z + 0.1;
+
+        // std::cout << p << std::endl;
   			vertices.push_back(p);
   		}
   		else if( type == 'f')
@@ -130,17 +147,42 @@ public:
         triangles_cnt++;
   			int i, j, k;
   			buffer >> i >> j >> k;
-  			primitives.push_back( new Triangle(amb, dif, spe, shine, refl, transp, transm, vertices[i], vertices[j], vertices[k]));
+
+        // std::cout << i  << "," << j << "," << k << std::endl; 
+  			
+        primitives.push_back( new Triangle(amb, dif, spe, shine, refl, transp, transm, vertices[i], vertices[j], vertices[k]));
   		}
-  		
   	}
 
-#ifdef DEBUG
-      std::cout << "[naive_load] Read file complete: " << line_cnt << " lines in total" << std::endl;
+    // // points for the 
+    Point p1(xmin, ymin, zmin); Point p2(xmin, ymin, zmax);
+    Point p3(xmin, ymax, zmin); Point p4(xmin, ymax, zmax);
+    Point p5(xmax, ymin, zmin); Point p6(xmax, ymin, zmax);
+    Point p7(xmax, ymax, zmin); Point p8(xmax, ymax, zmax);
 
+    std::cout << "diagnoal points:" << p1 << p8 << std::endl;
+
+    // optimization 1
+    box.push_back(Triangle(p1, p2, p4));
+    box.push_back(Triangle(p1, p3, p4));
+    box.push_back(Triangle(p1, p5, p7));
+    box.push_back(Triangle(p1, p7, p3));
+    box.push_back(Triangle(p1, p2, p6));
+    box.push_back(Triangle(p1, p5, p6));
+    box.push_back(Triangle(p2, p6, p8));
+    box.push_back(Triangle(p2, p4, p8));
+    box.push_back(Triangle(p3, p4, p8));
+    box.push_back(Triangle(p3, p7, p8));
+    box.push_back(Triangle(p5, p6, p7));
+    box.push_back(Triangle(p6, p7, p8));
+
+
+      std::cout << "[naive_load] Read file complete: " << line_cnt << " lines in total" << std::endl;
       std::cout << "total points number: "    << vertices_cnt << endl;
       std::cout << "total triangles number: " << triangles_cnt << endl;
-#endif
+      std::cout << "vertices number: " << vertices.size() << endl;
+      std::cout << "primitives number: " << primitives.size() << endl;
+
   }
 
   ~Chess() {
@@ -155,26 +197,45 @@ public:
 
   bool intersect(const Ray &ray, Intersection & insect)
   {
-    Intersection tHit(INFINITY);
+    // bool inside = true;
+    // Intersection tHit(INFINITY);
 
-		for (unsigned int i = 0; i < primitives.size(); ++i)
-		{
+    bool inside = false;
+    Intersection tHit(INFINITY);
+    // first optimization: a bounding box of the object
+    for( unsigned int i = 0; i < box.size(); ++i)
+    {
       Intersection tmpHit(INFINITY);
-			if( primitives[i]->intersect(ray, tmpHit) )
-			{
-        if( tmpHit.t < tHit.t )
+      if( box[i].intersect(ray, tmpHit) )
+      {
+        inside = true;
+      }
+    }
+
+    if( inside ){
+      for (unsigned int i = 0; i < primitives.size(); ++i)
+      {
+        Intersection tmpHit(INFINITY);
+        if( primitives[i]->intersect(ray, tmpHit) )
         {
-          tHit = tmpHit;
+          if( tmpHit.t < tHit.t )
+          {
+            tHit = tmpHit;
+          }
         }
-			}
-		}
-    
-    if( tHit.t == INFINITY)
-  	  return false;
+      }
+      
+      if( tHit.t > ray.tmax)
+        return false;
+      else
+      {
+        insect = tHit;
+        return true;
+      }
+    }
     else
     {
-      insect = tHit;
-      return true;
+      return false;
     }
   }
   

@@ -23,8 +23,7 @@ extern float decay_b;
 extern float decay_c;
 
 extern bool chessboard_on;
-extern bool half_chess_detail_on;
-extern bool full_chess_detail_on;
+extern bool full_detail_on;
 //////////////////////////////////////////////////////////////////////////
 
 /*******************************************
@@ -118,7 +117,8 @@ void set_up_user_scene() {
   global_transm = 1.0;
   
   // setup light 1
-  light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
+  light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), 
+    RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
   // sphere 1
   Point sphere1_ctr         = Point(1.5, -0.2, -3.2);
@@ -168,24 +168,66 @@ void set_up_user_scene() {
     RGB board_dark_diffuse   = RGB(0.10, 0.10, 0.10);
     RGB board_specular       = RGB(1.00, 1.00, 1.00);
     float board_shineness    = 30;
-    float board_reflectance  = 0.0;
+    float board_reflectance  = 1.0;
     float board_transp       = 0.0;
     float board_transm       = 1.0;
 
     scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
                     board_dark_diffuse, board_specular, 
                     board_shineness, board_reflectance, 
-                    board_transp, board_transm, -4.0, 1.0));
+                    board_transp, board_transm, -2.0, 1.0));
   }
 }
 
 /***************************************
  * bonus scene with chess
  ***************************************/
+void naive_load(const RGB &amb, const RGB &dif, const RGB &spe,
+const float &shine, const float &refl, const float &transp,
+const float &transm, const string &str, Vector v = Vector(0.0, 0.0, 0.0), float scale = 1.0)
+{
+  int line_cnt = 0;
+  int vertices_cnt = 0;
+  int triangles_cnt = 0;
+  vector<Point > vertices;
+  std::ifstream infile(str.c_str());
+  std::cout << "reading file:" << str << "..." << std::endl;
+  std::string line;
+  while (std::getline(infile, line)){
+    line_cnt ++;
+    std::istringstream buffer(line);
+    char type;
+    // read the first character and see which type of line it is
+    buffer >> type;
+    if(type == '#') continue;
+    
+    if(type == 'v')
+    {
+      vertices_cnt++;
+      float x, y, z;
+      buffer >> x >> y >> z;
+      Point p = scale * Point(x, y, z) + v;
+
+      vertices.push_back(p);
+    }
+    else if( type == 'f')
+    {
+      triangles_cnt++;
+      int i, j, k;
+      buffer >> i >> j >> k;
+      scene.push_back( new Triangle(amb, dif, spe, shine, refl, transp, transm, vertices[i], vertices[j], vertices[k]));
+    }
+  }
+  #ifdef DEBUG
+    std::cout << "[naive_load] Read file complete: " << line_cnt << " lines in total" << std::endl;
+    std::cout << "total points number: " << vertices_cnt << endl;
+    std::cout << "total triangles number: " << triangles_cnt << endl;
+  #endif
+}
 
 void set_up_bonus_scene(){
   // set background color
-  background_clr = RGB(0.5, 0.05, 0.8);
+  background_clr = RGB(0.8, 0.5, 0.8);
   // background_clr = RGB(0.8, 0.8, 0.8);
 
   // setup global ambient term
@@ -197,35 +239,48 @@ void set_up_bonus_scene(){
   // setup light 1
   light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
-  RGB chess_ambient       = RGB(0.2, 0.2, 0.2);
-  RGB chess_diffuse       = RGB(0.2, 0.4, 0.8);
+  RGB chess_ambient       = RGB(0.8, 0.8, 0.8);
+  RGB chess_diffuse       = RGB(0.5, 0.5, 0.5);
   RGB chess_specular      = RGB(0.8, 0.8, 0.8);
   float chess_shineness   = 30;
   float chess_reflectance = 0.5;
-  float chess_transp      = 0.8;
+  float chess_transp      = 0.5;
   float chess_transm      = 1.0;  
 
-  scene.push_back( new Chess(chess_ambient, chess_diffuse, 
-                             chess_specular,chess_shineness,
-                             chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf")));
-
-  if( half_chess_detail_on || full_chess_detail_on )
+  if( !full_detail_on )
   {
-      scene.push_back( new Chess(chess_ambient, chess_diffuse, 
-                             chess_specular,chess_shineness,
-                             chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop.smf")));
+      scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular,
+                             chess_shineness, chess_reflectance, chess_transp, 
+                             chess_transm, std::string("chess_pieces/chess_piece.smf"),
+                             Vector(-2.0, 0.0, 0.0), 0.0) );
+
+      scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, 
+                                 chess_shineness, chess_reflectance, chess_transp, 
+                                 chess_transm, std::string("chess_pieces/bishop.smf"),
+                                 Vector(0.0, 0.0, 0.0), 10.0) );
   }
 
-  if( full_chess_detail_on )
-  {
-      scene.push_back( new Chess(chess_ambient, chess_diffuse, 
-                             chess_specular,chess_shineness,
-                             chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_hires.smf")));
+  // naive_load(chess_ambient,  chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, 0.0, 0.0));
 
-      scene.push_back( new Chess(chess_ambient, chess_diffuse, 
-                             chess_specular,chess_shineness,
-                             chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop_hires.smf")));    
-  }
+  // naive_load(chess_ambient,  chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop.smf"), Vector(0.0, 0.0, 0.0), 10.0);
+
+  // if( full_detail_on )
+  // {
+      // scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
+      //                        chess_shineness, chess_reflectance, chess_transp, 
+      //                        chess_transm, std::string("chess_pieces/chess_hires.smf"),
+      //                        Vector(0.0, 0.0, 0.0), 1.0) );
+      // scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
+      //                        chess_shineness, chess_reflectance, chess_transp, 
+      //                        chess_transm, std::string("chess_pieces/bishop_hires.smf"),
+      //                        Vector(0.0, 0.0, 0.0), 10.0) );    
+  // }
+
+  // naive_load(chess_ambient, chess_diffuse, chess_specular,
+  //                            chess_shineness, chess_reflectance, chess_transp, 
+  //                            chess_transm, std::string("chess_pieces/bishop_hires.smf"),
+  //                            Vector(0.0, 0.0, 0.0), 10.0 ); 
+  // first, test triangle   
 
   if( chessboard_on ){
     // add chess board to the ground of the chess 
@@ -241,7 +296,7 @@ void set_up_bonus_scene(){
     scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
                     board_dark_diffuse, board_specular, 
                     board_shineness, board_reflectance, 
-                    board_transp, board_transm, -1.0, 1.0));
+                    board_transp, board_transm, -3.0, 1.0));
   }
 }
 
@@ -255,6 +310,5 @@ void release_scene()
     delete pObject;
     pObject = NULL;
   }
-
 }
 

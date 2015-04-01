@@ -48,11 +48,11 @@ RGB null_clr = RGB(0.0, 0.0, 0.0);   // NULL color
 //
 // these view parameters should be fixed
 //
-// Point eye_pos = Point(0.0, 0.0, 0.0);       // eye position
-// float image_plane = -1.5;                   // image plane position
-Point eye_pos = Point(0.0, 0.0, 5.0);       // eye position
-float image_plane = 1.5;                   // image plane position
-
+// Point eye_pos = Point(0.0, 0.0, 0.0);            // eye position
+// float image_plane = -1.5;                        // image plane position
+Point eye_pos = Point(0.0, 0.0, 1.5);               // eye position
+// float image_plane = -1.5;                           // image plane position
+float image_plane = 0.0;
 // list of spheres in the scene
 vector<Object *> scene;
 ChessBoard * chess_board;
@@ -82,8 +82,7 @@ bool diffuse_reflection_on        = false;
 bool antialiasing_on              = false;
 bool nondisplay_on                = false;
 bool poisson_on                   = false;
-bool half_chess_detail_on         = false;
-bool full_chess_detail_on         = false;
+bool full_detail_on               = false;
 // OpenGL
 const int NumPoints = 6;
 
@@ -237,8 +236,7 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+p") == 0)    antialiasing_on            = true;
     else if (strcmp(argv[i], "+n") == 0)    nondisplay_on              = true;
     else if (strcmp(argv[i], "+b") == 0)    poisson_on                 = true;
-    else if (strcmp(argv[i], "half") == 0)  half_chess_detail_on       = true;
-    else if (strcmp(argv[i], "full") == 0)  full_chess_detail_on       = true;
+    else if (strcmp(argv[i], "full") == 0)  full_detail_on             = true;
     else {
       std::cout << "Unknown command: " << argv[i] << std::endl;
       return -1;

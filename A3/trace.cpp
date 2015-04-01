@@ -127,7 +127,7 @@ RGB phong(const Intersection &hit, const Vector &view, const Object * pObject)
     // third, plus specular reflectance for the object
     color += light.specular * pObject->specular(hit.point) * light_att * 
         (float)std::pow( std::max(R.dot(view),(float)0.0), 
-                          pObject->shineness(hit.point)   );
+                          pObject->shineness(hit.point) );
   }
 
   return color;
