@@ -89,7 +89,7 @@ public:
 
         // std::cout << i  << "," << j << "," << k << std::endl; 
   			
-        primitives.push_back( new Triangle(vertices[i-1], vertices[j-1], vertices[k-1]));
+        primitives.push_back(Triangle(vertices[i-1], vertices[j-1], vertices[k-1]));
   		}
   	}
 
@@ -124,15 +124,7 @@ public:
 
   }
 
-  ~Chess() {
-  	for (unsigned int i = 0; i < primitives.size(); ++i)
-  	{
-  		Object * pTriangle = primitives.back();
-  		primitives.pop_back();
-  		delete pTriangle;
-  		pTriangle = NULL;
-  	}
-  }
+  ~Chess() { }
 
   bool intersect(const Ray &ray, Intersection & insect)
   {
@@ -155,7 +147,7 @@ public:
       for (unsigned int i = 0; i < primitives.size(); ++i)
       {
         Intersection tmpHit(INFINITY);
-        if( primitives[i]->intersect(ray, tmpHit) )
+        if( primitives[i].intersect(ray, tmpHit) )
         {
           if( tmpHit.t < tHit.t )
           {

@@ -79,17 +79,17 @@ public:
   }
 
   Vector normal(const Point &q)            { return mat_normal;      }
-  RGB 	ambient(const Point &q)      const { return mat_ambient;     }
-  RGB 	diffuse(const Point &q)      const { return mat_diffuse;     }
-  RGB 	specular(const Point &q)     const { return mat_specular;    }
-  float shineness(const Point &q)    const { return mat_shineness;   }
-  float reflection(const Point &q)   const { return mat_reflection;  }
-  float transparency(const Point &q) const { return mat_transparency;}
-  float transmission(const Point &q) const { return mat_transmission;}
+  RGB 	ambient(const Point &q)      const { return RGB();           }
+  RGB 	diffuse(const Point &q)      const { return RGB();           }
+  RGB 	specular(const Point &q)     const { return RGB();           }
+  float shineness(const Point &q)    const { return float(0.0);      }
+  float reflection(const Point &q)   const { return float(0.0);      }
+  float transparency(const Point &q) const { return float(0.0);      }
+  float transmission(const Point &q) const { return float(0.0);      }
 };
 
 // triangle mesh object
-class Mesh: Object
+class Mesh: public Object
 {
 public:
   RGB   mat_ambient;
@@ -156,4 +156,4 @@ public:
   float transparency(const Point &q) const { return mat_transparency;}
   float transmission(const Point &q) const { return mat_transmission;}
 
-}
+};

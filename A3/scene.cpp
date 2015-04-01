@@ -182,48 +182,6 @@ void set_up_user_scene() {
 /***************************************
  * bonus scene with chess
  ***************************************/
-void naive_load(const RGB &amb, const RGB &dif, const RGB &spe,
-const float &shine, const float &refl, const float &transp,
-const float &transm, const string &str, Vector v = Vector(0.0, 0.0, 0.0), float scale = 1.0)
-{
-  int line_cnt = 0;
-  int vertices_cnt = 0;
-  int triangles_cnt = 0;
-  vector<Point > vertices;
-  std::ifstream infile(str.c_str());
-  std::cout << "reading file:" << str << "..." << std::endl;
-  std::string line;
-  while (std::getline(infile, line)){
-    line_cnt ++;
-    std::istringstream buffer(line);
-    char type;
-    // read the first character and see which type of line it is
-    buffer >> type;
-    if(type == '#') continue;
-    
-    if(type == 'v')
-    {
-      vertices_cnt++;
-      float x, y, z;
-      buffer >> x >> y >> z;
-      Point p = scale * Point(x, y, z) + v;
-
-      vertices.push_back(p);
-    }
-    else if( type == 'f')
-    {
-      triangles_cnt++;
-      int i, j, k;
-      buffer >> i >> j >> k;
-      scene.push_back( new Triangle(amb, dif, spe, shine, refl, transp, transm, vertices[i], vertices[j], vertices[k]));
-    }
-  }
-  #ifdef DEBUG
-    std::cout << "[naive_load] Read file complete: " << line_cnt << " lines in total" << std::endl;
-    std::cout << "total points number: " << vertices_cnt << endl;
-    std::cout << "total triangles number: " << triangles_cnt << endl;
-  #endif
-}
 
 void set_up_bonus_scene(){
   // set background color
@@ -280,16 +238,15 @@ void set_up_bonus_scene(){
   float mirror_transp      = 0.0;
   float mirror_transm      = 1.0; 
 
-  // place a triangle mirror
-  scene.push_back( new Triangle(mirror_ambient, mirror_diffuse, mirror_specular,
-                             mirror_shineness, mirror_reflectance, mirror_transp, 
-                             mirror_transm, Point(-2.0, -3.0, -4.0), Point(2.0, -3.0, -4.0), 
-                             Point(-2.0, 3.0, -4.0)));
+  // place a mirror to the back
+  Mesh *pMesh = new Mesh(mirror_ambient, mirror_diffuse, mirror_specular, mirror_shineness, mirror_reflectance, mirror_transp, mirror_transm);
 
-  scene.push_back( new Triangle(mirror_ambient, mirror_diffuse, mirror_specular,
-                             mirror_shineness, mirror_reflectance, mirror_transp, 
-                             mirror_transm, Point(-2.0, 3.0, -4.0), Point(2.0, 3.0, -4.0), 
-                             Point(2.0, -3.0, -4.0)));
+  pMesh->addTriangle(Point(-2.0, -3.0, -4.0), Point(2.0, -3.0, -4.0), Point(-2.0, 3.0, -4.0));
+
+  pMesh->addTriangle(Point(-2.0, 3.0, -4.0), Point(2.0, 3.0, -4.0), Point(2.0, -3.0, -4.0));
+
+  scene.push_back(pMesh);
+
 
   if( chessboard_on ){
     // add chess board to the ground of the chess 
