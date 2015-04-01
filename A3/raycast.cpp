@@ -82,7 +82,8 @@ bool diffuse_reflection_on        = false;
 bool antialiasing_on              = false;
 bool nondisplay_on                = false;
 bool poisson_on                   = false;
-
+bool half_chess_detail_on         = false;
+bool full_chess_detail_on         = false;
 // OpenGL
 const int NumPoints = 6;
 
@@ -228,14 +229,16 @@ int main( int argc, char **argv )
   // Optional arguments
   for(int i = 3; i < argc; i++)
   {
-    if      (strcmp(argv[i], "+s") == 0) shadow_on                  = true;
-    else if (strcmp(argv[i], "+l") == 0) reflection_on              = true;
-    else if (strcmp(argv[i], "+r") == 0) refraction_on              = true;
-    else if (strcmp(argv[i], "+f") == 0) diffuse_reflection_on      = true;
-    else if (strcmp(argv[i], "+c") == 0) chessboard_on              = true;
-    else if (strcmp(argv[i], "+p") == 0) antialiasing_on            = true;
-    else if (strcmp(argv[i], "+n") == 0) nondisplay_on              = true;
-    else if (strcmp(argv[i], "+b") == 0) poisson_on                 = true;
+    if      (strcmp(argv[i], "+s") == 0)    shadow_on                  = true;
+    else if (strcmp(argv[i], "+l") == 0)    reflection_on              = true;
+    else if (strcmp(argv[i], "+r") == 0)    refraction_on              = true;
+    else if (strcmp(argv[i], "+f") == 0)    diffuse_reflection_on      = true;
+    else if (strcmp(argv[i], "+c") == 0)    chessboard_on              = true;
+    else if (strcmp(argv[i], "+p") == 0)    antialiasing_on            = true;
+    else if (strcmp(argv[i], "+n") == 0)    nondisplay_on              = true;
+    else if (strcmp(argv[i], "+b") == 0)    poisson_on                 = true;
+    else if (strcmp(argv[i], "half") == 0)  half_chess_detail_on       = true;
+    else if (strcmp(argv[i], "full") == 0)  full_chess_detail_on       = true;
     else {
       std::cout << "Unknown command: " << argv[i] << std::endl;
       return -1;
@@ -256,13 +259,13 @@ int main( int argc, char **argv )
 
 #ifdef __APPLE__
   // if the current platform is a macitosh, output the tracing result immediately and finish
-  save_image("ray-tracer-picture/generated.png");
+  save_image("ray-tracer-picture/generated.bmp");
   return 0;
 
 #else
   // use a non displayable mode to just generate image and skip OpenGL rendering
   if (nondisplay_on) {
-    save_image("ray-tracer-picture/generated.png");
+    save_image("ray-tracer-picture/generated.bmp");
     return 0;
   }
 
