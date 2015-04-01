@@ -82,7 +82,7 @@ bool diffuse_reflection_on        = false;
 bool antialiasing_on              = false;
 bool nondisplay_on                = false;
 bool poisson_on                   = false;
-bool full_detail_on               = false;
+int  bonus_scene_mode             = 0;
 // OpenGL
 const int NumPoints = 6;
 
@@ -236,7 +236,12 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+p") == 0)    antialiasing_on            = true;
     else if (strcmp(argv[i], "+n") == 0)    nondisplay_on              = true;
     else if (strcmp(argv[i], "+b") == 0)    poisson_on                 = true;
-    else if (strcmp(argv[i], "full") == 0)  full_detail_on             = true;
+    else if (strcmp(argv[i], "+full") == 0) bonus_scene_mode           = 1;    
+    // render both high-resolution/low-resolution chess object
+    else if (strcmp(argv[i], "+t") == 0)    bonus_scene_mode           = 2;
+    // test naive ray tracing intersection number
+    else if (strcmp(argv[i], "+a") == 0)    bonus_scene_mode           = 3;
+    // test accelerated version of object intersection number
     else {
       std::cout << "Unknown command: " << argv[i] << std::endl;
       return -1;

@@ -23,7 +23,7 @@ extern float decay_b;
 extern float decay_c;
 
 extern bool chessboard_on;
-extern bool full_detail_on;
+extern int  bonus_scene_mode;
 //////////////////////////////////////////////////////////////////////////
 
 /*******************************************
@@ -205,30 +205,39 @@ void set_up_bonus_scene(){
   float chess_transp      = 0.3;
   float chess_transm      = 1.0;  
 
+  if( bonus_scene_mode == 0 || bonus_scene_mode == 1){
+    scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular,
+                           chess_shineness, chess_reflectance, chess_transp, 
+                           chess_transm, std::string("chess_pieces/chess_piece.smf"),
+                           Vector(1.0, -2.0, -3.0), 1.0) );
 
-  scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular,
-                         chess_shineness, chess_reflectance, chess_transp, 
-                         chess_transm, std::string("chess_pieces/chess_piece.smf"),
-                         Vector(1.0, -2.0, -3.0), 1.0) );
-
-  scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, 
-                             chess_shineness, chess_reflectance, chess_transp, 
-                             chess_transm, std::string("chess_pieces/bishop.smf"),
-                             Vector(0.5, -2.0, -3.0), 15.0) );
-
-
-  if( full_detail_on )
-  {
-      scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-                             chess_shineness, chess_reflectance, chess_transp, 
-                             chess_transm, std::string("chess_pieces/chess_hires.smf"),
-                             Vector(-0.5, -2.0, -3.0), 1.0) );
-      scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-                             chess_shineness, chess_reflectance, chess_transp, 
-                             chess_transm, std::string("chess_pieces/bishop_hires.smf"),
-                             Vector(-1.0, -2.0, -3.0), 15.0) );    
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, 
+                               chess_shineness, chess_reflectance, chess_transp, 
+                               chess_transm, std::string("chess_pieces/bishop.smf"),
+                               Vector(0.5, -2.0, -3.0), 15.0) );
   }
 
+
+  if( bonus_scene_mode == 1 )
+  {
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
+                           chess_shineness, chess_reflectance, chess_transp, 
+                           chess_transm, std::string("chess_pieces/chess_hires.smf"),
+                           Vector(-0.5, -2.0, -3.0), 1.0) );
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
+                           chess_shineness, chess_reflectance, chess_transp, 
+                           chess_transm, std::string("chess_pieces/bishop_hires.smf"),
+                           Vector(-1.0, -2.0, -3.0), 15.0) );    
+  }
+
+  if( bonus_scene_mode == 2 || bonus_scene_mode == 3)
+  {
+    // test accerlation result
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
+                           chess_shineness, chess_reflectance, chess_transp, 
+                           chess_transm, std::string("chess_pieces/chess_piece.smf"),
+                           Vector(0.0, -2.0, -3.0), 1.0) );    
+  }
 
   RGB mirror_ambient       = RGB(0.3, 0.3, 0.3);
   RGB mirror_diffuse       = RGB(0.4, 0.4, 0.4);

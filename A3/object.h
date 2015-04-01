@@ -11,8 +11,6 @@ class Object
 {
 public:
   // material property used in Phong model
-
-
   Object(){}
 
   virtual ~Object() {}
