@@ -136,20 +136,20 @@ public:
 
   bool intersect(const Ray &ray, Intersection & insect)
   {
-    bool inside = true;
-    Intersection tHit(INFINITY);
-
-    // bool inside = false;
+    // bool inside = true;
     // Intersection tHit(INFINITY);
-    // // first optimization: a bounding box of the object
-    // for( unsigned int i = 0; i < box.size(); ++i)
-    // {
-    //   Intersection tmpHit(INFINITY);
-    //   if( box[i].intersect(ray, tmpHit) )
-    //   {
-    //     inside = true;
-    //   }
-    // }
+
+    bool inside = false;
+    Intersection tHit(INFINITY);
+    // first optimization: a bounding box of the object
+    for( unsigned int i = 0; i < box.size(); ++i)
+    {
+      Intersection tmpHit(INFINITY);
+      if( box[i].intersect(ray, tmpHit) )
+      {
+        inside = true;
+      }
+    }
 
     if( inside ){
       for (unsigned int i = 0; i < primitives.size(); ++i)
