@@ -17,7 +17,7 @@ public:
 
 	~Triangle(){}
 
-/* traditional triangle intersection
+ // traditional triangle intersection
 
   // bool intersect(const Ray &ray, Intersection & insect)
   // {
@@ -30,7 +30,7 @@ public:
   
   // 	// test if the intersection point is outside the range 
   // 	if ( t > ray.tmax) 	{ return false; }
-  // 	else if( t < 0) { return false; }
+  // 	else if( t < ray.tmin) { return false; }
   // 	// test if interestion point is inside triangle
   // 	Point p = ray.intersectPoint(t);
 
@@ -45,7 +45,7 @@ public:
 
   // 	return inside;
   // }
-*/
+
   bool intersect(const Ray &ray, Intersection & insect)
   {
   	// a fast MOLLER_TRUMBORE method for finding triangle intersection point
@@ -71,14 +71,14 @@ public:
 
 		if (v < 0 || u + v > 1) return false;
 		
-		insect.t = edge2.dot(qvec) * invDet;
-		insect.point = ray.intersectPoint(insect.t);
+		insect.t      = edge2.dot(qvec) * invDet;
+		insect.point  = ray.intersectPoint(insect.t);
 		insect.normal = this->normal(insect.point);
 
 		return true;
   }
 
-  Vector normal(const Point &q)            { return mat_normal;      }
+  Vector normal(const Point &q)      const { return mat_normal;      }
   RGB 	ambient(const Point &q)      const { return RGB();           }
   RGB 	diffuse(const Point &q)      const { return RGB();           }
   RGB 	specular(const Point &q)     const { return RGB();           }
@@ -128,7 +128,7 @@ public:
       }
     }
     
-    if( tHit.t > ray.tmax)
+    if( tHit.t > ray.tmax || tHit.t < ray.tmin)
       return false;
     else
     {
@@ -142,10 +142,10 @@ public:
   	primitives.push_back(Triangle(p1, p2, p3));
   }
 
-  Vector normal(const Point &q) 
+  Vector normal(const Point &q) const
   {
-    std::cout << "there should be something wrong" << std::endl;
-  	return Vector();
+    // std::cout << "there should be something wrong" << std::endl;
+  	return Vector(0.0, 0.0, -2.0);
   }
 
   RGB 	ambient(const Point &q)      const { return mat_ambient;     }

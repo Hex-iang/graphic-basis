@@ -1,22 +1,23 @@
 /**********************************************************************
  * Ray class & Ray intersection class
  **********************************************************************/
- #pragma once
- #include "vector.hpp"
-
+#pragma once
+#include "vector.hpp"
+#include "global.h" 
 class Ray
 {
 public:
   Point origin;
   Vector direction;
   float tmax;
+  float tmin;
   unsigned triangleId;  
 
   Vector invdir;        /// precomputed for ray-box intersection
   int sign[3];          /// precomputed for ray-box intersection
 
-  Ray(const Vector &orig, const Vector &dir, const float far = float(10000.0) ):
-  origin(orig), direction(dir), tmax(far)
+  Ray(const Vector &orig, const Vector &dir, const float far = float(1000.0), const float near = float(EPSILON)):
+  origin(orig), direction(dir), tmax(far), tmin(near)
   {
     invdir = float(1) / dir;
     sign[0] = (invdir.x < 0);

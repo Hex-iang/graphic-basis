@@ -42,8 +42,6 @@ public:
     plane_y(y), grid_wid(wid) {}
 
   ~ChessBoard(){}
-
-  Vector normal(const Point & q) { return Vector(0.0, 1.0, 0.0); }
   
   bool intersect(const Ray &ray, Intersection & insect)
   {
@@ -55,7 +53,7 @@ public:
     // if the ray is out of the maximum range, return false
     if ( t > ray.tmax) return false;
     // else if ray is negative, return false
-    else if ( t < 0 ) return false;
+    else if ( t < ray.tmin ) return false;
     // else the ray hits the plane, return true
     else insect.t = t;
 
@@ -66,9 +64,12 @@ public:
     return true;
   }
 
+  Vector normal(const Point & q) const { return Vector(0.0, 1.0, 0.0); }
+
   // *********************************************************************
   // Function for returning material property
   // *********************************************************************
+
   RGB ambient(const Point &q)         const { return mat_ambient; }
   RGB specular(const Point &q)        const { return mat_specular; }
   float shineness(const Point &q)     const { return mat_shineness; }

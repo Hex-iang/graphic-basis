@@ -50,7 +50,7 @@ public:
   	std::string line;
 
     Mat4 transfer  = Mat4().setTranslation(displacement);
-    Mat4 scale    = Mat4().scale(s, s, s);
+    Mat4 scale     = Mat4().scale(s, s, s);
 
   	while (std::getline(infile, line)){
       line_cnt++;
@@ -156,7 +156,7 @@ public:
         }
       }
       
-      if( tHit.t > ray.tmax)
+      if( tHit.t > ray.tmax || tHit.t < ray.tmin )
         return false;
       else
       {
@@ -170,10 +170,10 @@ public:
     }
   }
   
-  Vector normal(const Point &q) 
+  Vector normal(const Point &q) const
   {
-    std::cout << "there should be something wrong" << std::endl;
-  	return Vector();
+    // std::cout << "there should be something wrong" << std::endl;
+  	return Vector(0.0, 1.0, 0.0);
   }
 
   // getter function for derived class variable 

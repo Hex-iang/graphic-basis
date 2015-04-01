@@ -38,7 +38,7 @@ public:
   // *********************************************************************
   // Function for calculate sphere normal
   // *********************************************************************
-  Vector normal(const Point &q) {
+  Vector normal(const Point &q) const {
     return (this->center - q).normalize();
   }
 
@@ -86,11 +86,12 @@ public:
       return false;
 
     // if nearest hit out of range or both hits are negative, return false
-    if (t0 > ray.tmax || (t0 < 0 && t1 < 0)){ 
+    if (t0 > ray.tmax || (t0 < ray.tmin && t1 < ray.tmin)){ 
       return false;
     }
 
-    if(t0 > 0) insect.t = t0;
+    // intersect t is smaller than ray.tmin
+    if(t0 > ray.tmin) insect.t = t0;
     else insect.t = t1;
 
     insect.point  = ray.intersectPoint(insect.t);

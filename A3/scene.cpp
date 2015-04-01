@@ -185,7 +185,7 @@ void set_up_user_scene() {
 
 void set_up_bonus_scene(){
   // set background color
-  background_clr = RGB(0.8, 0.5, 0.8);
+  background_clr = RGB(0.2, 0.5, 0.8);
   // background_clr = RGB(0.8, 0.8, 0.8);
 
   // setup global ambient term
@@ -202,19 +202,19 @@ void set_up_bonus_scene(){
   RGB chess_specular      = RGB(0.02, 0.02, 0.8);
   float chess_shineness   = 30;
   float chess_reflectance = 0.5;
-  float chess_transp      = 0.5;
+  float chess_transp      = 0.3;
   float chess_transm      = 1.0;  
 
 
   scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular,
                          chess_shineness, chess_reflectance, chess_transp, 
                          chess_transm, std::string("chess_pieces/chess_piece.smf"),
-                         Vector(1.0, -3.0, -2.5), 1.0) );
+                         Vector(1.0, -2.0, -3.0), 1.0) );
 
   scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, 
                              chess_shineness, chess_reflectance, chess_transp, 
                              chess_transm, std::string("chess_pieces/bishop.smf"),
-                             Vector(0.5, -3.0, -2.5), 15.0) );
+                             Vector(0.5, -2.0, -3.0), 15.0) );
 
 
   if( full_detail_on )
@@ -222,11 +222,11 @@ void set_up_bonus_scene(){
       scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
                              chess_shineness, chess_reflectance, chess_transp, 
                              chess_transm, std::string("chess_pieces/chess_hires.smf"),
-                             Vector(-0.5, -3.0, -2.5), 1.0) );
+                             Vector(-0.5, -2.0, -3.0), 1.0) );
       scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
                              chess_shineness, chess_reflectance, chess_transp, 
                              chess_transm, std::string("chess_pieces/bishop_hires.smf"),
-                             Vector(-1.0, -3.0, -2.5), 15.0) );    
+                             Vector(-1.0, -2.0, -3.0), 15.0) );    
   }
 
 
@@ -241,9 +241,9 @@ void set_up_bonus_scene(){
   // place a mirror to the back
   Mesh *pMesh = new Mesh(mirror_ambient, mirror_diffuse, mirror_specular, mirror_shineness, mirror_reflectance, mirror_transp, mirror_transm);
 
-  pMesh->addTriangle(Point(-2.0, -3.0, -4.0), Point(2.0, -3.0, -4.0), Point(-2.0, 3.0, -4.0));
+  pMesh->addTriangle(Point(-3.0, -2.0, -3.6), Point(3.0, -2.0, -3.6), Point(-3.0, 2.0, -3.6));
 
-  pMesh->addTriangle(Point(-2.0, 3.0, -4.0), Point(2.0, 3.0, -4.0), Point(2.0, -3.0, -4.0));
+  pMesh->addTriangle(Point(-3.0, 2.0, -3.6), Point(3.0, 2.0, -3.6), Point(3.0, -2.0, -3.6));
 
   scene.push_back(pMesh);
 
@@ -262,7 +262,7 @@ void set_up_bonus_scene(){
     scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
                     board_dark_diffuse, board_specular, 
                     board_shineness, board_reflectance, 
-                    board_transp, board_transm, -3.0, 1.0));
+                    board_transp, board_transm, -2.0, 0.5));
   }
 }
 

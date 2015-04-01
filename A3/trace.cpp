@@ -107,17 +107,28 @@ RGB phong(const Intersection &hit, const Vector &view, const Object * pObject)
 	// RGB color;
   RGB color = (global_ambient + light.ambient ) * pObject->ambient(hit.point);
   // assume that we have a point light source and shot the shadow ray
-  Vector shadow_ray = light.source - hit.point; 
+  // Vector shadow_ray = hit.point - light.source; 
+  Vector shadow_ray = (light.source - hit.point).normalize(); 
   
   // Normalize it shadow ray to get its direction L
-  Vector L = (light.source - hit.point).normalize();
+  Vector L = light.source - hit.point;
 
+  // Debug code
+  // if( pObject->normal(hit.point) == Vector(0.0, 0.0, -2.0))
+  // {
+  //   if( shadow_test( Ray(hit.point, shadow_ray), pObject) )
+  //   {
+  //     std::cout << "shadow ray direction: " << shadow_ray << std::endl;
+  //   }
+  // }
+
+  // if( (!shadow_on) || shadow_test( Ray(light.source, shadow_ray), pObject) ){
   if( (!shadow_on) || shadow_test( Ray(hit.point, shadow_ray), pObject) ){
-
-    float d_L2 = shadow_ray.dot(shadow_ray);
+    float d_L2 = L.dot(L);
     float d_L = std::sqrt(d_L2);
     float light_att = light.attenuation(d_L, d_L2);
 
+    L = L.normalize();
     // second, plus diffuse reflectance for the object
     color += light.diffuse * pObject->diffuse(hit.point) * std::max((hit.normal).dot(L), (float)0.0) * light_att;
 

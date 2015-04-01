@@ -18,7 +18,7 @@ public:
   virtual ~Object() {}
 
   virtual bool intersect(const Ray &, Intersection &) = 0;
-  virtual Vector normal(const Point &) = 0;
+  virtual Vector normal(const Point &)      const = 0;
 
   // // getter function for derived class variable 
   virtual RGB   ambient(const Point &)      const = 0;
