@@ -4,11 +4,14 @@
  **********************************************************************/
 #pragma once
 #include "ray.hpp"
+#include "vector.hpp"
+#include "matrix.hpp"
 
 class Object 
 {
 public:
   // material property used in Phong model
+
 
   Object(){}
 

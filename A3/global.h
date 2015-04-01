@@ -5,6 +5,7 @@
 
 // numerical convienent macro
 #define EPSILON           1e-8
+
 #ifdef __linux__
 #elif defined __APPLE__
 #else

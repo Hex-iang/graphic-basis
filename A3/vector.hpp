@@ -53,11 +53,9 @@ public:
 		os << "[" << v.x << " " << v.y << " " << v.z << "]";
 		return os;
 	}
-	Vec3<T> cross(const Vec3<T>& v )
+	Vec3<T> cross(const Vec3<T>& v ) const
 	{
-	    return Vec3<T>( this->y * v.z - this->z * v.y, 
-	    								this->z * v.x - this->x * v.z, 
-	    								this->x * v.y - this->y * v.x );
+	    return Vec3<T>( y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x );
 	}
 	friend Vec3<T> operator / (const T &s, const Vec3<T> &v) { return Vec3<T>( s / v.x, s / v.y, s / v.z); } 
 

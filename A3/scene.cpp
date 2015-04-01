@@ -239,9 +239,9 @@ void set_up_bonus_scene(){
   // setup light 1
   light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
-  RGB chess_ambient       = RGB(0.8, 0.8, 0.8);
-  RGB chess_diffuse       = RGB(0.5, 0.5, 0.5);
-  RGB chess_specular      = RGB(0.8, 0.8, 0.8);
+  RGB chess_ambient       = RGB(0.3, 0.3, 0.3);
+  RGB chess_diffuse       = RGB(0.02, 0.02, 0.4);
+  RGB chess_specular      = RGB(0.02, 0.02, 0.8);
   float chess_shineness   = 30;
   float chess_reflectance = 0.5;
   float chess_transp      = 0.5;
@@ -252,12 +252,12 @@ void set_up_bonus_scene(){
       scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular,
                              chess_shineness, chess_reflectance, chess_transp, 
                              chess_transm, std::string("chess_pieces/chess_piece.smf"),
-                             Vector(-2.0, 0.0, 0.0), 0.0) );
+                             Vector(1.0, -3.0, -2.5), 1.0) );
 
       scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, 
                                  chess_shineness, chess_reflectance, chess_transp, 
                                  chess_transm, std::string("chess_pieces/bishop.smf"),
-                                 Vector(0.0, 0.0, 0.0), 10.0) );
+                                 Vector(-0.5, -3.0, -2.5), 15.0) );
   }
 
   // naive_load(chess_ambient,  chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, 0.0, 0.0));
@@ -280,7 +280,12 @@ void set_up_bonus_scene(){
   //                            chess_shineness, chess_reflectance, chess_transp, 
   //                            chess_transm, std::string("chess_pieces/bishop_hires.smf"),
   //                            Vector(0.0, 0.0, 0.0), 10.0 ); 
+
   // first, test triangle   
+  // scene.push_back( new Triangle(chess_ambient, chess_diffuse, chess_specular,
+  //                            chess_shineness, chess_reflectance, chess_transp, 
+  //                            chess_transm, Point(-2.0, 1.0, -1.0), Point(0.0, -2.0, -2.0), 
+  //                            Point(3.0, 3.0, -3)));
 
   if( chessboard_on ){
     // add chess board to the ground of the chess 

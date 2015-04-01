@@ -28,6 +28,7 @@ public:
   { 
     return origin + direction * t; 
   }
+
 };
 
 class Intersection
@@ -47,4 +48,10 @@ public:
     this->point   = p.point;
   }
   ~Intersection(){};
+
+  friend std::ostream & operator << (std::ostream &os, const Intersection &v)
+  {
+    os << "Intersected t: " << v.t <<", Intersected normal:" << v.normal << ", Intersected point:" << v.point;
+    return os;
+  }
 };
