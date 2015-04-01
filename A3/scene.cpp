@@ -247,29 +247,28 @@ void set_up_bonus_scene(){
   float chess_transp      = 0.5;
   float chess_transm      = 1.0;  
 
-  if( !full_detail_on )
-  {
-      scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular,
-                             chess_shineness, chess_reflectance, chess_transp, 
-                             chess_transm, std::string("chess_pieces/chess_piece.smf"),
-                             Vector(1.0, -3.0, -2.5), 1.0) );
 
-      scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, 
-                                 chess_shineness, chess_reflectance, chess_transp, 
-                                 chess_transm, std::string("chess_pieces/bishop.smf"),
-                                 Vector(-0.5, -3.0, -2.5), 15.0) );
-  }
+  scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular,
+                         chess_shineness, chess_reflectance, chess_transp, 
+                         chess_transm, std::string("chess_pieces/chess_piece.smf"),
+                         Vector(1.0, -3.0, -2.5), 1.0) );
+
+  scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, 
+                             chess_shineness, chess_reflectance, chess_transp, 
+                             chess_transm, std::string("chess_pieces/bishop.smf"),
+                             Vector(0.5, -3.0, -2.5), 15.0) );
+
 
   if( full_detail_on )
   {
       scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
                              chess_shineness, chess_reflectance, chess_transp, 
                              chess_transm, std::string("chess_pieces/chess_hires.smf"),
-                             Vector(1.0, -3.0, -2.5), 1.0) );
+                             Vector(-0.5, -3.0, -2.5), 1.0) );
       scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
                              chess_shineness, chess_reflectance, chess_transp, 
                              chess_transm, std::string("chess_pieces/bishop_hires.smf"),
-                             Vector(-0.5, -3.0, -2.5), 15.0) );    
+                             Vector(-1.0, -3.0, -2.5), 15.0) );    
   }
 
 

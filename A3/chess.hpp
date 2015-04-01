@@ -28,7 +28,7 @@ class Chess: public Object
 
   // chess piece position property 
 public:
-	vector<Object *> primitives;
+	vector<Triangle> primitives;
   vector<Triangle> box;
 
   Chess(const RGB &amb, const RGB &dif, const RGB &spe, 
@@ -89,7 +89,7 @@ public:
 
         // std::cout << i  << "," << j << "," << k << std::endl; 
   			
-        primitives.push_back( new Triangle(amb, dif, spe, shine, refl, transp, transm, vertices[i-1], vertices[j-1], vertices[k-1]));
+        primitives.push_back( new Triangle(vertices[i-1], vertices[j-1], vertices[k-1]));
   		}
   	}
 
