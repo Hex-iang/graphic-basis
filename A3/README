@@ -30,52 +30,60 @@
 
 
 ## Bonus Part
-
   1. Render Scene With Chess Pieces on Chess Board         [Achieved]
-    * Render 2 low-resolution chess pieces
+
+    * Render 2 low-resolution chess pieces - single bounding box accelerated
       * test command: raycast -b 5 +s +l +r +c +p +f
-    * Render all chess pieces
-      * test command: raycast -b 5 +s +l +r +c +p +f +w 
+      	* intersection test:	4294598454
+      	* total time: 				114.276 secs (2 min)
+      	* saved as: 					low-resolution-chess.bmp
+    * Render all chess pieces 						 - single bounding box accelerated
+      * test command: raycast -b 5 +s +l +r +c +p +f +w
+      	* intersection test: 	74827272024
+      	* total time:					1481.74 secs (20+ min)
     * Note: 
-      * Since it will take a while to render the scene, I attached two image "low-resolution-chess.bmp" and "high-resolution-chess.bmp" in the zip file. Or you can try run the program. [Recommend to turn off the diffuse reflection - use command raycast -b 5 +s +l +r +c +p ]
+      * Since it will take a while to render the scene, I attached two image "low-resolution-chess.bmp" and "high-resolution-chess.bmp" in the zip file. Or you can try run the program. [Recommend to turn off the diffuse reflection - use command raycast -b 5 +s +l +r +c +f +p ]
+      * I tried to render the high resolution image with all details on using naive method, it turns out that the result can not be rendered in 2 hours, so I finally gave up doing a computation time comparing with the single bounding box accerlerated version 
       * In the bonus scene, I also placed a mirror in the back to the chess, so as to have better vision to each side of every piece of chess
 
   2. Improve the intersection with some methods            [Achieved]
+  	* test command: raycast -b 5 +s +l +r +c +p +a0				=> test non-accelerated version
+  	* test command: raycast -b 5 +s +l +r +c +p +a1				=> test accelerated version
     * In my implementation, I adopt a single bounding volume method for each chess piece, which decrease largely to the intersection test made by the program. The detailed analysis is shown in the following section
 
 
 ### Bonus Question 2: intersection case study
 * Intersection algorithm result
   * Intersection Number for _naive intersection_ :
-	  1. chess_piece.smf (                  max-step:5) [512 x 512]: 
+	  1. chess_piece.smf (+a0                   max-step:5) [512 x 512]: 
       * intersection test: 79691776
-      * intersection :     
-      * total ray number : 
-	  2. chess_piece.smf (+s +r +l +c       max-step:5) [512 x 512]: 
-      * intersection test: 200118640
-      * intersection :     
-      * total ray number : 
-    3. chess_piece.smf (+s +r +l +c +f +p max-step:5) [512 x 512]: 
-      * intersection test: 2402875280
-      * intersection :     
-      * total ray number : 
+      * intersection :     7752
+      * total ray number : 262144
+	  2. chess_piece.smf (+s +r +l +c +a0       max-step:5) [512 x 512]: 
+      * intersection test: 201988240
+      * intersection :     14692
+      * total ray number : 679966
+    3. chess_piece.smf (+s +r +l +c +f +p +a0 max-step:5) [512 x 512]: 
+      * intersection test: 2775710000
+      * intersection :     234637
+      * total ray number : 9894188
 
   * Intersection Number _Single bounding box_ : 16432484
-  	1. chess_piece.smf (                  max-step:5) [512 x 512]:
-  		* intersection test: 925376
-  		* intersection :		 2456
+  	1. chess_piece.smf (+a1                   max-step:5) [512 x 512]:
+  		* intersection test: 2788896
+  		* intersection :		 7752
   		* total ray number : 262144
-  	2. chess_piece.smf (+s +r +l +c       max-step:5) [512 x 512]:
-  		* intersection test: 2343840
-  		* intersection :		 5106
-  		* total ray number : 664411
-  	3. chess_piece.smf (+s +r +l +c +f +p max-step:5) [512 x 512]:
-  		* intersection test: 54921248
-  		* intersection :		 117980
-  		* total ray number : 8312265
+  	2. chess_piece.smf (+s +r +l +c +a1       max-step:5) [512 x 512]:
+  		* intersection test: 6226224
+  		* intersection :		 14692
+  		* total ray number : 679966
+  	3. chess_piece.smf (+s +r +l +c +f +p +a1 max-step:5) [512 x 512]:
+  		* intersection test: 103667344
+  		* intersection :		 235271
+  		* total ray number : 9905950
 
 * Analysis
-	* With my simple bounding box algorithm, we could decrease two order of  magnitudes from the number of ray-triangle intersection in naive version of algorithm. 
+	* With my simple bounding box algorithm, we could decrease a order of magnitudes from the number of ray-triangle intersection in naive version of algorithm. 
 
 ## Code Structure
 
