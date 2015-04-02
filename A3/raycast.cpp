@@ -86,7 +86,7 @@ int  bonus_scene_mode             = 0;
 
 
 // initiate static object variable 
-int Object::intersect_cnt = 0;
+uint64_t Object::intersect_cnt = 0;
 // OpenGL
 const int NumPoints = 6;
 
@@ -244,10 +244,12 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+b") == 0)    poisson_on                 = true;
     else if (strcmp(argv[i], "+w") == 0)    bonus_scene_mode           = 1;    
     // render both high-resolution/low-resolution chess object
-    else if (strcmp(argv[i], "+t") == 0)    bonus_scene_mode           = 2;
+    else if (strcmp(argv[i], "+a0") == 0)    bonus_scene_mode          = 2;
     // test naive ray tracing intersection number
-    else if (strcmp(argv[i], "+a") == 0)    bonus_scene_mode           = 3;
-    // test accelerated version of object intersection number
+    else if (strcmp(argv[i], "+a1") == 0)   bonus_scene_mode           = 3;
+    // test simple accerlerated version of object intersection number
+    else if (strcmp(argv[i], "+a2") == 0)   bonus_scene_mode           = 4;
+    // test BVH accerlerated version of object intersection number
     else {
       std::cout << "Unknown command: " << argv[i] << std::endl;
       return -1;
@@ -267,6 +269,7 @@ int main( int argc, char **argv )
   histogram_normalization();
   
   std::cout << "Total Ray-Triangle Intersection Count: " << Object::intersect_cnt << std::endl;
+
 #ifdef __APPLE__
   // if the current platform is a macitosh, output the tracing result immediately and finish
   save_image("ray-tracer-picture/generated.bmp");

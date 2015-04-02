@@ -6,11 +6,12 @@
 #include "ray.hpp"
 #include "vector.hpp"
 #include "matrix.hpp"
-
+#include "stdint.h"
+ 
 class Object 
 {
 public: 
-  static int intersect_cnt;
+  static uint64_t intersect_cnt;
 
   // material property used in Phong model
   Object(){}
