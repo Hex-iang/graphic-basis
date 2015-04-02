@@ -5,6 +5,7 @@
 #include "object.h"
 #include "global.h"
 
+
 class Triangle: public Object
 {
 public:
@@ -21,6 +22,7 @@ public:
 
   // bool intersect(const Ray &ray, Intersection & insect)
   // {
+  // 
   // 	// first, test if the ray direction is parallel to the surface
   // 	float divider = ray.direction.dot(mat_normal);
   // 	if( divider == 0) return false;
@@ -40,15 +42,16 @@ public:
 
   // 	if ( inside ) insect.t = t;
 
-  //   insect.point  = p;
-  //   insect.normal = this->normal(p);
-
+  //  insect.point  = p;
+  //  insect.normal = this->normal(p);
+  //
   // 	return inside;
   // }
 
   bool intersect(const Ray &ray, Intersection & insect)
   {
-    Object::count_intersection();
+    // increase the intersection test counter
+    Statistic::intersect_test_cnt ++;
 
   	// a fast MOLLER_TRUMBORE method for finding triangle intersection point
 		Vector edge1 = p2 - p1;
@@ -76,6 +79,9 @@ public:
 		insect.t      = edge2.dot(qvec) * invDet;
 		insect.point  = ray.intersectPoint(insect.t);
 		insect.normal = this->normal(insect.point);
+
+    // increase the intersection counter
+    Statistic::intersect_cnt++;
 
 		return true;
   }

@@ -4,6 +4,7 @@
 #pragma once
 #include "vector.hpp"
 #include "global.h" 
+
 class Ray
 {
 public:
@@ -19,6 +20,9 @@ public:
   Ray(const Vector &orig, const Vector &dir, const float far = float(1000.0), const float near = float(EPSILON)):
   origin(orig), direction(dir), tmax(far), tmin(near)
   {
+    // increase ray number
+    Statistic::ray_num_cnt ++;
+
     invdir = float(1) / dir;
     // sign structure is used for excluding the zero value case
     sign[0] = (invdir.x < 0);

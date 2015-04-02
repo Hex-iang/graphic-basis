@@ -6,13 +6,10 @@
 #include "ray.hpp"
 #include "vector.hpp"
 #include "matrix.hpp"
-#include "stdint.h"
- 
+
 class Object 
 {
 public: 
-  static uint64_t intersect_cnt;
-
   // material property used in Phong model
   Object(){}
 
@@ -32,7 +29,4 @@ public:
   virtual float transparency(const Point &q) const { return float(0.0);      }
   virtual float transmission(const Point &q) const { return float(0.0);      }
 
-  static void count_intersection(){ 
-    intersect_cnt ++; 
-  }
 };

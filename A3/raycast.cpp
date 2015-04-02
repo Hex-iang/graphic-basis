@@ -17,6 +17,7 @@
 #include <string.h>
 #include <cstdlib>
 #include <ctime>
+#include <iomanip>
 
 #include "chessboard.hpp"
 #include "light.hpp"
@@ -84,9 +85,11 @@ bool nondisplay_on                = false;
 bool poisson_on                   = false;
 int  bonus_scene_mode             = 0;
 
+// initiate global static variable 
+uint64_t Statistic::intersect_cnt       = 0;
+uint64_t Statistic::intersect_test_cnt  = 0;
+uint64_t Statistic::ray_num_cnt         = 0;
 
-// initiate static object variable 
-uint64_t Object::intersect_cnt = 0;
 // OpenGL
 const int NumPoints = 6;
 
@@ -263,12 +266,20 @@ int main( int argc, char **argv )
 
   // ray trace the scene now
   printf("Rendering scene using my fantastic ray tracer ...\n");
+
+  clock_t timeStart = clock();
   ray_trace();
+  clock_t timeEnd   = clock();
 
   // we want to make sure that intensity values are normalized
   histogram_normalization();
   
-  std::cout << "Total Ray-Triangle Intersection Count: " << Object::intersect_cnt << std::endl;
+  // Output ray tracing statistics
+  std::cout << "Total Ray-Triangle Intersection Test: " << Statistic::intersect_test_cnt << std::endl;
+  std::cout << "Total Ray-Triangle Intersection: " << Statistic::intersect_cnt << std::endl;
+  std::cout << "Total Ray Number: " << Statistic::ray_num_cnt << std::endl;
+  std::cout << "Total Ray-tracing Time: " << std::setw(4) << 
+                 float(timeEnd - timeStart) / CLOCKS_PER_SEC << " secs."<< std::endl;
 
 #ifdef __APPLE__
   // if the current platform is a macitosh, output the tracing result immediately and finish

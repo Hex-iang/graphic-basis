@@ -12,8 +12,17 @@
     3. chess_piece.smf (+s +r +l +c +f +p max-step:5) [512 x 512]: 2402875280
   * Intersection Number _Simple bounding box_ algorithm: 16432484
     1. chess_piece.smf (                  max-step:5) [512 x 512]: 925376
-    2. chess_piece.smf (+s +r +l +c       max-step:5) [512 x 512]: 2343840
-    3. chess_piece.smf (+s +r +l +c +f +p max-step:5) [512 x 512]: 55141648
+      * intersection test: 925376
+    	* intersection :		 2456
+    	* total ray number : 262144
+    2. chess_piece.smf (+s +r +l +c       max-step:5) [512 x 512]:
+    	* intersection test: 2343840
+    	* intersection :		 5106
+    	* total ray number : 664411
+    3. chess_piece.smf (+s +r +l +c +f +p max-step:5) [512 x 512]:
+    	* intersection test: 54921248
+    	* intersection :		 117980
+    	* total ray number : 8312265
 
 * Analysis
 	* With my simple bounding box algorithm, we could decrease two order of  magnitudes from the number of ray-triangle intersection in naive version of algorithm. 
