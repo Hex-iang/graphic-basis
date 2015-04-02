@@ -10,15 +10,17 @@ class Ray
 public:
   Point origin;
   Vector direction;
-  mutable float tmax;
-  mutable float tmin;
+  float tmax;
+  float tmin;
+  mutable float tfar;
+  mutable float tnear;
   unsigned triangleId;  
 
   Vector invdir;        // precomputed value for ray-box intersection
   int sign[3];          // precomputed value for ray-box intersection
 
   Ray(const Vector &orig, const Vector &dir, const float far = float(1000.0), const float near = float(EPSILON)):
-  origin(orig), direction(dir), tmax(far), tmin(near)
+  origin(orig), direction(dir), tfar(far), tnear(near)
   {
     // increase ray number
     Statistic::ray_num_cnt ++;
@@ -28,6 +30,9 @@ public:
     sign[0] = (invdir.x < 0);
     sign[1] = (invdir.y < 0);
     sign[2] = (invdir.z < 0);
+    
+    tmin = float(0.0);
+    tmax = float(1000.0);
   }
 
   Point intersectPoint(const float &t) const

@@ -5,7 +5,7 @@
 #include "light.hpp"
 #include "vector.hpp"
 #include "chessboard.hpp"
-#include "chess.hpp"
+#include "chess.h"
 
 #include <stdio.h>
 #include <string>
@@ -220,19 +220,19 @@ void set_up_bonus_scene(){
     scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular,
                            chess_shineness, chess_reflectance, chess_transp, 
                            chess_transm, std::string("chess_pieces/chess_piece.smf"),
-                           Vector(1.0, -2.0, -3.0), 1.0) );
+                           Vector(1.0, -2.0, -2.0), 1.0, 1) );
 
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, 
                                chess_shineness, chess_reflectance, chess_transp, 
                                chess_transm, std::string("chess_pieces/bishop.smf"),
-                               Vector(0.5, -2.0, -3.0), 15.0) );
+                               Vector(0.5, -2.0, -2.0), 15.0, 1) );
 
     // place a mirror to the back
     Mesh *pMesh = new Mesh(mirror_ambient, mirror_diffuse, mirror_specular, mirror_shineness, mirror_reflectance, mirror_transp, mirror_transm);
 
-    pMesh->addTriangle(Point(-3.0, -2.0, -3.6), Point(3.0, -2.0, -3.6), Point(-3.0, 2.0, -3.6));
+    pMesh->addTriangle(Point(-3.0, -2.0, -3.0), Point(3.0, -2.0, -3.0), Point(-3.0, 2.0, -3.0));
 
-    pMesh->addTriangle(Point(-3.0, 2.0, -3.6), Point(3.0, 2.0, -3.6), Point(3.0, -2.0, -3.6));
+    pMesh->addTriangle(Point(-3.0, 2.0, -3.0), Point(3.0, 2.0, -3.0), Point(3.0, -2.0, -3.0));
 
     scene.push_back(pMesh);
   }
@@ -243,11 +243,11 @@ void set_up_bonus_scene(){
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
                            chess_shineness, chess_reflectance, chess_transp, 
                            chess_transm, std::string("chess_pieces/chess_hires.smf"),
-                           Vector(-0.5, -2.0, -3.0), 1.0) );
+                           Vector(-0.5, -2.0, -2.0), 1.0, 1) );
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
                            chess_shineness, chess_reflectance, chess_transp, 
                            chess_transm, std::string("chess_pieces/bishop_hires.smf"),
-                           Vector(-1.0, -2.0, -3.0), 15.0) );    
+                           Vector(-1.0, -2.0, -2.0), 15.0, 1) );    
   }
 
   // bonus scene mode 2-4 is used for testing intersection  
@@ -256,22 +256,22 @@ void set_up_bonus_scene(){
     // test non-accerlated result
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
                      chess_shineness, chess_reflectance, chess_transp, 
-                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -3.0), 1.0, 0) );    
+                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -2.0), 1.0, 0) );    
   }
   else if( bonus_scene_mode == 3 )
   {
     // test simple box bounded accerlated result
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
                      chess_shineness, chess_reflectance, chess_transp, 
-                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -3.0), 1.0, 1));        
+                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -2.0), 1.0, 1));        
   }
-  else if( bonus_scene_mode == 4)
-  {
-    // test BVH accerlated result
-    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-                     chess_shineness, chess_reflectance, chess_transp, 
-                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -3.0), 1.0, 2));         
-  }
+  // else if( bonus_scene_mode == 4)
+  // {
+  //   // test BVH accerlated result
+  //   scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
+  //                    chess_shineness, chess_reflectance, chess_transp, 
+  //                    chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -3.0), 1.0, 2));         
+  // }
 
 
   if( chessboard_on ){

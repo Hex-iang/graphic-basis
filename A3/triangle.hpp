@@ -4,7 +4,7 @@
 #pragma once
 #include "object.h"
 #include "global.h"
-
+#include <vector>
 
 class Triangle: public Object
 {
@@ -13,41 +13,26 @@ public:
 	Vector mat_normal;
 	Triangle(const Point & _p1, const Point & _p2, const Point & _p3): p1(_p1), p2(_p2), p3(_p3) 
 	{ 
-		mat_normal = ((p3 - p2).cross(p2 - p1) ).normalize(); 
+		mat_normal = ((p3 - p2).cross(p2 - p1) ).normalize();
 	}
 
 	~Triangle(){}
 
+  Point get_min_bound(){
+    return Point( std::min(p1.x, std::min(p2.x , p3.x)) ,
+                  std::min(p1.y, std::min(p2.y , p3.y)) ,
+                  std::min(p1.z, std::min(p2.z , p3.z)) );
+  }
+  Point get_max_bound(){
+    return Point( std::max(p1.x, std::max(p2.x , p3.x)) ,
+                  std::max(p1.y, std::max(p2.y , p3.y)) ,
+                  std::max(p1.z, std::max(p2.z , p3.z)) );
+  }
+
  // traditional triangle intersection
 
-  // bool intersect(const Ray &ray, Intersection & insect)
-  // {
-  // 
-  // 	// first, test if the ray direction is parallel to the surface
-  // 	float divider = ray.direction.dot(mat_normal);
-  // 	if( divider == 0) return false;
-  	
-  // 	// calculate intersection point t to the plane
-  // 	float t = ( p1.dot(mat_normal) - ray.origin.dot(mat_normal) ) / divider;
-  
-  // 	// test if the intersection point is outside the range 
-  // 	if ( t > ray.tmax) 	{ return false; }
-  // 	else if( t < ray.tmin) { return false; }
-  // 	// test if interestion point is inside triangle
-  // 	Point p = ray.intersectPoint(t);
-
-  // 	bool inside = ( (p - p1).dot( (p2 - p1).cross(mat_normal) ) >= 0 ) && 
-  // 					 			( (p - p2).dot( (p3 - p2).cross(mat_normal) ) >= 0 ) &&
-  // 					 			( (p - p3).dot( (p1 - p3).cross(mat_normal) ) >= 0 );
-
-  // 	if ( inside ) insect.t = t;
-
-  //  insect.point  = p;
-  //  insect.normal = this->normal(p);
-  //
-  // 	return inside;
-  // }
-
+#define MOLLER_TRUMBORE
+#ifdef MOLLER_TRUMBORE
   bool intersect(const Ray &ray, Intersection & insect)
   {
     // increase the intersection test counter
@@ -85,6 +70,35 @@ public:
 
 		return true;
   }
+#else
+  bool intersect(const Ray &ray, Intersection & insect)
+  {
+  
+   // first, test if the ray direction is parallel to the surface
+   float divider = ray.direction.dot(mat_normal);
+   if( divider == 0) return false;
+    
+   // calculate intersection point t to the plane
+   float t = ( p1.dot(mat_normal) - ray.origin.dot(mat_normal) ) / divider;
+  
+   // test if the intersection point is outside the range 
+   if ( t > ray.tmax)  { return false; }
+   else if( t < ray.tmin) { return false; }
+   // test if interestion point is inside triangle
+   Point p = ray.intersectPoint(t);
+
+   bool inside = ( (p - p1).dot( (p2 - p1).cross(mat_normal) ) >= 0 ) && 
+                 ( (p - p2).dot( (p3 - p2).cross(mat_normal) ) >= 0 ) &&
+                 ( (p - p3).dot( (p1 - p3).cross(mat_normal) ) >= 0 );
+
+   if ( inside ) insect.t = t;
+
+   insect.point  = p;
+   insect.normal = this->normal(p);
+  
+   return inside;
+  }
+#endif
 
   Vector normal(const Point &q)      const { return mat_normal;      }
   RGB 	ambient(const Point &q)      const { return RGB();           }
@@ -109,7 +123,7 @@ public:
   float mat_transparency; 
   float mat_transmission;
 
-  vector<Triangle> primitives;
+  std::vector<Triangle> primitives;
 
 	Mesh(const RGB &amb, const RGB &dif, const RGB &spe, 
     const float &shine, const float &refl, const float &transp, 

@@ -247,11 +247,11 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+b") == 0)    poisson_on                 = true;
     else if (strcmp(argv[i], "+w") == 0)    bonus_scene_mode           = 1;    
     // render both high-resolution/low-resolution chess object
-    else if (strcmp(argv[i], "+a0") == 0)    bonus_scene_mode          = 2;
+    else if (strcmp(argv[i], "+a0") == 0)   bonus_scene_mode           = 2;
     // test naive ray tracing intersection number
     else if (strcmp(argv[i], "+a1") == 0)   bonus_scene_mode           = 3;
     // test simple accerlerated version of object intersection number
-    else if (strcmp(argv[i], "+a2") == 0)   bonus_scene_mode           = 4;
+    // else if (strcmp(argv[i], "+a2") == 0)   bonus_scene_mode           = 4;
     // test BVH accerlerated version of object intersection number
     else {
       std::cout << "Unknown command: " << argv[i] << std::endl;
@@ -283,13 +283,13 @@ int main( int argc, char **argv )
 
 #ifdef __APPLE__
   // if the current platform is a macitosh, output the tracing result immediately and finish
-  save_image("ray-tracer-picture/generated.bmp");
+  save_image("scene.bmp");
   return 0;
 
 #else
   // use a non displayable mode to just generate image and skip OpenGL rendering
   if (nondisplay_on) {
-    save_image("ray-tracer-picture/generated.bmp");
+    save_image("scene.bmp");
     return 0;
   }
 

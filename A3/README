@@ -1,28 +1,99 @@
 # Assignment 3 implementation report
+* Arthur: Hexiang Hu 301239910
 
 ## Basic Part
+  1. Ray‐sphere intersection and local reflectance:       [Achieved]
+    * test command: raycast [-d | -u] 5
+
+  2. Shadows:                                             [Achieved]
+    * test command: raycast [-d | -u] 5 +s
+
+  3. Reflections:                                         [Achieved]
+    * test command: raycast [-d | -u] 5 +s +l
+
+  4. Chess Board:                                         [Achieved]
+    * test command: raycast [-d | -u] 5 +s +l +c
+
+  5. Refraction:                                          [Achieved]
+    * test command: raycast -u 5 +s +l +c +r
+    * Note: since that in the default scene, there is no transparency setted, please do test this feature through user scene.
+      * In the user scene, the transmission rate is set as 1.1 for each ball
+    
+  6. Diffuse Reflection:                                  [Achieved]
+    * test command: raycast [-d | -u] +s +l +r +c +f
+  7. Super Sampling:                                      [Achieved]
+    * test command: raycast [-d | -u] +s +l +r +c +f +p
+
+  8. Additional Features: Poisson Anti-aliasing 
+    * an alternative way for super sampling
+    * test command: raycast [-d | -u] +s +l +r +c +f +p +b 
+
 
 ## Bonus Part
 
+  1. Render Scene With Chess Pieces on Chess Board         [Achieved]
+    * Render 2 low-resolution chess pieces
+      * test command: raycast -b 5 +s +l +r +c +p +f
+    * Render all chess pieces
+      * test command: raycast -b 5 +s +l +r +c +p +f +w 
+    * Note: 
+      * Since it will take a while to render the scene, I attached two image "low-resolution-chess.bmp" and "high-resolution-chess.bmp" in the zip file. Or you can try run the program. [Recommend to turn off the diffuse reflection - use command raycast -b 5 +s +l +r +c +p ]
+      * In the bonus scene, I also placed a mirror in the back to the chess, so as to have better vision to each side of every piece of chess
 
+  2. Improve the intersection with some methods            [Achieved]
+    * In my implementation, I adopt a single bounding volume method for each chess piece, which decrease largely to the intersection test made by the program. The detailed analysis is shown in the following section
+
+
+### Bonus Question 2: intersection case study
 * Intersection algorithm result
-  * Intersection Number for _naive intersection_ algorithm:
-    1. chess_piece.smf (                  max-step:5) [512 x 512]: 79691776
-    2. chess_piece.smf (+s +r +l +c       max-step:5) [512 x 512]: 200118640
-    3. chess_piece.smf (+s +r +l +c +f +p max-step:5) [512 x 512]: 2402875280
-  * Intersection Number _Simple bounding box_ algorithm: 16432484
-    1. chess_piece.smf (                  max-step:5) [512 x 512]: 925376
-      * intersection test: 925376
-    	* intersection :		 2456
-    	* total ray number : 262144
-    2. chess_piece.smf (+s +r +l +c       max-step:5) [512 x 512]:
-    	* intersection test: 2343840
-    	* intersection :		 5106
-    	* total ray number : 664411
-    3. chess_piece.smf (+s +r +l +c +f +p max-step:5) [512 x 512]:
-    	* intersection test: 54921248
-    	* intersection :		 117980
-    	* total ray number : 8312265
+  * Intersection Number for _naive intersection_ :
+	  1. chess_piece.smf (                  max-step:5) [512 x 512]: 
+      * intersection test: 79691776
+      * intersection :     
+      * total ray number : 
+	  2. chess_piece.smf (+s +r +l +c       max-step:5) [512 x 512]: 
+      * intersection test: 200118640
+      * intersection :     
+      * total ray number : 
+    3. chess_piece.smf (+s +r +l +c +f +p max-step:5) [512 x 512]: 
+      * intersection test: 2402875280
+      * intersection :     
+      * total ray number : 
+
+  * Intersection Number _Single bounding box_ : 16432484
+  	1. chess_piece.smf (                  max-step:5) [512 x 512]:
+  		* intersection test: 925376
+  		* intersection :		 2456
+  		* total ray number : 262144
+  	2. chess_piece.smf (+s +r +l +c       max-step:5) [512 x 512]:
+  		* intersection test: 2343840
+  		* intersection :		 5106
+  		* total ray number : 664411
+  	3. chess_piece.smf (+s +r +l +c +f +p max-step:5) [512 x 512]:
+  		* intersection test: 54921248
+  		* intersection :		 117980
+  		* total ray number : 8312265
 
 * Analysis
 	* With my simple bounding box algorithm, we could decrease two order of  magnitudes from the number of ray-triangle intersection in naive version of algorithm. 
+
+## Code Structure
+
+* Project Folder
+  * object.h            - base class for all shape primitive
+  * box.hpp             - bounding box volume class
+  * ray.hpp             - ray class
+  * sphere.hpp          - sphere class
+  * scene.h/.cpp        - rendering scene setting up
+  * trace.h/.hpp        - ray tracing algorithm
+  * matrix.hpp          - 4 by 4 matrix helper function
+  * vector.hpp          - 3d vector helper function
+  * image_util.h/.cpp   - image writing
+  * chess.h/.cpp        - chess class for processing chess object
+  * chessboard.hpp      - chess board class
+  * triangle.hpp        - triangle class, triangle mesh class
+  * global.h            - global macro and variable
+
+## Notice: 
+
+In this assignment, I made a dual compilable version to linux machine and mac os x. However, as mac os x does not support some stale glut functionality, I basically disabled the openGL display mode in the mac compilation. And instead, I made the mac version to write a image after the rendering process

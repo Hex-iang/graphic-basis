@@ -12,7 +12,7 @@ INCLUDEDIR=/usr/include/
 LIBDIR=/usr/lib
 
 # The source files
-SOURCE= scene.cpp image_util.cpp trace.cpp raycast.cpp include/InitShader.cpp
+SOURCE= chess.cpp scene.cpp image_util.cpp trace.cpp raycast.cpp include/InitShader.cpp
 
 # The compiler 
 CC= g++
@@ -60,7 +60,7 @@ INCLUDEDIR=/usr/include/
 LIBDIR=/usr/lib
 
 # The source files
-SOURCE= scene.cpp image_util.cpp trace.cpp raycast.cpp include/InitShader.cpp
+SOURCE= chess.cpp scene.cpp image_util.cpp trace.cpp raycast.cpp include/InitShader.cpp
 
 # The compiler 
 CC= g++

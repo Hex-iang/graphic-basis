@@ -57,7 +57,13 @@ public:
 	{
 	    return Vec3<T>( y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x );
 	}
+	Vec3<T> operator / (const Vec3<T> &v) { return Vec3<T>( x / v.x, y / v.y, z / v.z); } 
 	friend Vec3<T> operator / (const T &s, const Vec3<T> &v) { return Vec3<T>( s / v.x, s / v.y, s / v.z); } 
+	T & operator [] (const uint32_t i) { 
+		if( i == 0 ) return x;
+		else if( i == 1) return y;
+		else return z;
+	}
 
 };
 
