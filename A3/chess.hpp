@@ -5,6 +5,7 @@
 #include "object.h"
 #include "triangle.hpp"
 #include "matrix.hpp"
+#include "box.hpp"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -13,7 +14,7 @@
 
 
 class Triangle;
-
+class Box;
 #define DEBUG
 class Chess: public Object
 {
@@ -32,7 +33,7 @@ class Chess: public Object
   // chess piece position property 
 public:
 	vector<Triangle> primitives;
-  vector<Triangle> box;
+  Box box;
 
   Chess(const RGB &amb, const RGB &dif, const RGB &spe, 
     const float &shine, const float &refl, const float &transp, 
@@ -99,26 +100,13 @@ public:
     if( optimize == 1 )
     {
       // // points for the 
-      Point p1(xmin, ymin, zmin); Point p2(xmin, ymin, zmax);
-      Point p3(xmin, ymax, zmin); Point p4(xmin, ymax, zmax);
-      Point p5(xmax, ymin, zmin); Point p6(xmax, ymin, zmax);
-      Point p7(xmax, ymax, zmin); Point p8(xmax, ymax, zmax);
+      Point pMin(xmin, ymin, zmin); 
+      Point pMax(xmax, ymax, zmax);
 
-      std::cout << "Coarse Bounding Box on - diagnoal points:" << p1 << p8 << std::endl;
+      std::cout << "Coarse Bounding Box on - diagnoal points:" << pMin << pMax << std::endl;
 
       // optimization 1
-      box.push_back(Triangle(p1, p2, p4));
-      box.push_back(Triangle(p1, p3, p4));
-      box.push_back(Triangle(p1, p5, p7));
-      box.push_back(Triangle(p1, p7, p3));
-      box.push_back(Triangle(p1, p2, p6));
-      box.push_back(Triangle(p1, p5, p6));
-      box.push_back(Triangle(p2, p6, p8));
-      box.push_back(Triangle(p2, p4, p8));
-      box.push_back(Triangle(p3, p4, p8));
-      box.push_back(Triangle(p3, p7, p8));
-      box.push_back(Triangle(p5, p6, p7));
-      box.push_back(Triangle(p6, p7, p8));
+      box = Box(pMin, pMax);
     }
 
     std::cout << "[naive_load] Read file complete: " << line_cnt << " lines in total" << std::endl;
@@ -141,13 +129,10 @@ public:
       // if coarse optimization on
       inside = false;
       // first optimization: a bounding box of the object
-      for( unsigned int i = 0; i < box.size(); ++i)
+      Intersection tmpHit(INFINITY);
+      if( box.intersect(ray, tmpHit) )
       {
-        Intersection tmpHit(INFINITY);
-        if( box[i].intersect(ray, tmpHit) )
-        {
-          inside = true;
-        }
+        inside = true;
       }
     }
     else if( optimize == 0)
