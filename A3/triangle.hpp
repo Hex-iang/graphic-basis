@@ -48,6 +48,8 @@ public:
 
   bool intersect(const Ray &ray, Intersection & insect)
   {
+    Object::count_intersection();
+
   	// a fast MOLLER_TRUMBORE method for finding triangle intersection point
 		Vector edge1 = p2 - p1;
 		Vector edge2 = p3 - p1;

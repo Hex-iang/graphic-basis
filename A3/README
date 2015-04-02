@@ -1,0 +1,12 @@
+# Assignment 3 implementation report
+
+## Basic Part
+
+## Bonus Part
+
+
+* Intersection algorithm result
+  * Intersection Number for naive intersection algorithm: 
+    1. chess_piece.smf + chess board + all effects [512 x 512]: 93380952
+  * Intersection Number Simgle bounding box algorithm: 16432484
+    1. [512 x 512]: 

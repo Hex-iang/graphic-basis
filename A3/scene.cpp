@@ -231,13 +231,19 @@ void set_up_bonus_scene(){
                            Vector(-1.0, -2.0, -3.0), 15.0) );    
   }
 
-  if( bonus_scene_mode == 2 || bonus_scene_mode == 3)
+  if( bonus_scene_mode == 2 )
   {
-    // test accerlation result
+    // test non-accerlated result
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-                           chess_shineness, chess_reflectance, chess_transp, 
-                           chess_transm, std::string("chess_pieces/chess_piece.smf"),
-                           Vector(0.0, -2.0, -3.0), 1.0) );    
+                     chess_shineness, chess_reflectance, chess_transp, 
+                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -3.0), 1.0, false) );    
+  }
+  else if( bonus_scene_mode == 3 )
+  {
+    // test accerlated result
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
+                     chess_shineness, chess_reflectance, chess_transp, 
+                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -3.0), 1.0, true));        
   }
 
   RGB mirror_ambient       = RGB(0.3, 0.3, 0.3);
@@ -251,15 +257,9 @@ void set_up_bonus_scene(){
   // place a mirror to the back
   Mesh *pMesh = new Mesh(mirror_ambient, mirror_diffuse, mirror_specular, mirror_shineness, mirror_reflectance, mirror_transp, mirror_transm);
 
-<<<<<<< Updated upstream
   pMesh->addTriangle(Point(-3.0, -2.0, -3.6), Point(3.0, -2.0, -3.6), Point(-3.0, 2.0, -3.6));
 
   pMesh->addTriangle(Point(-3.0, 2.0, -3.6), Point(3.0, 2.0, -3.6), Point(3.0, -2.0, -3.6));
-=======
-  pMesh->addTriangle(Point(-3.0, -3.0, -4.0), Point(3.0, -3.0, -4.0), Point(-3.0, 3.0, -4.0));
-
-  pMesh->addTriangle(Point(-3.0, 3.0, -4.0), Point(3.0, 3.0, -4.0), Point(3.0, -3.0, -4.0));
->>>>>>> Stashed changes
 
   scene.push_back(pMesh);
 

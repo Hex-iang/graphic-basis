@@ -83,6 +83,10 @@ bool antialiasing_on              = false;
 bool nondisplay_on                = false;
 bool poisson_on                   = false;
 int  bonus_scene_mode             = 0;
+
+
+// initiate static object variable 
+int Object::intersect_cnt = 0;
 // OpenGL
 const int NumPoints = 6;
 
@@ -262,7 +266,7 @@ int main( int argc, char **argv )
   // we want to make sure that intensity values are normalized
   histogram_normalization();
   
-
+  std::cout << "Total Ray-Triangle Intersection Count: " << Object::intersect_cnt << std::endl;
 #ifdef __APPLE__
   // if the current platform is a macitosh, output the tracing result immediately and finish
   save_image("ray-tracer-picture/generated.bmp");

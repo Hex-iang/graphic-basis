@@ -26,6 +26,9 @@ class Chess: public Object
   float mat_transparency; 
   float mat_transmission;
 
+  // optimization method type
+  int optimize;
+  
   // chess piece position property 
 public:
 	vector<Triangle> primitives;
@@ -34,10 +37,10 @@ public:
   Chess(const RGB &amb, const RGB &dif, const RGB &spe, 
     const float &shine, const float &refl, const float &transp, 
     const float &transm, const string &str, 
-    const Vector displacement = Vector(0.0, 0.0, 0.0), const float s = 1.0) : 
+    const Vector displacement = Vector(0.0, 0.0, 0.0), const float s = 1.0, int opt = 1) : 
     mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
     mat_shineness(shine), mat_reflection(refl), mat_transparency(transp),
-    mat_transmission(transm)
+    mat_transmission(transm), optimize(opt)
   {
   	vector<Point > vertices;
     int vertices_cnt = 0, triangles_cnt = 0, line_cnt =0;
@@ -93,28 +96,30 @@ public:
   		}
   	}
 
-    // // points for the 
-    Point p1(xmin, ymin, zmin); Point p2(xmin, ymin, zmax);
-    Point p3(xmin, ymax, zmin); Point p4(xmin, ymax, zmax);
-    Point p5(xmax, ymin, zmin); Point p6(xmax, ymin, zmax);
-    Point p7(xmax, ymax, zmin); Point p8(xmax, ymax, zmax);
+    if( optimize == 1 )
+    {
+      // // points for the 
+      Point p1(xmin, ymin, zmin); Point p2(xmin, ymin, zmax);
+      Point p3(xmin, ymax, zmin); Point p4(xmin, ymax, zmax);
+      Point p5(xmax, ymin, zmin); Point p6(xmax, ymin, zmax);
+      Point p7(xmax, ymax, zmin); Point p8(xmax, ymax, zmax);
 
-    std::cout << "diagnoal points:" << p1 << p8 << std::endl;
+      std::cout << "Coarse Bounding Box on - diagnoal points:" << p1 << p8 << std::endl;
 
-    // optimization 1
-    box.push_back(Triangle(p1, p2, p4));
-    box.push_back(Triangle(p1, p3, p4));
-    box.push_back(Triangle(p1, p5, p7));
-    box.push_back(Triangle(p1, p7, p3));
-    box.push_back(Triangle(p1, p2, p6));
-    box.push_back(Triangle(p1, p5, p6));
-    box.push_back(Triangle(p2, p6, p8));
-    box.push_back(Triangle(p2, p4, p8));
-    box.push_back(Triangle(p3, p4, p8));
-    box.push_back(Triangle(p3, p7, p8));
-    box.push_back(Triangle(p5, p6, p7));
-    box.push_back(Triangle(p6, p7, p8));
-
+      // optimization 1
+      box.push_back(Triangle(p1, p2, p4));
+      box.push_back(Triangle(p1, p3, p4));
+      box.push_back(Triangle(p1, p5, p7));
+      box.push_back(Triangle(p1, p7, p3));
+      box.push_back(Triangle(p1, p2, p6));
+      box.push_back(Triangle(p1, p5, p6));
+      box.push_back(Triangle(p2, p6, p8));
+      box.push_back(Triangle(p2, p4, p8));
+      box.push_back(Triangle(p3, p4, p8));
+      box.push_back(Triangle(p3, p7, p8));
+      box.push_back(Triangle(p5, p6, p7));
+      box.push_back(Triangle(p6, p7, p8));
+    }
 
     std::cout << "[naive_load] Read file complete: " << line_cnt << " lines in total" << std::endl;
     std::cout << "total points number: "    << vertices_cnt << endl;
@@ -128,20 +133,27 @@ public:
 
   bool intersect(const Ray &ray, Intersection & insect)
   {
-    // bool inside = true;
-    // Intersection tHit(INFINITY);
-
-    bool inside = false;
     Intersection tHit(INFINITY);
-    // first optimization: a bounding box of the object
-    for( unsigned int i = 0; i < box.size(); ++i)
-    {
-      Intersection tmpHit(INFINITY);
-      if( box[i].intersect(ray, tmpHit) )
+    
+    bool inside;
+
+    if( optimize == 1){
+      // if coarse optimization on
+      inside = false;
+      // first optimization: a bounding box of the object
+      for( unsigned int i = 0; i < box.size(); ++i)
       {
-        inside = true;
+        Intersection tmpHit(INFINITY);
+        if( box[i].intersect(ray, tmpHit) )
+        {
+          inside = true;
+        }
       }
     }
+    else if( optimize == 0)
+      inside = true;
+    else // need to change
+      inside = true;
 
     if( inside ){
       for (unsigned int i = 0; i < primitives.size(); ++i)
