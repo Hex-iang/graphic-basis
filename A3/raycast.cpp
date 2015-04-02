@@ -196,8 +196,8 @@ void keyboard(unsigned char key, int x, int y)
 #ifdef __linux__
     glutPostRedisplay();
 #endif
-    
     break;
+
   default:
     break;
   }
@@ -219,11 +219,13 @@ int main( int argc, char **argv )
   // generate random seed for global usage
   srand(time(NULL));
 
-  int default_scene_on = strcmp(argv[1], "-d");
-  int user_scene_on    = strcmp(argv[1], "-u");
-  int bonus_scene_on   = strcmp(argv[1], "-b");
+  int scene_type = 0; // default scene as initial value
+  if( strcmp(argv[1], "-d") == 0 ) scene_type = 0;
+  if( strcmp(argv[1], "-u") == 0 ) scene_type = 1;
+  if( strcmp(argv[1], "-b") == 0 ) scene_type = 2;
 
-  step_max = atoi(argv[2]); // maximum level of recursions
+  // maximum level of recursions
+  step_max = atoi(argv[2]);
 
   // Optional arguments
   for(int i = 3; i < argc; i++)
@@ -236,7 +238,7 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+p") == 0)    antialiasing_on            = true;
     else if (strcmp(argv[i], "+n") == 0)    nondisplay_on              = true;
     else if (strcmp(argv[i], "+b") == 0)    poisson_on                 = true;
-    else if (strcmp(argv[i], "+full") == 0) bonus_scene_mode           = 1;    
+    else if (strcmp(argv[i], "+w") == 0)    bonus_scene_mode           = 1;    
     // render both high-resolution/low-resolution chess object
     else if (strcmp(argv[i], "+t") == 0)    bonus_scene_mode           = 2;
     // test naive ray tracing intersection number
@@ -248,9 +250,10 @@ int main( int argc, char **argv )
     }
   }
 
-  if ( !user_scene_on )   set_up_user_scene();
-  if ( !bonus_scene_on )   set_up_bonus_scene();
-  if ( !default_scene_on )   set_up_default_scene();
+  // set up scene type
+  if ( scene_type == 0 )                    set_up_user_scene();
+  else if ( scene_type == 1 )               set_up_default_scene();
+  else if ( scene_type == 2 )               set_up_bonus_scene();
 
   // ray trace the scene now
   printf("Rendering scene using my fantastic ray tracer ...\n");
