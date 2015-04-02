@@ -1,5 +1,6 @@
 # Assignment 3 implementation report
 * Arthur: Hexiang Hu 301239910
+* all output images are in the "images" directory 
 
 ## Basic Part
   1. Ray‐sphere intersection and local reflectance:       [Achieved]
