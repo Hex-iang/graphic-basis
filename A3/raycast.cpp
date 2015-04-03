@@ -82,8 +82,22 @@ bool chessboard_on                = false;
 bool diffuse_reflection_on        = false;
 bool antialiasing_on              = false;
 bool nondisplay_on                = false;
+
 bool poisson_on                   = false;
+bool mirror_on                    = false;
+
 int  bonus_scene_mode             = 0;
+// Bonus scene mode : 
+//  0 - just load chess_piece.smf
+//  1 - load chess_piece.smf and bishop.smf
+//  2 - load chess_hire.smf and bishop_hire.smf
+//  3 - load all chess files
+
+int  accerlerate_mode             = 0; 
+// Accerlerate mode:
+//  0 - no accerleration
+//  1 - single bounding volume accerleration
+//  2 - spatial grid accerleration
 
 // initiate global static variable 
 uint64_t Statistic::intersect_cnt       = 0;
@@ -237,22 +251,25 @@ int main( int argc, char **argv )
   // Optional arguments
   for(int i = 3; i < argc; i++)
   {
+    // default functionality required by assignment
     if      (strcmp(argv[i], "+s") == 0)    shadow_on                  = true;
     else if (strcmp(argv[i], "+l") == 0)    reflection_on              = true;
     else if (strcmp(argv[i], "+r") == 0)    refraction_on              = true;
     else if (strcmp(argv[i], "+f") == 0)    diffuse_reflection_on      = true;
     else if (strcmp(argv[i], "+c") == 0)    chessboard_on              = true;
     else if (strcmp(argv[i], "+p") == 0)    antialiasing_on            = true;
+    // additional feature for bonus point
     else if (strcmp(argv[i], "+n") == 0)    nondisplay_on              = true;
-    else if (strcmp(argv[i], "+b") == 0)    poisson_on                 = true;
-    else if (strcmp(argv[i], "+w") == 0)    bonus_scene_mode           = 1;    
-    // render both high-resolution/low-resolution chess object
-    else if (strcmp(argv[i], "+a0") == 0)   bonus_scene_mode           = 2;
-    // test naive ray tracing intersection number
-    else if (strcmp(argv[i], "+a1") == 0)   bonus_scene_mode           = 3;
-    // test simple accerlerated version of object intersection number
-    else if (strcmp(argv[i], "+a2") == 0)   bonus_scene_mode           = 4;
-    // test BVH accerlerated version of object intersection number
+    else if (strcmp(argv[i], "+m") == 0)    mirror_on                  = true;
+    else if (strcmp(argv[i], "+ps") == 0)   poisson_on                 = true;
+    // turn on different bonus scene mode 
+    else if (strcmp(argv[i], "+b0") == 0)   bonus_scene_mode           = 0;
+    else if (strcmp(argv[i], "+b1") == 0)   bonus_scene_mode           = 1;
+    else if (strcmp(argv[i], "+b2") == 0)   bonus_scene_mode           = 2;
+    // turn on different accerlerate structure
+    else if (strcmp(argv[i], "+a0") == 0)   accerlerate_mode           = 0;
+    else if (strcmp(argv[i], "+a1") == 0)   accerlerate_mode           = 1;
+    else if (strcmp(argv[i], "+a2") == 0)   accerlerate_mode           = 2;
     else {
       std::cout << "Unknown command: " << argv[i] << std::endl;
       return -1;

@@ -24,6 +24,8 @@ extern float decay_c;
 
 extern bool chessboard_on;
 extern int  bonus_scene_mode;
+extern int  accerlerate_mode;
+extern bool mirror_on;
 //////////////////////////////////////////////////////////////////////////
 
 /*******************************************
@@ -216,17 +218,8 @@ void set_up_bonus_scene(){
   float mirror_transp      = 0.3;
   float mirror_transm      = 1.52; 
 
-  if( bonus_scene_mode == 0 || bonus_scene_mode == 1){
-    scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular,
-                           chess_shineness, chess_reflectance, chess_transp, 
-                           chess_transm, std::string("chess_pieces/chess_piece.smf"),
-                           Vector(1.0, -2.0, -2.0), 1.0, 1) );
-
-    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, 
-                               chess_shineness, chess_reflectance, chess_transp, 
-                               chess_transm, std::string("chess_pieces/bishop.smf"),
-                               Vector(0.5, -2.0, -2.0), 15.0, 1) );
-
+  if( mirror_on )
+  {
     // place a mirror to the back
     Mesh *pMesh = new Mesh(mirror_ambient, mirror_diffuse, mirror_specular, mirror_shineness, mirror_reflectance, mirror_transp, mirror_transm);
 
@@ -237,41 +230,47 @@ void set_up_bonus_scene(){
     scene.push_back(pMesh);
   }
 
+  // Bonus scene mode : 
+  //  0 - just load chess_piece.smf
+  //  1 - load chess_piece.smf and bishop.smf
+  //  2 - load chess_hire.smf and bishop_hire.smf
+  //  3 - load all chess files
 
-  if( bonus_scene_mode == 1 )
+  if( bonus_scene_mode == 0 )
   {
-    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-                           chess_shineness, chess_reflectance, chess_transp, 
-                           chess_transm, std::string("chess_pieces/chess_hires.smf"),
-                           Vector(-0.5, -2.0, -2.0), 1.0, 1) );
-    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-                           chess_shineness, chess_reflectance, chess_transp, 
-                           chess_transm, std::string("chess_pieces/bishop_hires.smf"),
-                           Vector(-1.0, -2.0, -2.0), 15.0, 1) );    
+    // Single Object for testing
+    //  - just load chess_piece.smf
+    scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(1.0, -2.0, -2.0), 1.0, accerlerate_mode) );
+  }
+  else if ( bonus_scene_mode == 1 )
+  {
+    // Low resolution objects
+    //  - load chess_piece.smf and bishop.smf
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop.smf"), Vector(0.5, -2.0, -2.0), 15.0, accerlerate_mode) );
+    scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(1.0, -2.0, -2.0), 1.0, accerlerate_mode) );
+  }
+  else if( bonus_scene_mode == 2 )
+  {
+    // High resolution objects
+    //  - load chess_hire.smf and bishop_hire.smf
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_hires.smf"), Vector(-0.5, -2.0, -2.0), 1.0, accerlerate_mode) );
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop_hires.smf"), Vector(-1.0, -2.0, -2.0), 15.0, accerlerate_mode) );    
+  }
+  else if( bonus_scene_mode == 4 )
+  {
+    // All chess objects
+    //  - load all chess files
+    
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_hires.smf"), Vector(-0.5, -2.0, -2.0), 1.0, accerlerate_mode) );
+    
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop_hires.smf"), Vector(-1.0, -2.0, -2.0), 15.0, accerlerate_mode) );  
+
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop.smf"), Vector(0.5, -2.0, -2.0), 15.0, accerlerate_mode) );
+
+    scene.push_back( new Chess(chess_ambient,  chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(1.0, -2.0, -2.0), 1.0, accerlerate_mode) );
+
   }
 
-  // bonus scene mode 2-4 is used for testing intersection  
-  if( bonus_scene_mode == 2 )
-  {
-    // test non-accerlated result
-    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-                     chess_shineness, chess_reflectance, chess_transp, 
-                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -2.0), 1.0, 0) );    
-  }
-  else if( bonus_scene_mode == 3 )
-  {
-    // test simple box bounded accerlated result
-    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-                     chess_shineness, chess_reflectance, chess_transp, 
-                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -2.0), 1.0, 1));        
-  }
-  else if( bonus_scene_mode == 4)
-  {
-    // test BVH accerlated result
-    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-                     chess_shineness, chess_reflectance, chess_transp, 
-                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -3.0), 1.0, 2));         
-  }
 
 
   if( chessboard_on ){

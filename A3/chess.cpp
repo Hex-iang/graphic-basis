@@ -71,7 +71,7 @@ Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
     Point pMin(xmin, ymin, zmin); 
     Point pMax(xmax, ymax, zmax);
 
-    std::cout << "Bounding Volume " << std::endl;
+    std::cout << "Bounding Volume: pMin: "<< pMin << ", pMax: " << pMax << std::endl;
 
     // optimization 1 structure
     box = Box(pMin, pMax);
@@ -122,10 +122,6 @@ Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
       }
       // in grid optimization, no need for primitives any more
 
-      // for (std::map<uint32_t, Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
-      // {
-      //   std::cout << "key: " << it->first << std::endl; 
-      // }
     }
 
   }
@@ -159,7 +155,7 @@ bool Chess::intersect(const Ray &ray, Intersection & insect)
     
     for (uint8_t i = 0; i < 3; ++i) {
       // convert ray starting point to cell coordinates
-      float rayOrigCell = ((ray.origin[i] + ray.direction[i] * ray.tmin) -  box[0][i]);
+      float rayOrigCell = ((ray.origin[i] + ray.direction[i] * ray.tnear) -  box[0][i]);
       cell[i] = clamp<uint32_t>(std::floor(rayOrigCell / cellDimension[i]), 0, resolution[i] - 1);
       if (ray.direction[i] < 0) {
         deltaT[i] = -cellDimension[i] * ray.invdir[i];
@@ -191,6 +187,7 @@ bool Chess::intersect(const Ray &ray, Intersection & insect)
         }
       }
 
+      // next grid to step in
       uint8_t k = 
         ((nextCrossingT[0] < nextCrossingT[1]) << 2) +
         ((nextCrossingT[0] < nextCrossingT[2]) << 1) +
