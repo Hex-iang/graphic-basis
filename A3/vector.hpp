@@ -65,6 +65,11 @@ public:
 		else if( i == 1) return y;
 		else return z;
 	}
+	const T & operator [] (const uint32_t i) const { 
+		if( i == 0 ) return x;
+		else if( i == 1) return y;
+		else return z;
+	}
 
 };
 

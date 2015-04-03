@@ -16,11 +16,11 @@ using namespace std;
 extern int win_width;
 extern int win_height;
 
-extern GLfloat frame[WIN_HEIGHT][WIN_WIDTH][3]; 
+extern GLfloat frame[WIN_HEIGHT][WIN_WIDTH][3];
 
 /*********************************************************
  * This function saves the current image to a ppm file
- *    
+ *
  * DO NOT CHANGE
  *********************************************************/
 void save_image(const string imagefullpath) {
@@ -33,8 +33,8 @@ void save_image(const string imagefullpath) {
   for(int y = 0; y < h; y++){
     for(int x = 0; x < w; x++) {
 
-    float r = frame[y][x][0]; 
-    float g = frame[y][x][1]; 
+    float r = frame[y][x][0];
+    float g = frame[y][x][1];
     float b = frame[y][x][2];
 
     bImg[index] = (b > 1.f) ? 255 : (unsigned char)(b*255); index++;
@@ -86,7 +86,7 @@ void save_image(const string imagefullpath) {
     fwrite(bmppad, 1, (4-(w*3)%4)%4, fp);
   }
 
- 
+
   fclose(fp);
 }
 
@@ -100,14 +100,14 @@ void histogram_normalization() {
   GLfloat max_val = 0.0;
   int i, j;
 
-  for (i=0; i<win_height; i++) 
+  for (i=0; i<win_height; i++)
     for (j=0; j<win_width; j++) {
       if (frame[i][j][0] > max_val) max_val = frame[i][j][0];
       if (frame[i][j][1] > max_val) max_val = frame[i][j][1];
       if (frame[i][j][2] > max_val) max_val = frame[i][j][2];
     }
 
-  for (i=0; i<win_height; i++) 
+  for (i=0; i<win_height; i++)
     for (j=0; j<win_width; j++) {
       frame[i][j][0] /= max_val;
       frame[i][j][1] /= max_val;

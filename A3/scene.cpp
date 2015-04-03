@@ -265,13 +265,13 @@ void set_up_bonus_scene(){
                      chess_shineness, chess_reflectance, chess_transp, 
                      chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -2.0), 1.0, 1));        
   }
-  // else if( bonus_scene_mode == 4)
-  // {
-  //   // test BVH accerlated result
-  //   scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
-  //                    chess_shineness, chess_reflectance, chess_transp, 
-  //                    chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -3.0), 1.0, 2));         
-  // }
+  else if( bonus_scene_mode == 4)
+  {
+    // test BVH accerlated result
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,
+                     chess_shineness, chess_reflectance, chess_transp, 
+                     chess_transm, std::string("chess_pieces/chess_piece.smf"), Vector(0.0, -2.0, -3.0), 1.0, 2));         
+  }
 
 
   if( chessboard_on ){

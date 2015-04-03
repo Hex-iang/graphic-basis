@@ -64,8 +64,8 @@ Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
     }
   }
 
-  // if( optimize == 1 || optimize == 2)
-  if( optimize == 1 )
+  if( optimize == 1 || optimize == 2)
+  // if( optimize == 1 )
   {
     // points for the 
     Point pMin(xmin, ymin, zmin); 
@@ -76,54 +76,57 @@ Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
     // optimization 1 structure
     box = Box(pMin, pMax);
 
-    // if( optimize == 2 )
-    // {
-    //   // calculate the size of grid 
-    //   Vector size = Point(xmax, ymax, zmax) - Point(xmin, ymin, zmin);
+    if( optimize == 2 )
+    {
+      // calculate the size of grid 
+      Vector size = Point(xmax, ymax, zmax) - Point(xmin, ymin, zmin);
 
-    //   // compute grid number according to a metric proposer by Cleary in 1983
-    //   float root = powf(1 * primitives.size() / (size.x * size.y * size.z), 1 / 3.f);
+      // compute grid number according to a metric proposer by Cleary in 1983
+      float root = powf(1 * primitives.size() / (size.x * size.y * size.z), 1 / 3.f);
 
-    //   resolution[0] = std::floor(size.x * root);
-    //   resolution[0] = std::max(uint32_t(1), std::min(resolution[0], uint32_t(128)));
-    //   resolution[1] = std::floor(size.x * root);
-    //   resolution[1] = std::max(uint32_t(1), std::min(resolution[1], uint32_t(128)));
-    //   resolution[2] = std::floor(size.x * root);
-    //   resolution[2] = std::max(uint32_t(1), std::min(resolution[2], uint32_t(128)));
+      for (uint32_t i = 0; i < 3; ++i)
+      {
+        resolution[i] = std::floor(size[i] * root);
+        resolution[i] = std::max(uint32_t(1), std::min(resolution[i], uint32_t(128)));
+      }
 
-    //   // compute the dimensionality of cells
-    //   cellDimension = size / Vector(resolution[0], resolution[1], resolution[2]);
+      // compute the dimensionality of cells
+      cellDimension = size / Vector(resolution[0], resolution[1], resolution[2]);
 
-    //   for (unsigned int i = 0; i < primitives.size(); ++i)
-    //   {
-    //     Point minPoint = primitives[i].get_min_bound();
-    //     Point maxPoint = primitives[i].get_max_bound();
+      for (unsigned int i = 0; i < primitives.size(); ++i)
+      {
+        Point minPoint = primitives[i].get_min_bound();
+        Point maxPoint = primitives[i].get_max_bound();
 
-    //     // calculate the coordination of triangles in the grid
-    //     minPoint = (minPoint - box[0]) / cellDimension;
-    //     maxPoint = (maxPoint - box[0]) / cellDimension;
+        // calculate the coordination of triangles in the grid
+        minPoint = (minPoint - box[0]) / cellDimension;
+        maxPoint = (maxPoint - box[0]) / cellDimension;
 
-    //     uint32_t zmin = clamp<uint32_t>(std::floor(minPoint.z), 0, resolution[2] - 1);
-    //     uint32_t zmax = clamp<uint32_t>(std::floor(maxPoint.z), 0, resolution[2] - 1);
-    //     uint32_t ymin = clamp<uint32_t>(std::floor(minPoint.y), 0, resolution[1] - 1);
-    //     uint32_t ymax = clamp<uint32_t>(std::floor(maxPoint.y), 0, resolution[1] - 1);
-    //     uint32_t xmin = clamp<uint32_t>(std::floor(minPoint.x), 0, resolution[0] - 1);
-    //     uint32_t xmax = clamp<uint32_t>(std::floor(maxPoint.x), 0, resolution[0] - 1);
+        uint32_t zmin = clamp<uint32_t>(std::floor(minPoint.z), 0, resolution[2] - 1);
+        uint32_t zmax = clamp<uint32_t>(std::floor(maxPoint.z), 0, resolution[2] - 1);
+        uint32_t ymin = clamp<uint32_t>(std::floor(minPoint.y), 0, resolution[1] - 1);
+        uint32_t ymax = clamp<uint32_t>(std::floor(maxPoint.y), 0, resolution[1] - 1);
+        uint32_t xmin = clamp<uint32_t>(std::floor(minPoint.x), 0, resolution[0] - 1);
+        uint32_t xmax = clamp<uint32_t>(std::floor(maxPoint.x), 0, resolution[0] - 1);
 
-    //     // insert the triangle into the corresponding grid
-    //     for (uint32_t z = zmin; z <= zmax; ++z) {
-    //       for (uint32_t y = ymin; y <= ymax; ++y) {
-    //         for (uint32_t x = xmin; x <= xmax; ++x) {
-    //           uint32_t index = z * resolution[0] * resolution[1] + y * resolution[0] + x;
-    //           cells[index].insert(primitives[i]);
-    //         }
-    //       }
-    //     }
-    //     // optimization 2 ended
-    //   }
+        // insert the triangle into the corresponding grid
+        for (uint32_t z = zmin; z <= zmax; ++z) {
+          for (uint32_t y = ymin; y <= ymax; ++y) {
+            for (uint32_t x = xmin; x <= xmax; ++x) {
+              uint32_t index = z * resolution[0] * resolution[1] + y * resolution[0] + x;
+              cells[index].insert(primitives[i]);
+            }
+          }
+        }
+        // optimization 2 ended
+      }
       // in grid optimization, no need for primitives any more
-      // primitives.clear();
-    // }
+
+      // for (std::map<uint32_t, Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+      // {
+      //   std::cout << "key: " << it->first << std::endl; 
+      // }
+    }
 
   }
 
@@ -133,24 +136,6 @@ Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
   std::cout << "vertices number: " << vertices.size() << std::endl;
   std::cout << "primitives number: " << primitives.size() << std::endl;
 }
-
-// inline void Chess::interate_grid_1d(float& rayOrigCell, float& dimension, uint32_t & cell, float & deltaT, float & nextCrossingT, uint32_t & exit_point, uint32_t step, const float & ray_tnear, const float & ray_dir, const float & ray_invdir, const float&resolution)
-// {
-//   cell = clamp<uint32_t>(std::floor(rayOrigCell / dimension), 0, resolution - 1);
-//   if (ray_dir < 0) {
-//     deltaT = - dimension * ray_invdir;
-//     nextCrossingT = ray_tnear + (cell * dimension - rayOrigCell) * ray_invdir;
-//     exit_point = -1;
-//     step = -1;
-//   }
-//   else {
-//     deltaT = dimension * ray_invdir;
-//     nextCrossingT = ray_tnear + ((cell + 1)  * dimension - rayOrigCell) * ray_invdir;
-//     exit_point = resolution;
-//     step = 1;
-//   }
-// }
-
 
 bool Chess::intersect(const Ray &ray, Intersection & insect)
 {
@@ -162,63 +147,75 @@ bool Chess::intersect(const Ray &ray, Intersection & insect)
     if( !box.intersect(ray, tmpHit) )
       return false;
   }
-  // else if( optimize == 2)
-  // {
-  //   // first optimization: a bounding box of the object
-  //   Intersection tmpHit(INFINITY);
-  //   if( !box.intersect(ray, tmpHit) )
-  //     return false;
+  else if( optimize == 2)
+  {
+    // first optimization: a bounding box of the object
+    Intersection tmpHit(INFINITY);
+    if( !box.intersect(ray, tmpHit) )
+      return false;
 
-  //   Vec3<uint32_t> exit_point, step, cell;
-  //   Vector deltaT, nextCrossingT;
+    Vec3<uint32_t> exit_point, step, cell;
+    Vector deltaT, nextCrossingT;
     
-  //   Point rayOrigCell = ((ray.origin + ray.direction * ray.tnear) -  box[0]);
+    for (uint8_t i = 0; i < 3; ++i) {
+      // convert ray starting point to cell coordinates
+      float rayOrigCell = ((ray.origin[i] + ray.direction[i] * ray.tmin) -  box[0][i]);
+      cell[i] = clamp<uint32_t>(std::floor(rayOrigCell / cellDimension[i]), 0, resolution[i] - 1);
+      if (ray.direction[i] < 0) {
+        deltaT[i] = -cellDimension[i] * ray.invdir[i];
+        nextCrossingT[i] = ray.tnear + (cell[i] * cellDimension[i] - rayOrigCell) * ray.invdir[i];
+        exit_point[i] = -1;
+        step[i] = -1;
+      }
+      else {
+        deltaT[i] = cellDimension[i] * ray.invdir[i];
+        nextCrossingT[i] = ray.tnear + ((cell[i] + 1)  * cellDimension[i] - rayOrigCell) * ray.invdir[i];
+        exit_point[i] = resolution[i];
+        step[i] = 1;
+      }
+    }
 
-  //   interate_grid_1d( rayOrigCell.x, cellDimension.x, cell.x, deltaT.x, nextCrossingT.x, exit_point.x, step.x, ray.tnear, ray.direction.x, ray.invdir.x, resolution[0]);
-
-  //   interate_grid_1d( rayOrigCell.y, cellDimension.y, cell.y, deltaT.y, nextCrossingT.y, exit_point.y, step.y, ray.tnear, ray.direction.y, ray.invdir.y, resolution[1]);
-
-  //   interate_grid_1d( rayOrigCell.z, cellDimension.z, cell.z, deltaT.z, nextCrossingT.z, exit_point.z, step.z, ray.tnear, ray.direction.z, ray.invdir.z, resolution[2]);
-
-  //   // grids traversal
-  //   Intersection tHit(INFINITY);
-  //   while ( true ) {
-  //     // compute cell index for intersection
-  //     uint32_t index = cell.z * resolution[0] * resolution[1] + cell.y * resolution[0] + cell.x;
+    // grids traversal
+    Intersection tHit(INFINITY);
+    while ( true ) {
+      // compute cell index for intersection
+      uint32_t index = cell[2] * resolution[0] * resolution[1] + cell[1] * resolution[0] + cell[0];
           
-  //     Intersection tmpHit(INFINITY);
+      Intersection tmpHit(INFINITY);
 
-  //     if ( cells.find(index) != cells.end() && cells[index].intersect(ray, tmpHit) ) {
-  //       if( tmpHit.t < tHit.t )
-  //       {
-  //         tHit = tmpHit;
-  //       }
-  //     }
+      if ( cells.find(index) != cells.end() && cells[index].intersect(ray, tmpHit) ) 
+      {  
+        if( tmpHit.t < tHit.t )
+        {
+          tHit = tmpHit;
+        }
+      }
 
-  //     uint8_t k = 
-  //       ((nextCrossingT[0] < nextCrossingT[1]) << 2) +
-  //       ((nextCrossingT[0] < nextCrossingT[2]) << 1) +
-  //       ((nextCrossingT[1] < nextCrossingT[2]));
+      uint8_t k = 
+        ((nextCrossingT[0] < nextCrossingT[1]) << 2) +
+        ((nextCrossingT[0] < nextCrossingT[2]) << 1) +
+        ((nextCrossingT[1] < nextCrossingT[2]));
       
-  //     static const uint8_t map[8] = {2, 1, 2, 1, 2, 2, 0, 0};
+      static const uint8_t map[8] = {2, 1, 2, 1, 2, 2, 0, 0};
       
-  //     uint8_t axis = map[k];
+      uint8_t axis = map[k];
 
-  //     if (ray.tmax < nextCrossingT[axis]) break;
-  //     cell[axis] += step[axis];
-  //     if (cell[axis] == exit_point[axis]) break;
-  //     nextCrossingT[axis] += deltaT[axis];
-  //   }
+      if (ray.tmax < nextCrossingT[axis]) break;
+      cell[axis] += step[axis];
+      if (cell[axis] == exit_point[axis]) break;
+      nextCrossingT[axis] += deltaT[axis];
+    }
 
-  //   if( tHit.t > ray.tmax || tHit.t < ray.tmin )
-  //     return false;
-  //   else
-  //   {
-  //     insect = tHit;
-  //     return true;
-  //   }
+    if( tHit.t > ray.tmax || tHit.t < ray.tmin ){
+      return false;
+    }
+    else
+    {
+      insect = tHit;
+      return true;
+    }
   
-  // }
+  }
 
 
 
@@ -244,28 +241,28 @@ bool Chess::intersect(const Ray &ray, Intersection & insect)
   }
 }
 
-// // function for finding intersected triangles within the cell
-// bool Cell::intersect(const Ray &ray, Intersection & insect)
-// {
-//   Intersection tHit(INFINITY);
+// function for finding intersected triangles within the cell
+bool Cell::intersect(const Ray &ray, Intersection & insect)
+{
+  Intersection tHit(INFINITY);
 
-//   // iterate over all triangles inside cell
-//   for (unsigned int i = 0; i < triangles.size(); ++i) {
-//     Intersection tmpHit(INFINITY);
-//     // no mailbox assists in this inplementaton
+  // iterate over all triangles inside cell
+  for (unsigned int i = 0; i < triangles.size(); ++i) {
+    Intersection tmpHit(INFINITY);
+    // no mailbox assists in this inplementaton
 
-//     if (triangles[i].intersect(ray, tmpHit)) {
-//       if (tmpHit.t < tHit.t) {
-//         tHit = tmpHit;
-//       }
-//     }
-//   }
+    if (triangles[i].intersect(ray, tmpHit)) {
+      if (tmpHit.t < tHit.t) {
+        tHit = tmpHit;
+      }
+    }
+  }
 
-//   if( tHit.t > ray.tmax || tHit.t < ray.tmin )
-//     return false;
-//   else
-//   {
-//     insect = tHit;
-//     return true;
-//   }
-// }
+  if( tHit.t > ray.tmax || tHit.t < ray.tmin )
+    return false;
+  else
+  {
+    insect = tHit;
+    return true;
+  }
+}

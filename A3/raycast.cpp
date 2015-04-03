@@ -251,7 +251,7 @@ int main( int argc, char **argv )
     // test naive ray tracing intersection number
     else if (strcmp(argv[i], "+a1") == 0)   bonus_scene_mode           = 3;
     // test simple accerlerated version of object intersection number
-    // else if (strcmp(argv[i], "+a2") == 0)   bonus_scene_mode           = 4;
+    else if (strcmp(argv[i], "+a2") == 0)   bonus_scene_mode           = 4;
     // test BVH accerlerated version of object intersection number
     else {
       std::cout << "Unknown command: " << argv[i] << std::endl;

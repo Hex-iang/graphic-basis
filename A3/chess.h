@@ -18,20 +18,20 @@ class Triangle;
 class Box;
 
 // a structure for accerlerate chess object intersection
-// struct Cell
-// {
-//   Cell()  {}
-//   ~Cell() {}
-//   std::vector<Triangle> triangles;
+struct Cell
+{
+  Cell()  {}
+  ~Cell() {}
+  std::vector<Triangle> triangles;
 
-//   void insert( const Triangle & t)
-//   { 
-//     triangles.push_back(t); 
-//   }
+  void insert( const Triangle & t)
+  { 
+    triangles.push_back(t); 
+  }
 
-//   bool intersect(const Ray &ray, Intersection & insect);
+  bool intersect(const Ray &ray, Intersection & insect);
 
-// };
+};
 
 class Chess: public Object
 {
@@ -57,9 +57,9 @@ public:
   Box box;
 
   // structures for grid optimization
-  // std::map<uint32_t, Cell> cells;
-  // Vector cellDimension;
-  // uint32_t resolution[3];
+  std::map<uint32_t, Cell> cells;
+  Vector cellDimension;
+  uint32_t resolution[3];
 
   Chess(const RGB &amb, const RGB &dif, const RGB &spe, 
     const float &shine, const float &refl, const float &transp, 
@@ -70,8 +70,6 @@ public:
   ~Chess() { }
 
   bool intersect(const Ray &ray, Intersection & insect);
-  
-  // inline void interate_grid_1d(float& rayOrigCell, float& dimension, uint32_t & cell, float & deltaT, float & nextCrossingT, uint32_t & exit_point, uint32_t step, const float & ray_tnear, const float & ray_dir, const float & ray_invdir, const float&resolution);
   
 
   Vector normal(const Point &q) const      { return Vector(0.0, 1.0, 0.0); }
