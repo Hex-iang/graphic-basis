@@ -50,8 +50,6 @@ RGB null_clr = RGB(0.0, 0.0, 0.0);   // NULL color
 // these view parameters should be fixed
 //
 Point eye_pos = Point(0.0, 0.0, 0.0);            // eye position
-// float image_plane = -1.5;                        // image plane position
-// Point eye_pos = Point(0.0, 0.0, 1.5);               // eye position
 float image_plane = -1.5;                           // image plane position
 // float image_plane = 0.0;
 // list of spheres in the scene
@@ -266,6 +264,7 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+b0") == 0)   bonus_scene_mode           = 0;
     else if (strcmp(argv[i], "+b1") == 0)   bonus_scene_mode           = 1;
     else if (strcmp(argv[i], "+b2") == 0)   bonus_scene_mode           = 2;
+    else if (strcmp(argv[i], "+b3") == 0)   bonus_scene_mode           = 3;
     // turn on different accerlerate structure
     else if (strcmp(argv[i], "+a0") == 0)   accerlerate_mode           = 0;
     else if (strcmp(argv[i], "+a1") == 0)   accerlerate_mode           = 1;
@@ -277,8 +276,8 @@ int main( int argc, char **argv )
   }
 
   // set up scene type
-  if ( scene_type == 0 )                    set_up_user_scene();
-  else if ( scene_type == 1 )               set_up_default_scene();
+  if ( scene_type == 0 )                    set_up_default_scene();
+  else if ( scene_type == 1 )               set_up_user_scene();
   else if ( scene_type == 2 )               set_up_bonus_scene();
 
   // ray trace the scene now

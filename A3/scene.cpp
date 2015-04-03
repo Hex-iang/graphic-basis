@@ -99,7 +99,7 @@ void set_up_default_scene() {
     scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
                     board_dark_diffuse, board_specular, 
                     board_shineness, board_reflectance, 
-                    board_transp, board_transm, -4.0, 1.0));
+                    board_transp, board_transm, -2.0, 1.0));
   }
 
 }
@@ -256,7 +256,7 @@ void set_up_bonus_scene(){
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_hires.smf"), Vector(-0.5, -2.0, -2.0), 1.0, accerlerate_mode) );
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop_hires.smf"), Vector(-1.0, -2.0, -2.0), 15.0, accerlerate_mode) );    
   }
-  else if( bonus_scene_mode == 4 )
+  else if( bonus_scene_mode == 3 )
   {
     // All chess objects
     //  - load all chess files

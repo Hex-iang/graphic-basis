@@ -2,91 +2,131 @@
 * Arthur: Hexiang Hu 301239910
 * all output images are in the "images" directory 
 
+## Program Usage
+
+raycast [scene option] [max step] [additional option]
+  * scene option(-b | -d | -u):
+    * -b : bonus scene with loading and rendering chess
+    * -d : default scene with rendering sphere
+    * -u : user scene with transparency settin on sphere
+  * max step(a number):
+    * use a number to define the maximum recursive depth of ray tracing program
+  * additional option:
+    * +s : add shadow effect
+    * +l : add reflection effect
+    * +r : add refraction effect
+    * +c : add chessboard object to the scene
+    * +f : add diffuse reflection effect
+    * +p : add anti-aliasing effect(default)
+
+    * +p +ps: turn on poisson anti-aliasing effect
+    
+    * +b0/+b1/+b2/+b3: adjust bonus scene objects(default: +b0), only work with bonus scene
+    * +a0/+a1/+a2:  use different accerlerate structure in bonus scene triangle mesh. only work with bonus scene
+
 ## Basic Part
   1. Ray‐sphere intersection and local reflectance:       [Achieved]
-    * test command: raycast [-d | -u] 5
+    * test command: ./raycast [-d | -u] 5
 
   2. Shadows:                                             [Achieved]
-    * test command: raycast [-d | -u] 5 +s
+    * test command: ./raycast [-d | -u] 5 +s
 
   3. Reflections:                                         [Achieved]
-    * test command: raycast [-d | -u] 5 +s +l
+    * test command: ./raycast [-d | -u] 5 +s +l
 
   4. Chess Board:                                         [Achieved]
-    * test command: raycast [-d | -u] 5 +s +l +c
+    * test command: ./raycast [-d | -u] 5 +s +l +c
 
   5. Refraction:                                          [Achieved]
-    * test command: raycast -u 5 +s +l +c +r
+    * test command: ./raycast -u 5 +s +l +c +r
+
     * Note: since that in the default scene, there is no transparency setted, please do test this feature through user scene.
       * In the user scene, the transmission rate is set as 1.1 for each ball
     
   6. Diffuse Reflection:                                  [Achieved]
-    * test command: raycast [-d | -u] +s +l +r +c +f
+    * test command: ./raycast [-d | -u] +s +l +r +c +f
   7. Super Sampling:                                      [Achieved]
-    * test command: raycast [-d | -u] +s +l +r +c +f +p
+    * test command: ./raycast [-d | -u] +s +l +r +c +f +p
 
   8. Additional Features: Poisson Anti-aliasing 
     * an alternative way for super sampling
-    * test command: raycast [-d | -u] +s +l +r +c +f +p +b 
+    * test command: ./raycast [-d | -u] +s +l +r +c +f +p +b 
 
+***
 
 ## Bonus Part
-  1. Render Scene With Chess Pieces on Chess Board         [Achieved]
+1. Render Scene With Chess Pieces on Chess Board         [Achieved]
+  * In my implementation, I made the program being able to render a scene with four piece of chess and a mirror in the back.
+  * You could find the result images in images directory:
+    * "images/bonus-scene.bmp"            - the entire bonus scene I rendered
+    * "images/low-resolution-chess.bmp"   - the scene with low-resolution chess
+    * "images/high-resolution-chess.bmp"  - the scene with all chesses
+  
+  * Test command: 
+    * ./raycast -b 5 +s +l +r +c +p +f +b3 +m +a2
+      * Note: Here I recommend using +a2 since it will give the best performance. It will take around 1 minute to render the scene, if you cannot wait, just turn off the mirror by using "./raycast -b 5 +s +l +r +c +p +f +b3 +a2" command, the result should be rendered in 20 seconds.
 
-    * Render 2 low-resolution chess pieces - single bounding box accelerated
-      * test command: raycast -b 5 +s +l +r +c +p +f
-      	* intersection test:	4294598454
-      	* total time: 				114.276 secs (2 min)
-      	* saved as: 					low-resolution-chess.bmp
-    * Render all chess pieces 						 - single bounding box accelerated
-      * test command: raycast -b 5 +s +l +r +c +p +f +w
-      	* intersection test: 	74827272024
-      	* total time:					1481.74 secs (20+ min)
-    * Note: 
-      * Since it will take a while to render the scene, I attached two image "low-resolution-chess.bmp" and "high-resolution-chess.bmp" in the zip file. Or you can try run the program. [Recommend to turn off the diffuse reflection - use command raycast -b 5 +s +l +r +c +f +p ]
-      * I tried to render the high resolution image with all details on using naive method, it turns out that the result can not be rendered in 2 hours, so I finally gave up doing a computation time comparing with the single bounding box accerlerated version 
-      * In the bonus scene, I also placed a mirror in the back to the chess, so as to have better vision to each side of every piece of chess
-
-  2. Improve the intersection with some methods            [Achieved]
-  	* test command: raycast -b 5 +s +l +r +c +p +a0				=> test non-accelerated version
-  	* test command: raycast -b 5 +s +l +r +c +p +a1				=> test accelerated version
-    * In my implementation, I adopt a single bounding volume method for each chess piece, which decrease largely to the intersection test made by the program. The detailed analysis is shown in the following section
+2. Improve the intersection with some methods            [Achieved]
+	* Non-accelerated naive intersection: 
+    * test command: ./raycast -b 5 +s +l +r +c +p +f +b0 +a0
+	* Single bounding volume accerleration: 
+    * test command: ./raycast -b 5 +s +l +r +c +p +f +b0 +a1
+  * Spatial grid accerleration:
+    * test command: ./raycast -b 5 +s +l +r +c +p +f +b0 +a2
 
 
-### Bonus Question 2: intersection case study
-* Intersection algorithm result
-  * Intersection Number for _naive intersection_ :
-	  1. chess_piece.smf (+a0                   max-step:5) [512 x 512]: 
-      * intersection test: 79691776
-      * intersection :     7752
-      * total ray number : 262144
-	  2. chess_piece.smf (+s +r +l +c +a0       max-step:5) [512 x 512]: 
-      * intersection test: 201988240
-      * intersection :     14692
-      * total ray number : 679966
-    3. chess_piece.smf (+s +r +l +c +f +p +a0 max-step:5) [512 x 512]: 
-      * intersection test: 2775710000
-      * intersection :     234637
-      * total ray number : 9894188
+### Intersection case study
 
-  * Intersection Number _Single bounding box_ : 16432484
-  	1. chess_piece.smf (+a1                   max-step:5) [512 x 512]:
-  		* intersection test: 2788896
-  		* intersection :		 7752
-  		* total ray number : 262144
-  	2. chess_piece.smf (+s +r +l +c +a1       max-step:5) [512 x 512]:
-  		* intersection test: 6226224
-  		* intersection :		 14692
-  		* total ray number : 679966
-  	3. chess_piece.smf (+s +r +l +c +f +p +a1 max-step:5) [512 x 512]:
-  		* intersection test: 103667344
-  		* intersection :		 235271
-  		* total ray number : 9905950
+For the purpose of comparing each method, I did a case study with different objects in the scene, and following is a comparable result to those scene. You can check the effect through intersection test number and rendering time (on csil linux machine)
+
+* Rendering result for certain scene
+  * __Naive intersection__
+    * Render 1 low-resolution chess pieces
+      * test command: ./raycast -b 5 +s +l +r +c +p +f +b0 +a0
+        * intersection test:  2788435744
+        * total time:         63.1539 secs (1 min)
+    * Render 2 low-resolution chess pieces
+      * test command: ./raycast -b 5 +s +l +r +c +p +f +b1 +a0
+        * intersection test:  10966158656
+        * total time:         247.367 secs (2 min)
+    * Render all chess pieces  
+      * test command: ./raycast -b 5 +s +l +r +c +p +f +b2 +a0
+        * intersection test:  unknown 
+        * total time:         multi-hour (I never see it finish when runing test)
+
+  * Single bounding box accelerated
+    * __Render 1 low-resolution chess pieces__
+      * test command: ./raycast -b 5 +s +l +r +c +p +f +b0 +a1
+        * intersection test:  110015168
+        * total time:         4.16276 secs
+    * Render 2 low-resolution chess pieces
+      * test command: ./raycast -b 5 +s +l +r +c +p +f +b1 +a1
+        * intersection test:  4294598454
+        * total time:         114.276 secs (2 min)
+    * Render all chess pieces  
+      * test command: ./raycast -b 5 +s +l +r +c +p +f +b2 +a1
+        * intersection test:  74827272024
+        * total time:         1481.74 secs (20+ min)
+
+  * __Spatial Grid Accelerated__[]
+    * Render 1 low-resolution chess pieces
+      * test command: ./raycast -b 5 +s +l +r +c +p +f +b0 +a2
+        * intersection test:  11373129
+        * total time:         2.1532 secs
+    * Render 2 low-resolution chess pieces
+      * test command: ./raycast -b 5 +s +l +r +c +p +f +b1 +a2
+        * intersection test:  37661080
+        * total time:         4.4047 secs
+    * Render all chess pieces  
+      * test command: ./raycast -b 5 +s +l +r +c +p +f +b2 +a2
+        * intersection test:  112949047
+        * total time:         11.2104 secs
 
 * Analysis
-	* With my simple bounding box algorithm, we could decrease a order of magnitudes from the number of ray-triangle intersection in naive version of algorithm. 
+	* With my simple bounding box algorithm, I could decrease a order of magnitudes from the number of ray-triangle intersection in naive version of algorithm. 
+  * With the spatial grid algorithm, it could further decrease two order of magnitude from the number of ray-triangle intersection in naive version of algorithm. 
 
-## Code Structure
+## Project Structure
 
 * Project Folder
   * object.h            - base class for all shape primitive
