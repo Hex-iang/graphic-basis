@@ -53,9 +53,9 @@ void set_up_default_scene() {
   float sphere1_shineness   = 10;
   float sphere1_reflectance = 0.4;
   float sphere1_transp      = 0.0;
-  float sphere1_transm      = 1.1;
-  scene.push_back(new Sphere(sphere1_ambient,sphere1_diffuse, 
-                  sphere1_specular, sphere1_shineness,sphere1_reflectance, 
+  float sphere1_transm      = 1.0;
+  scene.push_back(new Sphere(sphere1_ambient,sphere1_diffuse,
+                  sphere1_specular, sphere1_shineness,sphere1_reflectance,
                   sphere1_transp, sphere1_transm, sphere1_ctr, sphere1_rad));
 
   // sphere 2
@@ -67,9 +67,9 @@ void set_up_default_scene() {
   float sphere2_shineness   = 6;
   float sphere2_reflectance = 0.3;
   float sphere2_transp      = 0.0;
-  float sphere2_transm      = 1.1;
-  scene.push_back(new Sphere(sphere2_ambient,sphere2_diffuse, 
-                  sphere2_specular, sphere2_shineness,sphere2_reflectance, 
+  float sphere2_transm      = 1.0;
+  scene.push_back(new Sphere(sphere2_ambient,sphere2_diffuse,
+                  sphere2_specular, sphere2_shineness,sphere2_reflectance,
                   sphere2_transp, sphere2_transm, sphere2_ctr, sphere2_rad));
 
   // sphere 3
@@ -81,9 +81,9 @@ void set_up_default_scene() {
   float sphere3_shineness   = 30;
   float sphere3_reflectance = 0.3;
   float sphere3_transp      = 0.0;
-  float sphere3_transm      = 1.1;  
-  scene.push_back(new Sphere(sphere3_ambient,sphere3_diffuse, 
-                  sphere3_specular, sphere3_shineness,sphere3_reflectance, 
+  float sphere3_transm      = 1.0;
+  scene.push_back(new Sphere(sphere3_ambient,sphere3_diffuse,
+                  sphere3_specular, sphere3_shineness,sphere3_reflectance,
                   sphere3_transp, sphere3_transm, sphere3_ctr, sphere3_rad));
 
   if( chessboard_on ){
@@ -94,12 +94,12 @@ void set_up_default_scene() {
     float board_shineness    = 30;
     float board_reflectance  = 0.5;
     float board_transp       = 0.0;
-    float board_transm     = 1.0;
+    float board_transm       = 1.0;
 
-    scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
-                    board_dark_diffuse, board_specular, 
-                    board_shineness, board_reflectance, 
-                    board_transp, board_transm, -2.0, 1.0));
+    scene.push_back(new ChessBoard(board_ambient, board_light_diffuse,
+                    board_dark_diffuse, board_specular,
+                    board_shineness, board_reflectance,
+                    board_transp, board_transm, -1.8, 1.5));
   }
 
 }
@@ -117,9 +117,9 @@ void set_up_user_scene() {
 
   // setup air tranmission rate
   global_transm = 1.0;
-  
+
   // setup light 1
-  light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), 
+  light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0),
     RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
   // sphere 1
@@ -130,10 +130,10 @@ void set_up_user_scene() {
   RGB sphere1_specular      = RGB(1.0, 1.0, 1.0);
   float sphere1_shineness   = 10;
   float sphere1_reflectance = 0.4;
-  float sphere1_transp      = 0.7;
-  float sphere1_transm      = 1.1;
-  scene.push_back(new Sphere(sphere1_ambient,sphere1_diffuse, 
-                  sphere1_specular, sphere1_shineness,sphere1_reflectance, 
+  float sphere1_transp      = 0.4;
+  float sphere1_transm      = 1.52;
+  scene.push_back(new Sphere(sphere1_ambient,sphere1_diffuse,
+                  sphere1_specular, sphere1_shineness,sphere1_reflectance,
                   sphere1_transp, sphere1_transm, sphere1_ctr, sphere1_rad));
 
   // sphere 2
@@ -144,10 +144,10 @@ void set_up_user_scene() {
   RGB sphere2_specular      = RGB(1.0, 1.0, 1.0);
   float sphere2_shineness   = 6;
   float sphere2_reflectance = 0.2;
-  float sphere2_transp      = 0.6;
-  float sphere2_transm      = 1.1;
-  scene.push_back(new Sphere(sphere2_ambient,sphere2_diffuse, 
-                  sphere2_specular, sphere2_shineness,sphere2_reflectance, 
+  float sphere2_transp      = 0.5;
+  float sphere2_transm      = 1.52;
+  scene.push_back(new Sphere(sphere2_ambient,sphere2_diffuse,
+                  sphere2_specular, sphere2_shineness,sphere2_reflectance,
                   sphere2_transp, sphere2_transm, sphere2_ctr, sphere2_rad));
 
   // sphere 3
@@ -158,10 +158,10 @@ void set_up_user_scene() {
   RGB sphere3_specular      = RGB(0.0, 1.0, 0.0);
   float sphere3_shineness   = 30;
   float sphere3_reflectance = 0.2;
-  float sphere3_transp      = 0.5;
-  float sphere3_transm      = 1.1;  
-  scene.push_back(new Sphere(sphere3_ambient,sphere3_diffuse, 
-                  sphere3_specular, sphere3_shineness,sphere3_reflectance, 
+  float sphere3_transp      = 0.1;
+  float sphere3_transm      = 1.52;
+  scene.push_back(new Sphere(sphere3_ambient,sphere3_diffuse,
+                  sphere3_specular, sphere3_shineness,sphere3_reflectance,
                   sphere3_transp, sphere3_transm, sphere3_ctr, sphere3_rad));
 
   if( chessboard_on ){
@@ -174,10 +174,10 @@ void set_up_user_scene() {
     float board_transp       = 0.0;
     float board_transm       = 2.4;
 
-    scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
-                    board_dark_diffuse, board_specular, 
-                    board_shineness, board_reflectance, 
-                    board_transp, board_transm, -2.0, 1.0));
+    scene.push_back(new ChessBoard(board_ambient, board_light_diffuse,
+                    board_dark_diffuse, board_specular,
+                    board_shineness, board_reflectance,
+                    board_transp, board_transm, -1.8, 1.5));
   }
 }
 
@@ -195,7 +195,7 @@ void set_up_bonus_scene(){
 
   // setup air tranmission rate
   global_transm = 1.0;
-  
+
   // setup light 1
   light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
@@ -207,7 +207,7 @@ void set_up_bonus_scene(){
   float chess_reflectance = 0.5;
 
   float chess_transp      = 0.5;
-  float chess_transm      = 1.52;  
+  float chess_transm      = 1.52;
 
   // Mirror material property
   RGB mirror_ambient       = RGB(0.3, 0.3, 0.3);
@@ -216,7 +216,7 @@ void set_up_bonus_scene(){
   float mirror_shineness   = 40;
   float mirror_reflectance = 1.0;
   float mirror_transp      = 0.3;
-  float mirror_transm      = 1.52; 
+  float mirror_transm      = 1.52;
 
   if( mirror_on )
   {
@@ -230,7 +230,7 @@ void set_up_bonus_scene(){
     scene.push_back(pMesh);
   }
 
-  // Bonus scene mode : 
+  // Bonus scene mode :
   //  0 - just load chess_piece.smf
   //  1 - load chess_piece.smf and bishop.smf
   //  2 - load chess_hire.smf and bishop_hire.smf
@@ -254,16 +254,16 @@ void set_up_bonus_scene(){
     // High resolution objects
     //  - load chess_hire.smf and bishop_hire.smf
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular,chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_hires.smf"), Vector(-0.5, -2.0, -2.0), 1.0, accerlerate_mode) );
-    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop_hires.smf"), Vector(-1.0, -2.0, -2.0), 15.0, accerlerate_mode) );    
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop_hires.smf"), Vector(-1.0, -2.0, -2.0), 15.0, accerlerate_mode) );
   }
   else if( bonus_scene_mode == 3 )
   {
     // All chess objects
     //  - load all chess files
-    
+
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/chess_hires.smf"), Vector(-0.5, -2.0, -2.0), 1.0, accerlerate_mode) );
-    
-    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop_hires.smf"), Vector(-1.0, -2.0, -2.0), 15.0, accerlerate_mode) );  
+
+    scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop_hires.smf"), Vector(-1.0, -2.0, -2.0), 15.0, accerlerate_mode) );
 
     scene.push_back( new Chess(chess_ambient, chess_diffuse, chess_specular, chess_shineness, chess_reflectance, chess_transp, chess_transm, std::string("chess_pieces/bishop.smf"), Vector(0.5, -2.0, -2.0), 15.0, accerlerate_mode) );
 
@@ -274,7 +274,7 @@ void set_up_bonus_scene(){
 
 
   if( chessboard_on ){
-    // add chess board to the ground of the chess 
+    // add chess board to the ground of the chess
     RGB board_ambient        = RGB(0.20, 0.20, 0.20);
     RGB board_light_diffuse  = RGB(1.00, 1.00, 1.00);
     RGB board_dark_diffuse   = RGB(0.10, 0.10, 0.10);
@@ -284,10 +284,10 @@ void set_up_bonus_scene(){
     float board_transp       = 0.2;
     float board_transm       = 2.4;
 
-    scene.push_back(new ChessBoard(board_ambient, board_light_diffuse, 
-                    board_dark_diffuse, board_specular, 
-                    board_shineness, board_reflectance, 
-                    board_transp, board_transm, -2.0, 0.5));
+    scene.push_back(new ChessBoard(board_ambient, board_light_diffuse,
+                    board_dark_diffuse, board_specular,
+                    board_shineness, board_reflectance,
+                    board_transp, board_transm, -2.0, 1.0));
   }
 }
 
@@ -302,4 +302,3 @@ void release_scene()
     pObject = NULL;
   }
 }
-

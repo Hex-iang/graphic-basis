@@ -3,7 +3,7 @@
  **********************************************************************/
 #pragma once
 #include "vector.hpp"
-#include "global.h" 
+#include "global.h"
 
 class Ray
 {
@@ -14,7 +14,7 @@ public:
   float tmin;
   mutable float tfar;
   mutable float tnear;
-  unsigned triangleId;  
+  unsigned triangleId;
 
   Vector invdir;        // precomputed value for ray-box intersection
   int sign[3];          // precomputed value for ray-box intersection
@@ -30,14 +30,14 @@ public:
     sign[0] = (invdir.x < 0);
     sign[1] = (invdir.y < 0);
     sign[2] = (invdir.z < 0);
-    
-    tmin = float(0.0);
+
+    tmin = float(0.001);
     tmax = float(1000.0);
   }
 
   Point intersectPoint(const float &t) const
-  { 
-    return origin + direction * t; 
+  {
+    return origin + direction * t;
   }
 
 };
@@ -53,9 +53,9 @@ public:
 
   Intersection(){};
   Intersection(const float & _t):t(_t){}
-  Intersection(const Intersection &p) { 
-    this->t       = p.t; 
-    this->normal  = p.normal; 
+  Intersection(const Intersection &p) {
+    this->t       = p.t;
+    this->normal  = p.normal;
     this->point   = p.point;
   }
   ~Intersection(){};
