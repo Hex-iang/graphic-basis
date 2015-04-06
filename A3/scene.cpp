@@ -290,7 +290,7 @@ void set_up_bonus_scene(){
     scene.push_back(new ChessBoard(board_ambient, board_light_diffuse,
                     board_dark_diffuse, board_specular,
                     board_shineness, board_reflectance,
-                    board_transp, board_transm, diffuse_reflection, -2.0, 1.0));
+                    board_transp, board_transm, diffuse_reflection, -2.0, 1.0, true));
   }
 }
 

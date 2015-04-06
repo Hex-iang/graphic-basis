@@ -33,13 +33,14 @@ public:
   // Grid width variable for determinating grid size
   float grid_wid;
   Vector plane_normal;
+  bool grid_infinite;
 
   ChessBoard(const RGB &ambient, const RGB &light_dif, const Vector &dark_dif,
     const RGB &spe, const float &shine, const float &refl,
-    const float &transp, const float &transm, const float &dif_refl, const float y = - 2.0, const float wid = 1.0) :
+    const float &transp, const float &transm, const float &dif_refl, const float y = - 2.0, const float wid = 1.0, bool inf = false) :
     mat_ambient(ambient), light_diffuse(light_dif), dark_diffuse(dark_dif),
     mat_specular(spe), mat_shineness(shine), mat_reflection(refl),
-    mat_transparency(transp), mat_transmission(transm), mat_diffuse_reflection(dif_refl), plane_y( -y ), grid_wid(wid) { plane_normal = Vector(0.0, 1.0, 0.0); }
+    mat_transparency(transp), mat_transmission(transm), mat_diffuse_reflection(dif_refl), plane_y( -y ), grid_wid(wid), grid_infinite(inf) { plane_normal = Vector(0.0, 1.0, 0.0); }
 
   ~ChessBoard(){}
 
@@ -55,13 +56,32 @@ public:
     // else if ray is negative, return false
     else if ( t < ray.tmin ) return false;
     // else the ray hits the plane, return true
-    else insect.t = t;
 
-    insect.point = ray.intersectPoint(insect.t);
-    // get intersection normal
-    insect.normal = normal( insect.point );
 
-    return true;
+    if( grid_infinite ){
+      insect.t = t;
+      insect.point = ray.intersectPoint(insect.t);
+      // get intersection normal
+      insect.normal = normal( insect.point );
+
+      return true;
+    }
+    else
+    {
+      insect.t = t;
+      insect.point = ray.intersectPoint(insect.t);
+      // get intersection normal
+      insect.normal = normal( insect.point );
+
+      int x = floor(insect.point.x / grid_wid + 0.5);
+      int y = floor(insect.point.z / grid_wid + 0.5);
+
+      if( y >= -8 && y <= -1 && x >= -4 && x <= 3 )
+        return true;
+      else
+        return false;
+    }
+
   }
 
   Vector normal(const Point & q) const { return plane_normal; }
@@ -83,24 +103,56 @@ public:
     // calculate point coordinates on chess board
     int x = floor(q.x / grid_wid + 0.5);
     int y = floor(q.z / grid_wid + 0.5);
+    if( grid_infinite ){
+      // the case the chess board is infinite large
 
-    // rescale chessboard coordinates and calculate its coresponding color
-    if( y >= 0)
-    {
-      if( ( (int(abs(x)) % 2 ) == 0 && (int(abs(y)) % 2 ) == 0) ||
-          ( (int(abs(x)) % 2 ) == 1 && (int(abs(y)) % 2 ) == 1) )
-        return light_diffuse;
+      // rescale chessboard coordinates and calculate its coresponding color
+      if( y >= 0)
+      {
+        if( ( (int(abs(x)) % 2 ) == 0 && (int(abs(y)) % 2 ) == 0) ||
+            ( (int(abs(x)) % 2 ) == 1 && (int(abs(y)) % 2 ) == 1) )
+          return light_diffuse;
+        else
+          return dark_diffuse;
+      }
       else
-        return dark_diffuse;
+      {
+        if( ( (int(abs(x)) % 2 ) == 0 && (int(abs(y)) % 2 ) == 0) ||
+            ( (int(abs(x)) % 2 ) == 1 && (int(abs(y)) % 2 ) == 1) )
+          return dark_diffuse;
+        else
+          return light_diffuse;
+      }
     }
     else
     {
-      if( ( (int(abs(x)) % 2 ) == 0 && (int(abs(y)) % 2 ) == 0) ||
-          ( (int(abs(x)) % 2 ) == 1 && (int(abs(y)) % 2 ) == 1) )
-        return dark_diffuse;
+      // the case the chess board is 8 x 8
+      if( y >= -8 && y <= -1 && x >= -4 && x <= 3 )
+      {
+        if( y >= 0 )
+        {
+          if( ( (int(abs(x)) % 2 ) == 0 && (int(abs(y)) % 2 ) == 0) ||
+              ( (int(abs(x)) % 2 ) == 1 && (int(abs(y)) % 2 ) == 1) )
+            return light_diffuse;
+          else
+            return dark_diffuse;
+        }
+        else
+        {
+          if( ( (int(abs(x)) % 2 ) == 0 && (int(abs(y)) % 2 ) == 0) ||
+              ( (int(abs(x)) % 2 ) == 1 && (int(abs(y)) % 2 ) == 1) )
+            return dark_diffuse;
+          else
+            return light_diffuse;
+        }
+      }
       else
-        return light_diffuse;
+      {
+        return RGB(0.0, 0.0, 0.0);
+      }
+
     }
+
   }
 
 };
