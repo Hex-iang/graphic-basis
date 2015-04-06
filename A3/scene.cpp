@@ -102,7 +102,7 @@ void set_up_default_scene() {
     scene.push_back(new ChessBoard(board_ambient, board_light_diffuse,
                     board_dark_diffuse, board_specular,
                     board_shineness, board_reflectance,
-                    board_transp, board_transm, diffuse_reflection, -1.8, 1.5));
+                    board_transp, board_transm, diffuse_reflection, -2.0, 1.5));
   }
 
 }
@@ -134,7 +134,7 @@ void set_up_user_scene() {
   float sphere1_shineness   = 10;
   float sphere1_reflectance = 0.4;
   float sphere1_transp      = 0.4;
-  float sphere1_transm      = 1.52;
+  float sphere1_transm      = float(1.52);
   scene.push_back(new Sphere(sphere1_ambient,sphere1_diffuse,
                   sphere1_specular, sphere1_shineness,sphere1_reflectance,
                   sphere1_transp, sphere1_transm, diffuse_reflection, sphere1_ctr, sphere1_rad));
@@ -148,7 +148,7 @@ void set_up_user_scene() {
   float sphere2_shineness   = 6;
   float sphere2_reflectance = 0.2;
   float sphere2_transp      = 0.5;
-  float sphere2_transm      = 1.52;
+  float sphere2_transm      = float(1.52);
   scene.push_back(new Sphere(sphere2_ambient,sphere2_diffuse,
                   sphere2_specular, sphere2_shineness,sphere2_reflectance,
                   sphere2_transp, sphere2_transm, diffuse_reflection, sphere2_ctr, sphere2_rad));
@@ -161,8 +161,8 @@ void set_up_user_scene() {
   RGB sphere3_specular      = RGB(0.0, 1.0, 0.0);
   float sphere3_shineness   = 30;
   float sphere3_reflectance = 0.2;
-  float sphere3_transp      = 0.1;
-  float sphere3_transm      = 1.52;
+  float sphere3_transp      = 0.0;
+  float sphere3_transm      = float(1.52);
   scene.push_back(new Sphere(sphere3_ambient,sphere3_diffuse,
                   sphere3_specular, sphere3_shineness,sphere3_reflectance,
                   sphere3_transp, sphere3_transm, diffuse_reflection, sphere3_ctr, sphere3_rad));
@@ -180,7 +180,7 @@ void set_up_user_scene() {
     scene.push_back(new ChessBoard(board_ambient, board_light_diffuse,
                     board_dark_diffuse, board_specular,
                     board_shineness, board_reflectance,
-                    board_transp, board_transm, diffuse_reflection, -1.8, 1.5));
+                    board_transp, board_transm, diffuse_reflection, -2.0, 1.5));
   }
 }
 

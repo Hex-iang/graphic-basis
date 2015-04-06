@@ -228,17 +228,22 @@ RGB recursive_ray_trace(const Ray &ray, const int &depth, Object * pObject_ignor
   && ( depth < step_max) )
   {
     // In our scene, we are always outside of the sphere
-    float eta = ( inside? pObject->transmission(hit.point) / global_transm:
-                          global_transm / pObject->transmission(hit.point) );
+
+    float eta = 0;
+
+    if (inside)
+      eta = pObject->transmission(hit.point) / global_transm;
+    else
+      eta = global_transm / pObject->transmission(hit.point);
 
     // Sin(refr) = Sin(in) * eta
-    float cos_in = hit.normal.dot( - ray.direction);
+    float cos_in = hit.normal.dot( view );
     // Cos(refr) = sqrt( 1 - (Sin(in) * eta)^2 )
     float cos_refr = sqrt( 1 - eta * eta * (1 - cos_in * cos_in) );
 
     if( cos_refr >= 0 ){
       // Vector for refraction direction
-      Vector refr_direct = (eta * cos_in - cos_refr) * hit.normal - (- ray.direction * eta);
+      Vector refr_direct = (eta * cos_in - cos_refr) * hit.normal - ( view * eta);
       refr_direct = refr_direct.normalize();
 
       refraction = recursive_ray_trace(Ray(hit.point, refr_direct), depth + 1, pObject);
