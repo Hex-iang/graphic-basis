@@ -28,7 +28,10 @@ public:
 
   // Since chess board is infinite and lays on the x-z plane,
   // we only need its y value to determinate its location
-  float plane_y;
+  float A;
+  float B;
+  float C;
+  float D;
 
   // Grid width variable for determinating grid size
   float grid_wid;
@@ -40,7 +43,7 @@ public:
     const float &transp, const float &transm, const float &dif_refl, const float y = - 2.0, const float wid = 1.0, bool inf = false) :
     mat_ambient(ambient), light_diffuse(light_dif), dark_diffuse(dark_dif),
     mat_specular(spe), mat_shineness(shine), mat_reflection(refl),
-    mat_transparency(transp), mat_transmission(transm), mat_diffuse_reflection(dif_refl), plane_y( -y ), grid_wid(wid), grid_infinite(inf) { plane_normal = Vector(0.0, 1.0, 0.0); }
+    mat_transparency(transp), mat_transmission(transm), mat_diffuse_reflection(dif_refl), D( -y ), grid_wid(wid), grid_infinite(inf) { plane_normal = Vector(0.0, 1.0, 0.0); }
 
   ~ChessBoard(){}
 
@@ -49,7 +52,7 @@ public:
     // if there is no y component, then there is no intersection
     if ( std::abs( ray.direction.dot( plane_normal ) ) < EPSILON ) return false;
 
-    float t = - (ray.origin.y + plane_y) / ray.direction.y;
+    float t = - (ray.origin.y + D) / ray.direction.y;
 
     // if the ray is out of the maximum range, return false
     if ( t > ray.tmax) return false;

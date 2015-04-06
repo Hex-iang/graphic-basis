@@ -132,8 +132,8 @@ void set_up_user_scene() {
   RGB sphere1_diffuse       = RGB(0.1, 0.5, 0.8);
   RGB sphere1_specular      = RGB(1.0, 1.0, 1.0);
   float sphere1_shineness   = 10;
-  float sphere1_reflectance = 0.4;
-  float sphere1_transp      = 0.4;
+  float sphere1_reflectance = 0.5;
+  float sphere1_transp      = 0.5;
   float sphere1_transm      = float(1.52);
   scene.push_back(new Sphere(sphere1_ambient,sphere1_diffuse,
                   sphere1_specular, sphere1_shineness,sphere1_reflectance,
@@ -146,7 +146,7 @@ void set_up_user_scene() {
   RGB sphere2_diffuse       = RGB(1.0, 0.0, 0.25);
   RGB sphere2_specular      = RGB(1.0, 1.0, 1.0);
   float sphere2_shineness   = 6;
-  float sphere2_reflectance = 0.2;
+  float sphere2_reflectance = 0.5;
   float sphere2_transp      = 0.5;
   float sphere2_transm      = float(1.52);
   scene.push_back(new Sphere(sphere2_ambient,sphere2_diffuse,
@@ -160,14 +160,15 @@ void set_up_user_scene() {
   RGB sphere3_diffuse       = RGB(0.0, 1.0, 0.25);
   RGB sphere3_specular      = RGB(0.0, 1.0, 0.0);
   float sphere3_shineness   = 30;
-  float sphere3_reflectance = 0.2;
-  float sphere3_transp      = 0.0;
+  float sphere3_reflectance = 0.3;
+  float sphere3_transp      = 0.3;
   float sphere3_transm      = float(1.52);
   scene.push_back(new Sphere(sphere3_ambient,sphere3_diffuse,
                   sphere3_specular, sphere3_shineness,sphere3_reflectance,
                   sphere3_transp, sphere3_transm, diffuse_reflection, sphere3_ctr, sphere3_rad));
 
-  if( chessboard_on ){
+  if( chessboard_on )
+  {
     RGB board_ambient        = RGB(0.20, 0.20, 0.20);
     RGB board_light_diffuse  = RGB(1.00, 1.00, 1.00);
     RGB board_dark_diffuse   = RGB(0.10, 0.10, 0.10);
@@ -181,6 +182,27 @@ void set_up_user_scene() {
                     board_dark_diffuse, board_specular,
                     board_shineness, board_reflectance,
                     board_transp, board_transm, diffuse_reflection, -2.0, 1.5));
+  }
+
+  if( mirror_on )
+  {
+    // Mirror material property
+    RGB mirror_ambient       = RGB(0.3, 0.3, 0.3);
+    RGB mirror_diffuse       = RGB(0.6, 0.6, 0.6);
+    RGB mirror_specular      = RGB(0.9, 0.9, 0.9);
+    float mirror_shineness   = 40;
+    float mirror_reflectance = 1.0;
+    float mirror_transp      = 0.0;
+    float mirror_transm      = float(1.0);
+
+    // place a mirror to the back
+    Mesh *pMesh = new Mesh(mirror_ambient, mirror_diffuse, mirror_specular, mirror_shineness, mirror_reflectance, mirror_transp, mirror_transm, diffuse_reflection);
+
+    pMesh->addTriangle(Point(-3.0, -2.0, -4.0), Point(3.0, -2.0, -4.0), Point(-3.0, 2.0, -4.0));
+
+    pMesh->addTriangle(Point(-3.0, 2.0, -4.0), Point(3.0, 2.0, -4.0), Point(3.0, -2.0, -4.0));
+
+    scene.push_back(pMesh);
   }
 }
 
@@ -203,15 +225,15 @@ void set_up_bonus_scene(){
   light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
   // Chess material property
-  RGB chess_ambient       = RGB(0.3, 0.3, 0.3);
-  RGB chess_diffuse       = RGB(0.02, 0.02, 0.4);
-  RGB chess_specular      = RGB(0.02, 0.02, 0.8);
+  RGB chess_ambient       = RGB(0.02, 0.12, 0.2);
+  RGB chess_diffuse       = RGB(0.02, 0.22, 0.42);
+  RGB chess_specular      = RGB(0.02, 0.22, 0.42);
   float chess_shineness   = 30;
-  float chess_reflectance = 0.5;
+  float chess_reflectance = 0.3;
 
-  float chess_transp      = 0.5;
-  float chess_transm      = 1.52;
-
+  float chess_transp      = 0.9;
+  // float chess_transm      = float(1 / 1.52);
+  float chess_transm      = float(1.52);
   // Mirror material property
   RGB mirror_ambient       = RGB(0.3, 0.3, 0.3);
   RGB mirror_diffuse       = RGB(0.6, 0.6, 0.6);
@@ -219,7 +241,7 @@ void set_up_bonus_scene(){
   float mirror_shineness   = 40;
   float mirror_reflectance = 1.0;
   float mirror_transp      = 0.3;
-  float mirror_transm      = 1.52;
+  float mirror_transm      = float(1.52);
 
   if( mirror_on )
   {
