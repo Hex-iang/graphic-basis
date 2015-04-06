@@ -112,7 +112,7 @@ void set_up_default_scene() {
  ***************************************/
 void set_up_user_scene() {
   // set background color
-  background_clr = RGB(0.5, 0.05, 0.8);
+  background_clr = RGB(0.02, 0.05, 0.2);
   // background_clr = RGB(0.8, 0.8, 0.8);
 
   // setup global ambient term
@@ -187,7 +187,7 @@ void set_up_user_scene() {
   if( mirror_on )
   {
     // Mirror material property
-    RGB mirror_ambient       = RGB(0.3, 0.3, 0.3);
+    RGB mirror_ambient       = RGB(0.5, 0.5, 0.5);
     RGB mirror_diffuse       = RGB(0.6, 0.6, 0.6);
     RGB mirror_specular      = RGB(0.9, 0.9, 0.9);
     float mirror_shineness   = 40;
@@ -225,22 +225,21 @@ void set_up_bonus_scene(){
   light = Light( Point(-2.0, 5.0, 1.0), RGB(0.1, 0.1, 0.1), RGB(1.0, 1.0, 1.0), RGB(1.0, 1.0, 1.0), 0.5, 0.3, 0.0);
 
   // Chess material property
-  RGB chess_ambient       = RGB(0.02, 0.12, 0.2);
-  RGB chess_diffuse       = RGB(0.02, 0.22, 0.42);
-  RGB chess_specular      = RGB(0.02, 0.22, 0.42);
+  RGB chess_ambient       = RGB(0.01, 0.25, 0.58);
+  RGB chess_diffuse       = RGB(0.4, 0.4, 0.4);
+  RGB chess_specular      = RGB(0.7, 0.7, 0.7);
   float chess_shineness   = 30;
-  float chess_reflectance = 0.3;
+  float chess_reflectance = 0.6;
 
-  float chess_transp      = 0.9;
-  // float chess_transm      = float(1 / 1.52);
+  float chess_transp      = 0.3;
   float chess_transm      = float(1.52);
   // Mirror material property
   RGB mirror_ambient       = RGB(0.3, 0.3, 0.3);
   RGB mirror_diffuse       = RGB(0.6, 0.6, 0.6);
   RGB mirror_specular      = RGB(0.9, 0.9, 0.9);
-  float mirror_shineness   = 40;
-  float mirror_reflectance = 1.0;
-  float mirror_transp      = 0.3;
+  float mirror_shineness   = 30;
+  float mirror_reflectance = 0.9;
+  float mirror_transp      = 0.0;
   float mirror_transm      = float(1.52);
 
   if( mirror_on )
@@ -248,9 +247,9 @@ void set_up_bonus_scene(){
     // place a mirror to the back
     Mesh *pMesh = new Mesh(mirror_ambient, mirror_diffuse, mirror_specular, mirror_shineness, mirror_reflectance, mirror_transp, mirror_transm, diffuse_reflection);
 
-    pMesh->addTriangle(Point(-3.0, -2.0, -3.0), Point(3.0, -2.0, -3.0), Point(-3.0, 2.0, -3.0));
+    pMesh->addTriangle(Point(-3.0, -2.0, -2.5), Point(3.0, -2.0, -2.5), Point(-3.0, 2.0, -2.5));
 
-    pMesh->addTriangle(Point(-3.0, 2.0, -3.0), Point(3.0, 2.0, -3.0), Point(3.0, -2.0, -3.0));
+    pMesh->addTriangle(Point(-3.0, 2.0, -2.5), Point(3.0, 2.0, -2.5), Point(3.0, -2.0, -2.5));
 
     scene.push_back(pMesh);
   }

@@ -36,7 +36,7 @@ raycast [scene option] [max step] [additional option]
 
   4. Chess Board:                                         [Achieved]
     * test command: ./raycast [-d | -u] 5 +s +l +c
-
+    * In the user/default scene, the chess board is 8 x 8, and in the bonus scene, it will become a infinite chess board
   5. Refraction:                                          [Achieved]
     * test command: ./raycast -u 5 +s +l +c +r
 
@@ -64,7 +64,7 @@ raycast [scene option] [max step] [additional option]
   
   * Test command: 
     * ./raycast -b 5 +s +l +r +c +p +f +b3 +m +a2
-      * Note: Here I recommend using +a2 since it will give the best performance. It will take around 1 minute to render the scene, if you cannot wait, just turn off the mirror by using "./raycast -b 5 +s +l +r +c +p +f +b3 +a2" command, the result should be rendered in 20 seconds.
+      * Note: Here I recommend using +a2 since it will give the best performance. It will take around 1252.7 secs to render the scene, if you cannot wait, just turn off the mirror by using "./raycast -b 5 +s +l +r +c +p +f +b3 +a2" command, the result should be rendered in 250 secs.
 
 2. Improve the intersection with some methods            [Achieved]
 	* Non-accelerated naive intersection: 
@@ -79,48 +79,60 @@ raycast [scene option] [max step] [additional option]
 
 For the purpose of comparing each method, I did a case study with different objects in the scene, and following is a comparable result to those scene. You can check the effect through intersection test number and rendering time (on csil linux machine)
 
-* Rendering result for certain scene
+* Rendering result for certain scene( I exclude diffuse reflection for fast testing)
   * __Naive intersection__
     * Render 1 low-resolution chess pieces
-      * test command: ./raycast -b 5 +s +l +r +c +p +f +b0 +a0
-        * intersection test:  2788435744
-        * total time:         63.1539 secs (1 min)
+      * test command: ./raycast -b 5 +s +l +r +c +p +b0 +a0
+        * intersection test:  1011020400
+        * total time:         19.9468 secs
     * Render 2 low-resolution chess pieces
-      * test command: ./raycast -b 5 +s +l +r +c +p +f +b1 +a0
-        * intersection test:  10966158656
-        * total time:         247.367 secs (2 min)
-    * Render all chess pieces  
-      * test command: ./raycast -b 5 +s +l +r +c +p +f +b2 +a0
-        * intersection test:  unknown 
-        * total time:         multi-hour (I never see it finish when runing test)
+      * test command: ./raycast -b 5 +s +l +r +c +p +b1 +a0
+        * intersection test:  2756540816
+        * total time:         56.6689 secs
+    * Render 2 high-resolution chess pieces/all chess pieces
+      * test command: ./raycast -b 5 +s +l +r +c +p +b2 +a0
+        * intersection test:  43429069568 
+        * total time:         941.5943 secs
+    * Render all chess pieces 
+      * test command: ./raycast -b 5 +s +l +r +c +p +b3 +a0
+        * intersection test:  59817822409
+        * total time:         1371.9365 secs
 
   * Single bounding box accelerated
     * __Render 1 low-resolution chess pieces__
-      * test command: ./raycast -b 5 +s +l +r +c +p +f +b0 +a1
-        * intersection test:  110015168
-        * total time:         4.16276 secs
+      * test command: ./raycast -b 5 +s +l +r +c +p +b0 +a1
+        * intersection test:  59352960
+        * total time:         1.56418 secs
     * Render 2 low-resolution chess pieces
-      * test command: ./raycast -b 5 +s +l +r +c +p +f +b1 +a1
-        * intersection test:  4294598454
-        * total time:         114.276 secs (2 min)
+      * test command: ./raycast -b 5 +s +l +r +c +p +b1 +a1
+        * intersection test:  153213168
+        * total time:         3.53121 secs
+    * Render 2 high-resolution chess pieces 
+      * test command: ./raycast -b 5 +s +l +r +c +p +b2 +a1
+        * intersection test:  1824239104
+        * total time:         40.3423 secs
     * Render all chess pieces  
-      * test command: ./raycast -b 5 +s +l +r +c +p +f +b2 +a1
-        * intersection test:  74827272024
-        * total time:         1481.74 secs (20+ min)
+      * test command: ./raycast -b 5 +s +l +r +c +p +b3 +a2
+        * intersection test:  2227014896
+        * total time:         54.0535 secs
 
   * __Spatial Grid Accelerated__[]
     * Render 1 low-resolution chess pieces
-      * test command: ./raycast -b 5 +s +l +r +c +p +f +b0 +a2
-        * intersection test:  11373129
-        * total time:         2.1532 secs
+      * test command: ./raycast -b 5 +s +l +r +c +p +b0 +a2
+        * intersection test:  6016833
+        * total time:         0.573864 secs
     * Render 2 low-resolution chess pieces
-      * test command: ./raycast -b 5 +s +l +r +c +p +f +b1 +a2
-        * intersection test:  37661080
-        * total time:         4.4047 secs
+      * test command: ./raycast -b 5 +s +l +r +c +p +b1 +a2
+        * intersection test:  12806875
+        * total time:         0.868053 secs
+    * Render 2 high-resolution chess pieces  
+      * test command: ./raycast -b 5 +s +l +r +c +p +b2 +a2
+        * intersection test:  16696711
+        * total time:         1.09135 secs
     * Render all chess pieces  
-      * test command: ./raycast -b 5 +s +l +r +c +p +f +b2 +a2
-        * intersection test:  112949047
-        * total time:         11.2104 secs
+      * test command: ./raycast -b 5 +s +l +r +c +p +b3 +a2
+        * intersection test:  32329882
+        * total time:         1.79325 secs
 
 * Analysis
 	* With my simple bounding box algorithm, I could decrease a order of magnitudes from the number of ray-triangle intersection in naive version of algorithm. 

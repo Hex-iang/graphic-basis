@@ -25,3 +25,5 @@
 *.app
 FruitTetris
 depend
+
+submission/*

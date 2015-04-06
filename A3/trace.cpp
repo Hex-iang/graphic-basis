@@ -58,12 +58,12 @@ extern int step_max;
  * Shadow test for phong model
  *********************************************************************/
 
-bool shadow_test(const Ray &shadow_ray, const Object * pObject_ignore)
+bool shadow_test(const Ray &shadow_ray, const Object * pObject_current)
 {
   // find the nearest ray-sphere intersection point
   for (unsigned i = 0; i < scene.size(); ++i)
   {
-    if( pObject_ignore == scene[i] ) continue;
+    if( pObject_current == scene[i] ) continue;
 
     Intersection hit(INFINITY);
 
@@ -77,14 +77,14 @@ bool shadow_test(const Ray &shadow_ray, const Object * pObject_ignore)
 /*********************************************************************
  * Scene intersection
  *********************************************************************/
-Intersection intersect_scene(const Ray & ray, Object * &pObject, Object * pObject_ignore)
+Intersection intersect_scene(const Ray & ray, Object * &pObject, Object * pObject_current)
 {
   Intersection tHit(INFINITY);
   // find the nearest ray-object intersection point
   for (unsigned i = 0; i < scene.size(); ++i)
   {
     // skip the object we want to ignore
-    if(pObject_ignore == scene[i]) continue;
+    if(pObject_current == scene[i]) continue;
     Intersection hit(INFINITY);
     // maximum ray range
     if (scene[i]->intersect(ray, hit)) {
@@ -113,15 +113,6 @@ RGB phong(const Intersection &hit, const Vector &view, const Object * pObject)
   // Normalize it shadow ray to get its direction L
   Vector L = light.source - hit.point;
 
-  // Debug code
-  // if( pObject->normal(hit.point) == Vector(0.0, 0.0, -2.0))
-  // {
-  //   if( shadow_test( Ray(hit.point, shadow_ray), pObject) )
-  //   {
-  //     std::cout << "shadow ray direction: " << shadow_ray << std::endl;
-  //   }
-  // }
-
   // if( (!shadow_on) || shadow_test( Ray(light.source, shadow_ray), pObject) ){
   if( (!shadow_on) || shadow_test( Ray(hit.point, shadow_ray), pObject) ){
     float d_L2 = L.dot(L);
@@ -146,12 +137,12 @@ RGB phong(const Intersection &hit, const Vector &view, const Object * pObject)
 
 /************************************************************************
  * This is the recursive ray tracer ************************************************************************/
-RGB recursive_ray_trace(const Ray &ray, const int &depth, Object * pObject_ignore = NULL) {
+RGB recursive_ray_trace(const Ray &ray, const int &depth, Object * pObject_current = NULL) {
 
   Object * pObject = NULL;
 
   // find the nearest ray-sphere intersection point
-  Intersection hit = intersect_scene(ray, pObject, pObject_ignore);
+  Intersection hit = intersect_scene(ray, pObject, pObject_current);
 
   // if there is no intersection found
   if (!pObject){
@@ -189,7 +180,7 @@ RGB recursive_ray_trace(const Ray &ray, const int &depth, Object * pObject_ignor
   Vector view = - ray.direction;
 
   // recursive ray tracing for diffuse inter-reflection
-  if( diffuse_reflection_on && (depth < step_max) )
+  if( diffuse_reflection_on && ( pObject->diffuse_reflection(hit.point) > 0) && (depth < step_max) )
   {
     // if diffuse inter-reflection is on, there is no ambient light any more
     Rand random( (float) -1.0, (float ) 1.0);
@@ -231,21 +222,31 @@ RGB recursive_ray_trace(const Ray &ray, const int &depth, Object * pObject_ignor
 
     float eta = 0;
 
-    if (inside)
-      eta = pObject->transmission(hit.point) / global_transm;
-    else
-      eta = global_transm / pObject->transmission(hit.point);
+    if (inside){
+      if(pObject_current == NULL)
+        eta = pObject->transmission(hit.point) / global_transm;
+      else
+        eta = pObject->transmission(hit.point) / pObject_current->transmission(hit.point);
+    }
+    else{
+      if(pObject_current == NULL)
+        eta = global_transm / pObject->transmission(hit.point);
+      else
+        eta = pObject_current->transmission(hit.point) / pObject->transmission(hit.point);
+    }
 
     // Sin(refr) = Sin(in) * eta
     float cos_in = hit.normal.dot( view );
     // Cos(refr) = sqrt( 1 - (Sin(in) * eta)^2 )
-    float cos_refr = sqrt( 1 - eta * eta * (1 - cos_in * cos_in) );
+    float cos_refr_2 = 1 - eta * eta * (1 - cos_in * cos_in) ;
 
-    // Vector for refraction direction
-    Vector refr_direct = (eta * cos_in - cos_refr) * hit.normal - ( view * eta);
-    refr_direct = refr_direct.normalize();
+    if( cos_refr_2 >= 0 ){
 
-    if( refr_direct.dot(hit.normal) < 0 ){
+      float cos_refr = sqrt(cos_refr_2);
+      // Vector for refraction direction
+      Vector refr_direct = (eta * cos_in - cos_refr) * hit.normal - ( view * eta);
+      refr_direct = refr_direct.normalize();
+      // avoid total refraction
       refraction = recursive_ray_trace(Ray(hit.point, refr_direct), depth + 1, pObject);
     }
     else
