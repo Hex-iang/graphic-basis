@@ -15,21 +15,22 @@ class Sphere: public Object
   float mat_shineness;
 
   float mat_reflection;
-  float mat_transparency; 
+  float mat_transparency;
   float mat_transmission;
-public: 
+  float mat_diffuse_reflection;
+public:
   Point center;
   float radius, radius2;
 
   // *********************************************************************
   // Sphere constructor
   // *********************************************************************
-  Sphere(const RGB &amb, const RGB &dif, const RGB &spe, 
-    const float &shine, const float &refl, const float &transp, 
-    const float &transm, const Point &ctr, const float &rad) : 
-    mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
+  Sphere(const RGB &amb, const RGB &dif, const RGB &spe,
+    const float &shine, const float &refl, const float &transp,
+    const float &transm, const float &dif_refl, const Point &ctr, const float &rad) :
+    mat_ambient(amb), mat_diffuse(dif), mat_specular(spe),
     mat_shineness(shine), mat_reflection(refl), mat_transparency(transp),
-    mat_transmission(transm), center(ctr), radius(rad), radius2(rad * rad)
+    mat_transmission(transm), mat_diffuse_reflection(dif_refl), center(ctr), radius(rad), radius2(rad * rad)
   {}
 
 
@@ -43,7 +44,7 @@ public:
   }
 
   // *********************************************************************
-  // Quadratic function solver 
+  // Quadratic function solver
   // *********************************************************************
   static bool solveQuadraticEquation(const float &a, const float &b, const float &c, float *x0, float *x1)
   {
@@ -71,7 +72,7 @@ public:
 
 
   // *********************************************************************
-  // Function for finding ray-sphere intersection point 
+  // Function for finding ray-sphere intersection point
   // *********************************************************************
   bool intersect(const Ray &ray, Intersection & insect )
   {
@@ -80,13 +81,13 @@ public:
     float a = ray.direction.dot(ray.direction);
     float b = 2 * ray.direction.dot(L);
     float c = L.dot(L) - radius2;
-    
+
     // if there is no solution to the qudratic solver, return false
-    if (!solveQuadraticEquation(a, b, c, &t0, &t1)) 
+    if (!solveQuadraticEquation(a, b, c, &t0, &t1))
       return false;
 
     // if nearest hit out of range or both hits are negative, return false
-    if (t0 > ray.tmax || (t0 < ray.tmin && t1 < ray.tmin)){ 
+    if (t0 > ray.tmax || (t0 < ray.tmin && t1 < ray.tmin)){
       return false;
     }
 
@@ -110,4 +111,6 @@ public:
   float reflection(const Point &q)    const { return mat_reflection; }
   float transparency(const Point &q)  const { return mat_transparency; }
   float transmission(const Point &q)  const { return mat_transmission; }
+  float diffuse_reflection(const Point &q) const { return mat_diffuse_reflection; }
+
 };

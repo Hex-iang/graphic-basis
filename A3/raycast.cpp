@@ -2,9 +2,9 @@
  * CMPT 361, Summer 2014
  *
  *  raycast.cpp
- *      
+ *
  *  Render a simple scene using ray tracing
- * 
+ *
  *  NAME:         Hexiang Hu
  *  SFU ID:       301239910
  *
@@ -34,9 +34,9 @@
 int win_width = WIN_WIDTH;
 int win_height = WIN_HEIGHT;
 
-GLfloat frame[WIN_HEIGHT][WIN_WIDTH][3];   
-// array for the final image 
-// This gets displayed in glut window via texture mapping, 
+GLfloat frame[WIN_HEIGHT][WIN_WIDTH][3];
+// array for the final image
+// This gets displayed in glut window via texture mapping,
 // you can also save a copy as bitmap by pressing 's'
 
 float image_width = IMAGE_WIDTH;
@@ -49,7 +49,7 @@ RGB null_clr = RGB(0.0, 0.0, 0.0);   // NULL color
 //
 // these view parameters should be fixed
 //
-Point eye_pos = Point(0.0, 0.0, 0.0);            // eye position
+Point eye_pos = Point(0.0, 0.0, 0.0);               // eye position
 float image_plane = -1.5;                           // image plane position
 // float image_plane = 0.0;
 // list of spheres in the scene
@@ -85,19 +85,19 @@ bool poisson_on                   = false;
 bool mirror_on                    = false;
 
 int  bonus_scene_mode             = 0;
-// Bonus scene mode : 
+// Bonus scene mode :
 //  0 - just load chess_piece.smf
 //  1 - load chess_piece.smf and bishop.smf
 //  2 - load chess_hire.smf and bishop_hire.smf
 //  3 - load all chess files
 
-int  accerlerate_mode             = 0; 
+int  accerlerate_mode             = 0;
 // Accerlerate mode:
 //  0 - no accerleration
 //  1 - single bounding volume accerleration
 //  2 - spatial grid accerleration
 
-// initiate global static variable 
+// initiate global static variable
 uint64_t Statistic::intersect_cnt       = 0;
 uint64_t Statistic::intersect_test_cnt  = 0;
 uint64_t Statistic::ray_num_cnt         = 0;
@@ -114,8 +114,8 @@ void init()
   vec4 points[NumPoints] = {
     vec4( -ext, -ext,  0, 1.0 ), //v1
     vec4(  ext, -ext,  0, 1.0 ), //v2
-    vec4( -ext,  ext,  0, 1.0 ), //v3 
-    vec4( -ext,  ext,  0, 1.0 ), //v3 
+    vec4( -ext,  ext,  0, 1.0 ), //v3
+    vec4( -ext,  ext,  0, 1.0 ), //v3
     vec4(  ext, -ext,  0, 1.0 ), //v2
     vec4(  ext,  ext,  0, 1.0 )  //v4
   };
@@ -165,7 +165,7 @@ void init()
     BUFFER_OFFSET(offset) );
 
   offset += sizeof(points);
-  GLuint vTexCoord = glGetAttribLocation( program, "vTexCoord" ); 
+  GLuint vTexCoord = glGetAttribLocation( program, "vTexCoord" );
   glEnableVertexAttribArray( vTexCoord );
   glVertexAttribPointer( vTexCoord, 2, GL_FLOAT, GL_FALSE, 0,
     BUFFER_OFFSET(offset) );
@@ -234,7 +234,7 @@ int main( int argc, char **argv )
     printf("./raycast [-u | -d] step_max <options>\n");
     return -1;
   }
-  
+
   // generate random seed for global usage
   srand(time(NULL));
 
@@ -260,7 +260,7 @@ int main( int argc, char **argv )
     else if (strcmp(argv[i], "+n") == 0)    nondisplay_on              = true;
     else if (strcmp(argv[i], "+m") == 0)    mirror_on                  = true;
     else if (strcmp(argv[i], "+ps") == 0)   poisson_on                 = true;
-    // turn on different bonus scene mode 
+    // turn on different bonus scene mode
     else if (strcmp(argv[i], "+b0") == 0)   bonus_scene_mode           = 0;
     else if (strcmp(argv[i], "+b1") == 0)   bonus_scene_mode           = 1;
     else if (strcmp(argv[i], "+b2") == 0)   bonus_scene_mode           = 2;
@@ -289,12 +289,12 @@ int main( int argc, char **argv )
 
   // we want to make sure that intensity values are normalized
   histogram_normalization();
-  
+
   // Output ray tracing statistics
   std::cout << "Total Ray-Triangle Intersection Test: " << Statistic::intersect_test_cnt << std::endl;
   std::cout << "Total Ray-Triangle Intersection: " << Statistic::intersect_cnt << std::endl;
   std::cout << "Total Ray Number: " << Statistic::ray_num_cnt << std::endl;
-  std::cout << "Total Ray-tracing Time: " << std::setw(4) << 
+  std::cout << "Total Ray-tracing Time: " << std::setw(4) <<
                  float(timeEnd - timeStart) / CLOCKS_PER_SEC << " secs."<< std::endl;
 
 #ifdef __APPLE__

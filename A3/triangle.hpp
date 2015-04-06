@@ -11,8 +11,8 @@ class Triangle: public Object
 public:
 	Point  p1, p2, p3;
 	Vector mat_normal;
-	Triangle(const Point & _p1, const Point & _p2, const Point & _p3): p1(_p1), p2(_p2), p3(_p3) 
-	{ 
+	Triangle(const Point & _p1, const Point & _p2, const Point & _p3): p1(_p1), p2(_p2), p3(_p3)
+	{
 		mat_normal = ((p3 - p2).cross(p2 - p1) ).normalize();
 	}
 
@@ -43,7 +43,7 @@ public:
 		Vector edge2 = p3 - p1;
 
 		Vector pvec = (ray.direction).cross(edge2);
-		
+
 		float det = edge1.dot(pvec);
 
 
@@ -55,12 +55,12 @@ public:
 		float u = tvec.dot(pvec) * invDet;
 
 		if (u < 0 || u > 1) return false;
-		
+
 		Vector qvec = tvec.cross(edge1);
 		float v = ray.direction.dot(qvec) * invDet;
 
 		if (v < 0 || u + v > 1) return false;
-		
+
 		insect.t      = edge2.dot(qvec) * invDet;
 		insect.point  = ray.intersectPoint(insect.t);
 		insect.normal = this->normal(insect.point);
@@ -73,21 +73,21 @@ public:
 #else
   bool intersect(const Ray &ray, Intersection & insect)
   {
-  
+
    // first, test if the ray direction is parallel to the surface
    float divider = ray.direction.dot(mat_normal);
    if( divider == 0) return false;
-    
+
    // calculate intersection point t to the plane
    float t = ( p1.dot(mat_normal) - ray.origin.dot(mat_normal) ) / divider;
-  
-   // test if the intersection point is outside the range 
+
+   // test if the intersection point is outside the range
    if ( t > ray.tmax)  { return false; }
    else if( t < ray.tmin) { return false; }
    // test if interestion point is inside triangle
    Point p = ray.intersectPoint(t);
 
-   bool inside = ( (p - p1).dot( (p2 - p1).cross(mat_normal) ) >= 0 ) && 
+   bool inside = ( (p - p1).dot( (p2 - p1).cross(mat_normal) ) >= 0 ) &&
                  ( (p - p2).dot( (p3 - p2).cross(mat_normal) ) >= 0 ) &&
                  ( (p - p3).dot( (p1 - p3).cross(mat_normal) ) >= 0 );
 
@@ -95,7 +95,7 @@ public:
 
    insect.point  = p;
    insect.normal = this->normal(p);
-  
+
    return inside;
   }
 #endif
@@ -120,17 +120,18 @@ public:
   float mat_shineness;
 
   float mat_reflection;
-  float mat_transparency; 
+  float mat_transparency;
   float mat_transmission;
+	float mat_diffuse_reflection;
 
   std::vector<Triangle> primitives;
 
-	Mesh(const RGB &amb, const RGB &dif, const RGB &spe, 
-    const float &shine, const float &refl, const float &transp, 
-    const float &transm ): 
-	  mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
+	Mesh(const RGB &amb, const RGB &dif, const RGB &spe,
+    const float &shine, const float &refl, const float &transp,
+    const float &transm , const float &dif_refl):
+	  mat_ambient(amb), mat_diffuse(dif), mat_specular(spe),
     mat_shineness(shine), mat_reflection(refl), mat_transparency(transp),
-    mat_transmission(transm) {}
+    mat_transmission(transm), mat_diffuse_reflection(dif_refl) {}
 
    ~Mesh(){}
 
@@ -149,7 +150,7 @@ public:
         }
       }
     }
-    
+
     if( tHit.t > ray.tmax || tHit.t < ray.tmin)
       return false;
     else

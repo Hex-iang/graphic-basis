@@ -23,6 +23,7 @@ class ChessBoard : public Object
   float mat_reflection;
   float mat_transparency;
   float mat_transmission;
+  float mat_diffuse_reflection;
 public:
 
   // Since chess board is infinite and lays on the x-z plane,
@@ -35,12 +36,10 @@ public:
 
   ChessBoard(const RGB &ambient, const RGB &light_dif, const Vector &dark_dif,
     const RGB &spe, const float &shine, const float &refl,
-    const float &transp, const float &transm, const float y = - 2.0,
-    const float wid = 1.0) :
+    const float &transp, const float &transm, const float &dif_refl, const float y = - 2.0, const float wid = 1.0) :
     mat_ambient(ambient), light_diffuse(light_dif), dark_diffuse(dark_dif),
     mat_specular(spe), mat_shineness(shine), mat_reflection(refl),
-    mat_transparency(transp), mat_transmission(transm),
-    plane_y( -y ), grid_wid(wid) { plane_normal = Vector(0.0, 1.0, 0.0); }
+    mat_transparency(transp), mat_transmission(transm), mat_diffuse_reflection(dif_refl), plane_y( -y ), grid_wid(wid) { plane_normal = Vector(0.0, 1.0, 0.0); }
 
   ~ChessBoard(){}
 
@@ -77,6 +76,7 @@ public:
   float reflection(const Point &q)    const { return mat_reflection; }
   float transparency(const Point &q)  const { return mat_transparency; }
   float transmission(const Point &q)  const { return mat_transmission; }
+  float diffuse_reflection(const Point &q) const { return mat_diffuse_reflection; }
 
   RGB diffuse(const Point &q) const
   {

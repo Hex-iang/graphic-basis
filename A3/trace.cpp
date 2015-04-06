@@ -255,7 +255,7 @@ RGB recursive_ray_trace(const Ray &ray, const int &depth, Object * pObject_ignor
   color = pObject->transparency(hit.point) * refraction
         + pObject->reflection(hit.point) * reflection
         + phong(hit, view, pObject)
-        + pObject->ambient(hit.point) * diffuse;
+        + pObject->diffuse_reflection(hit.point) * diffuse;
 
 	return color;
 }

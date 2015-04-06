@@ -2,13 +2,13 @@
 //
 #include "chess.h"
 
-Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe, 
-  const float &shine, const float &refl, const float &transp, 
-  const float &transm, const std::string &str, 
-  const Vector displacement, const float s, int opt) : 
-  mat_ambient(amb), mat_diffuse(dif), mat_specular(spe), 
+Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
+  const float &shine, const float &refl, const float &transp,
+  const float &transm,  const float &dif_refl, const std::string &str,
+  const Vector displacement, const float s, int opt) :
+  mat_ambient(amb), mat_diffuse(dif), mat_specular(spe),
   mat_shineness(shine), mat_reflection(refl), mat_transparency(transp),
-  mat_transmission(transm), optimize(opt)
+  mat_transmission(transm), mat_diffuse_reflection(dif_refl), optimize(opt)
 {
   std::vector<Point > vertices;
   int vertices_cnt = 0, triangles_cnt = 0, line_cnt =0;
@@ -30,7 +30,7 @@ Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
     char type;
     // read the first character and see which type of line it is
     buffer >> type;
-    
+
     if(type == '#') continue;
 
     if(type == 'v')
@@ -58,8 +58,8 @@ Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
       int i, j, k;
       buffer >> i >> j >> k;
 
-      // std::cout << i  << "," << j << "," << k << std::endl; 
-      
+      // std::cout << i  << "," << j << "," << k << std::endl;
+
       primitives.push_back(Triangle(vertices[i-1], vertices[j-1], vertices[k-1]));
     }
   }
@@ -67,8 +67,8 @@ Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
   if( optimize == 1 || optimize == 2)
   // if( optimize == 1 )
   {
-    // points for the 
-    Point pMin(xmin, ymin, zmin); 
+    // points for the
+    Point pMin(xmin, ymin, zmin);
     Point pMax(xmax, ymax, zmax);
 
     std::cout << "Bounding Volume: pMin: "<< pMin << ", pMax: " << pMax << std::endl;
@@ -78,7 +78,7 @@ Chess::Chess(const RGB &amb, const RGB &dif, const RGB &spe,
 
     if( optimize == 2 )
     {
-      // calculate the size of grid 
+      // calculate the size of grid
       Vector size = Point(xmax, ymax, zmax) - Point(xmin, ymin, zmin);
 
       // compute grid number according to a metric proposer by Cleary in 1983
@@ -152,7 +152,7 @@ bool Chess::intersect(const Ray &ray, Intersection & insect)
 
     Vec3<uint32_t> exit_point, step, cell;
     Vector deltaT, nextCrossingT;
-    
+
     for (uint8_t i = 0; i < 3; ++i) {
       // convert ray starting point to cell coordinates
       float rayOrigCell = ((ray.origin[i] + ray.direction[i] * ray.tnear) -  box[0][i]);
@@ -176,11 +176,11 @@ bool Chess::intersect(const Ray &ray, Intersection & insect)
     while ( true ) {
       // compute cell index for intersection
       uint32_t index = cell[2] * resolution[0] * resolution[1] + cell[1] * resolution[0] + cell[0];
-          
+
       Intersection tmpHit(INFINITY);
 
-      if ( cells.find(index) != cells.end() && cells[index].intersect(ray, tmpHit) ) 
-      {  
+      if ( cells.find(index) != cells.end() && cells[index].intersect(ray, tmpHit) )
+      {
         if( tmpHit.t < tHit.t )
         {
           tHit = tmpHit;
@@ -188,13 +188,13 @@ bool Chess::intersect(const Ray &ray, Intersection & insect)
       }
 
       // next grid to step in
-      uint8_t k = 
+      uint8_t k =
         ((nextCrossingT[0] < nextCrossingT[1]) << 2) +
         ((nextCrossingT[0] < nextCrossingT[2]) << 1) +
         ((nextCrossingT[1] < nextCrossingT[2]));
-      
+
       static const uint8_t map[8] = {2, 1, 2, 1, 2, 2, 0, 0};
-      
+
       uint8_t axis = map[k];
 
       if (ray.tmax < nextCrossingT[axis]) break;
@@ -211,12 +211,12 @@ bool Chess::intersect(const Ray &ray, Intersection & insect)
       insect = tHit;
       return true;
     }
-  
+
   }
 
 
 
-  // intersect all primitives 
+  // intersect all primitives
   for (unsigned int i = 0; i < primitives.size(); ++i)
   {
     Intersection tmpHit(INFINITY);
@@ -228,7 +228,7 @@ bool Chess::intersect(const Ray &ray, Intersection & insect)
       }
     }
   }
-  
+
   if( tHit.t > ray.tmax || tHit.t < ray.tmin )
     return false;
   else
