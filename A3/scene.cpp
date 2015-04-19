@@ -29,7 +29,7 @@ extern bool mirror_on;
 //////////////////////////////////////////////////////////////////////////
 
 // weight for diffuse reflection
-float diffuse_reflection  = 0.1;
+float diffuse_reflection  = 0.3;
 
 /*******************************************
  * set up the default scene - DO NOT CHANGE
